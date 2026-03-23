@@ -1266,7 +1266,9 @@ function renderKalendar() {
         const visibleStart = rez.datum_dolaska > monthStart ? rez.datum_dolaska : monthStart;
         const visibleEnd = rez.datum_odlaska < monthEndExclusive ? rez.datum_odlaska : monthEndExclusive;
         const startDay = parseInt(visibleStart.split('-')[2], 10);
-        const endDay = parseInt(visibleEnd.split('-')[2], 10) - 1;
+        const endDay = visibleEnd === monthEndExclusive
+          ? daysInMonth
+          : parseInt(visibleEnd.split('-')[2], 10) - 1;
         if (endDay < startDay) return;
         const startCol = startDay + 1;
         const endCol = endDay + 2;
