@@ -1231,7 +1231,8 @@ function renderKalendar() {
   const today = new Date();
   const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
   const monthStart = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
-  const monthEndExclusive = new Date(calYear, calMonth + 1, daysInMonth + 1).toISOString().split('T')[0];
+  const nextMonthDate = new Date(calYear, calMonth + 1, 1);
+  const monthEndExclusive = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth()+1).padStart(2,'0')}-${String(nextMonthDate.getDate()).padStart(2,'0')}`;
   document.getElementById('calMonthLabel').textContent = `${mNames[calMonth]} ${calYear}`;
 
   let html = '<div class="cal-header">';
