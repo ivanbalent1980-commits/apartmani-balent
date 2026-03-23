@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apartmani Balent – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sand:#f5f0e8;--sand-dark:#e5ddd0;--navy:#1a2636;--navy-light:#243347;
+  --accent:#b5905a;--accent-light:#d4b48a;--white:#ffffff;
+  --text:#2a2a2a;--muted:#6b6b6b;
+  --green:#27ae60;--yellow:#f39c12;--red:#c0392b;--blue:#2980b9;
+  --sidebar-w:260px;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',sans-serif;
+}
+html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(--sand);overflow-x:hidden}
+
+/* ── LAYOUT ──────────────────────────────── */
+.app{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ─────────────────────────────── */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:1.6rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo h1{font-family:var(--serif);font-size:1.4rem;font-weight:300;color:#fff}
+.sidebar-logo h1 span{color:var(--accent-light)}
+.sidebar-logo p{font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.15em;text-transform:uppercase;margin-top:.2rem}
+.sidebar-nav{flex:1;overflow-y:auto;padding:.8rem 0}
+.nav-section{padding:.6rem 1.4rem .3rem;font-size:.6rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.nav-item{display:flex;align-items:center;gap:.8rem;padding:.7rem 1.4rem;font-size:.82rem;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-item.active{color:#fff;background:rgba(181,144,90,.15);border-left-color:var(--accent)}
+.nav-item .ico{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-pill{order:99;margin-left:auto;display:none;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 .45rem;border-radius:999px;background:var(--yellow);color:#fff;font-size:.68rem;font-weight:600;line-height:1}
+.nav-sub{padding-left:2rem}
+.nav-sub .nav-item{font-size:.78rem;padding:.5rem 1.4rem .5rem .8rem}
+.sidebar-footer{padding:1rem 1.4rem;border-top:1px solid rgba(255,255,255,.08)}
+.btn-logout{width:100%;padding:.65rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:2px;color:rgba(255,255,255,.5);font-family:var(--sans);font-size:.75rem;cursor:pointer;transition:all .2s;text-align:center}
+.btn-logout:hover{background:rgba(192,57,43,.2);border-color:rgba(192,57,43,.4);color:#fff}
+
+/* ── MAIN ────────────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--sand-dark);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--serif);font-size:1.4rem;font-weight:400;color:var(--navy)}
+.topbar-right{display:flex;align-items:center;gap:1rem;font-size:.8rem;color:var(--muted)}
+.topbar-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:999px;background:#eef4f8;color:#466178;border:1px solid rgba(70,97,120,.18);font-size:.74rem;font-weight:600}
+.topbar-chip.attention{background:#fff4cc;color:#8a6500;border-color:rgba(193,154,0,.35)}
+.content{padding:2rem;flex:1}
+
+/* ── CARDS ───────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:2rem}
+.stat-card{background:var(--white);border:1px solid var(--sand-dark);border-radius:3px;padding:1.4rem}
+.stat-card .label{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.stat-card .value{font-family:var(--serif);font-size:2rem;font-weight:300;color:var(--navy)}
+.stat-card .sub{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+.stat-card.accent .value{color:var(--accent)}
+.stat-card.green .value{color:var(--green)}
+.stat-card.blue .value{color:var(--blue)}
+
+/* ── SECTION CARD ────────────────────────── */
+.card{background:var(--white);border:1px solid var(--sand-dark);border-radius:3px;margin-bottom:1.5rem}
+.card-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--sand-dark);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.card-head h3{font-family:var(--serif);font-size:1.15rem;font-weight:400;color:var(--navy)}
+.card-body{padding:1.5rem}
+
+/* ── TABLE ───────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+.tbl th{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:.6rem 1rem;text-align:left;border-bottom:2px solid var(--sand-dark);white-space:nowrap}
+.tbl td{padding:.75rem 1rem;border-bottom:1px solid var(--sand-dark);vertical-align:middle}
+.tbl tbody tr:hover{background:rgba(181,144,90,.04)}
+.tbl tbody tr:last-child td{border-bottom:none}
+
+/* ── BADGES ──────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:.2rem .7rem;border-radius:20px;font-size:.7rem;font-weight:500;letter-spacing:.04em}
+.badge-green{background:#eafaf1;color:#1e8449}
+.badge-yellow{background:#fef9e7;color:#b7770d}
+.badge-red{background:#fdedec;color:#a93226}
+.badge-blue{background:#ebf5fb;color:#1a5276}
+.badge-grey{background:#f2f3f4;color:#566573}
+
+/* ── BUTTONS ─────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:2px;font-family:var(--sans);font-size:.75rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--accent)}
+.btn-secondary{background:transparent;color:var(--navy);border:1px solid var(--sand-dark)}
+.btn-secondary:hover{border-color:var(--navy);background:var(--sand)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(192,57,43,.3)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:.35rem .8rem;font-size:.7rem}
+.btn-icon{padding:.4rem;width:32px;height:32px;justify-content:center}
+
+/* ── FORMS ───────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{display:flex;flex-direction:column;gap:.4rem}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fg input,.fg select,.fg textarea{padding:.65rem .9rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.85rem;color:var(--text);background:var(--sand);outline:none;transition:border-color .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);background:var(--white)}
+.fg textarea{resize:vertical;min-height:80px}
+.fg input[type="color"]{padding:.3rem;height:38px;cursor:pointer}
+.form-actions{display:flex;gap:.8rem;margin-top:1.2rem;justify-content:flex-end}
+
+/* ── MODAL ───────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,25,38,.7);z-index:500;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:3px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;animation:modalIn .25s ease}
+@keyframes modalIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--sand-dark);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+.modal-head h3{font-family:var(--serif);font-size:1.2rem;font-weight:400;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer;padding:.2rem}
+.modal-body{padding:1.5rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--sand-dark);display:flex;justify-content:flex-end;gap:.8rem}
+
+/* ── CONFIRM MODAL ───────────────────────── */
+.confirm-modal{display:none;position:fixed;inset:0;background:rgba(15,25,38,.7);z-index:600;align-items:center;justify-content:center;padding:1rem}
+.confirm-modal.open{display:flex}
+.confirm-box{background:var(--white);border-radius:3px;width:100%;max-width:400px;padding:2rem;text-align:center;animation:modalIn .25s ease}
+.confirm-box .ico{font-size:2.5rem;margin-bottom:1rem}
+.confirm-box h3{font-family:var(--serif);font-size:1.3rem;font-weight:400;color:var(--navy);margin-bottom:.6rem}
+.confirm-box p{font-size:.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.5rem}
+.confirm-btns{display:flex;gap:.8rem;justify-content:center}
+
+/* ── TABS ────────────────────────────────── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--sand-dark);margin-bottom:1.5rem}
+.tab{padding:.7rem 1.4rem;font-size:.78rem;font-weight:500;letter-spacing:.06em;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans)}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--navy);border-bottom-color:var(--accent)}
+
+/* ── KALENDAR ────────────────────────────── */
+.cal-wrap{overflow-x:auto}
+.cal-grid{display:grid;min-width:700px}
+.cal-header{display:grid;grid-template-columns:120px repeat(31,1fr);background:var(--navy);color:#fff;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.cal-header div{padding:.5rem .2rem;text-align:center;border-right:1px solid rgba(255,255,255,.1)}
+.cal-row{display:grid;grid-template-columns:120px repeat(31,1fr);border-bottom:1px solid var(--sand-dark);position:relative}
+.cal-apt-label{padding:.6rem .8rem;font-size:.78rem;font-weight:500;color:var(--navy);background:var(--sand);border-right:1px solid var(--sand-dark)}
+.cal-cell{border-right:1px solid var(--sand-dark);min-height:38px;position:relative;cursor:pointer;transition:background .15s;z-index:1}
+.cal-cell:hover{background:rgba(181,144,90,.1)}
+.cal-header div.today{background:#2f6ea6;color:#eef6ff;font-weight:700}
+.cal-cell.confirmed{background:#dff3e4}
+.cal-cell.pending{background:#fff2b8}
+.cal-cell.blocked{background:#f9dddd}
+.cal-cell.today{background:#2f6ea6!important;outline:none}
+.cal-cell.today:hover{background:#2f6ea6!important}
+.cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3}
+.cal-span{grid-row:1;align-self:center;height:28px;margin:0 1px;border-radius:3px;display:flex;align-items:center;padding:0 .45rem;font-size:.66rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;pointer-events:auto}
+.cal-span.confirmed{background:#7bc67e;color:#103d17}
+.cal-span.pending{background:#f3d24d;color:#5f4300;border:1px solid #c19a00}
+.cal-span.blocked{background:#e26b6b;color:#fff2f2}
+.cal-span-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cal-nav{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.cal-nav-btns{display:flex;gap:.4rem}
+.cal-month-label{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--navy)}
+
+/* ── FINANCIJE ───────────────────────────── */
+.fin-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.fin-tab{padding:.5rem 1.2rem;border:1px solid var(--sand-dark);border-radius:20px;font-size:.78rem;cursor:pointer;transition:all .2s;background:var(--white);color:var(--muted)}
+.fin-tab:hover{border-color:var(--navy);color:var(--navy)}
+.fin-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.fin-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.fin-sum-card{background:var(--sand);border-radius:2px;padding:1.2rem;border-left:3px solid var(--sand-dark)}
+.fin-sum-card.realizirana{border-left-color:var(--green)}
+.fin-sum-card.buduca{border-left-color:var(--blue)}
+.fin-sum-card.ukupna{border-left-color:var(--accent)}
+.fin-sum-card .fs-label{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.fin-sum-card .fs-value{font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--navy)}
+.zarada-rucna{color:var(--accent)!important;font-style:italic}
+.year-sel{padding:.4rem .8rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.8rem;color:var(--navy);background:var(--white);outline:none;cursor:pointer}
+
+/* ── RASHODI ─────────────────────────────── */
+.rashodi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.rashod-kat{background:var(--white);border:1px solid var(--sand-dark);border-radius:3px}
+.rashod-kat-head{padding:1rem 1.2rem;background:var(--navy);border-radius:3px 3px 0 0;display:flex;align-items:center;justify-content:space-between}
+.rashod-kat-head h4{font-size:.8rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+.rashod-item{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--sand-dark)}
+.rashod-item:last-child{border-bottom:none}
+.rashod-info{flex:1}
+.rashod-naziv{font-size:.85rem;font-weight:500;color:var(--navy)}
+.rashod-meta{font-size:.72rem;color:var(--muted);margin-top:.1rem}
+.rashod-iznos{font-family:var(--serif);font-size:1rem;color:var(--navy);white-space:nowrap}
+
+/* ── SADRŽAJ ─────────────────────────────── */
+.content-nav{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.cnt-btn{padding:.5rem 1.1rem;border:1px solid var(--sand-dark);border-radius:2px;font-size:.75rem;cursor:pointer;background:var(--white);color:var(--muted);transition:all .2s}
+.cnt-btn:hover{border-color:var(--navy);color:var(--navy)}
+.cnt-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* ── TOGGLE ──────────────────────────────── */
+.toggle-wrap{display:flex;align-items:center;gap:.8rem}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--sand-dark);border-radius:20px;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;bottom:3px;left:3px;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-slider{background:var(--accent)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+.toggle-label{font-size:.82rem;color:var(--text)}
+
+/* ── BANER PREVIEW ───────────────────────── */
+.baner-preview{border-radius:3px;padding:1rem 1.5rem;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;transition:all .3s}
+.baner-preview p{font-size:.9rem}
+
+/* ── POPUP PREVIEW ───────────────────────── */
+.popup-preview{border:2px dashed var(--sand-dark);border-radius:3px;padding:2rem;text-align:center;margin-bottom:1.2rem;position:relative}
+.popup-preview .pp-x{position:absolute;top:.6rem;right:.8rem;font-size:1.1rem;color:var(--muted);cursor:pointer}
+
+/* ── EMPTY STATE ─────────────────────────── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty .ico{font-size:2.5rem;margin-bottom:.8rem}
+.empty p{font-size:.85rem}
+
+/* ── LOADING ─────────────────────────────── */
+.loading{text-align:center;padding:3rem;color:var(--muted);font-size:.85rem}
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .rashodi-grid{grid-template-columns:1fr}
+  .fin-summary{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .topbar{padding:.9rem 1.2rem}
+  .content{padding:1.2rem}
+}
+@media(max-width:540px){
+  .stat-grid{grid-template-columns:1fr}
+}
+
+/* PAGE SECTIONS */
+.page{display:none}
+.page.active{display:block}
+
+/* NOTICE */
+.notice{padding:.8rem 1.1rem;border-radius:2px;font-size:.82rem;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.notice-info{background:#ebf5fb;border-left:3px solid var(--blue);color:#1a5276}
+.notice-warn{background:#fef9e7;border-left:3px solid var(--yellow);color:#7d6608}
+.notice-success{background:#eafaf1;border-left:3px solid var(--green);color:#1e8449}
+.notice.attention{background:#fff4cc;border-left-color:#c19a00;color:#6f5200}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>Apartmani <span>Balent</span></h1>
+    <p>Admin Panel</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Upravljanje</div>
+    <a class="nav-item active" onclick="showPage('kalendar')" href="#">
+      <span class="nav-pill" id="navUpitCount">0</span>
+      <span class="ico">📅</span> Kalendar i rezervacije
+    </a>
+    <a class="nav-item" onclick="showPage('gosti')" href="#">
+      <span class="ico">👥</span> Gosti
+    </a>
+    <a class="nav-item" onclick="showPage('financije')" href="#">
+      <span class="ico">💰</span> Financije
+    </a>
+
+    <div class="nav-section" style="margin-top:.8rem">Sadržaj</div>
+    <a class="nav-item" onclick="showPage('sadrzaj')" href="#">
+      <span class="ico">✏️</span> Upravljanje sadržajem
+    </a>
+    <div class="nav-section" style="margin-top:.8rem">Sustav</div>
+    <a class="nav-item" onclick="showPage('postavke')" href="#">
+      <span class="ico">⚙️</span> Postavke
+    </a>
+    <a class="nav-item" href="https://ivanbalent1980-commits.github.io/krk-app/" target="_blank">
+      <span class="ico">🌐</span> Otvori web stranicu
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="font-size:.72rem;color:rgba(255,255,255,.35);margin-bottom:.7rem" id="userEmail"></div>
+    <button class="btn-logout" onclick="logout()">Odjava</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;background:none;border:none;font-size:1.3rem;cursor:pointer" id="hamburger">☰</button>
+      <h2 class="topbar-title" id="pageTitle">Kalendar i rezervacije</h2>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-chip" id="topbarUpitChip">🔔 <span id="topbarUpitText">Novi upiti: 0</span></div>
+      <span id="todayDate"></span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══════════════════════════════════════
+         PAGE: KALENDAR
+    ═══════════════════════════════════════ -->
+    <div class="page active" id="page-kalendar">
+      <div class="notice notice-warn" id="upitNotice" style="display:none">
+        🔔 <span id="upitNoticeText">Stigao je novi zahtjev.</span>
+      </div>
+      <div class="stat-grid" id="kalendarStats">
+        <div class="stat-card">
+          <div class="label">Danas slobodno</div>
+          <div class="value" id="kSlobodno">–</div>
+          <div class="sub">apartmana</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="label">Buduće rezervacije 2026.</div>
+          <div class="value" id="kAktivnih">–</div>
+          <div class="sub">potvrđene i upiti</div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">Gostiju trenutno</div>
+          <div class="value" id="kTrenutno">–</div>
+          <div class="sub">u apartmanima</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Popunjenost</div>
+          <div class="value" id="kPopunjenost">–</div>
+          <div class="sub">ovaj mjesec</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Kalendar zauzetosti</h3>
+          <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+            <div class="cal-nav-btns">
+              <button class="btn btn-secondary btn-sm" onclick="calPrev()">‹</button>
+              <button class="btn btn-secondary btn-sm" onclick="calToday()">Danas</button>
+              <button class="btn btn-secondary btn-sm" onclick="calNext()">›</button>
+            </div>
+            <span class="cal-month-label" id="calMonthLabel"></span>
+            <button class="btn btn-primary btn-sm" onclick="openRezModal()">+ Nova rezervacija</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="cal-wrap">
+            <div id="calendarGrid"></div>
+          </div>
+          <div style="display:flex;gap:1.5rem;padding:1rem 1.5rem;border-top:1px solid var(--sand-dark);flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
+              <div style="width:14px;height:14px;background:#d6eaf8;border-radius:2px"></div> Potvrđeno
+            </div>
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
+              <div style="width:14px;height:14px;background:#fef9e7;border-radius:2px"></div> Upit
+            </div>
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
+              <div style="width:14px;height:14px;background:#f2f3f4;border-radius:2px"></div> Blokirano
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: GOSTI
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-gosti">
+      <!-- Filteri -->
+      <div class="card" style="margin-bottom:1.2rem">
+        <div class="card-body" style="padding:1rem 1.5rem">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;align-items:end">
+            <div class="fg">
+              <label>Traži po imenu</label>
+              <input type="text" id="filterIme" placeholder="Ime gosta..." oninput="filterGosti()">
+            </div>
+            <div class="fg">
+              <label>Apartman</label>
+              <select id="filterApt" onchange="filterGosti()">
+                <option value="">Svi</option>
+                <option value="1">Apartman 1</option>
+                <option value="2">Apartman 2</option>
+                <option value="3">Apartman 3</option>
+                <option value="4">Apartman 4</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Izvor</label>
+              <select id="filterIzvor" onchange="filterGosti()">
+                <option value="">Svi</option>
+                <option value="vlastiti">Vlastiti</option>
+                <option value="airbnb">Airbnb</option>
+                <option value="estee">Estee agencija</option>
+                <option value="ostalo">Ostalo</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Dolazak od</label>
+              <input type="date" id="filterDatumOd" onchange="filterGosti()">
+            </div>
+            <div class="fg">
+              <label>Dolazak do</label>
+              <input type="date" id="filterDatumDo" onchange="filterGosti()">
+            </div>
+            <div class="fg">
+              <label>Godina</label>
+              <select id="filterGodina" onchange="filterGosti()">
+                <option value="">Sve</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Popis gostiju</h3>
+          <button class="btn btn-primary btn-sm" onclick="openRezModal()">+ Dodaj gosta</button>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="tbl" id="gostiTable">
+            <thead>
+              <tr>
+                <th>Gost</th>
+                <th>Apartman</th>
+                <th>Dolazak</th>
+                <th>Odlazak</th>
+                <th>Osobe</th>
+                <th>Izvor</th>
+                <th>Status</th>
+                <th>Zarada</th>
+                <th>Račun</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="gostiBody">
+              <tr><td colspan="10" class="loading">Učitavanje...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: FINANCIJE
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-financije">
+      <!-- Glavni tabovi: Prihodi / Rashodi -->
+      <div class="tabs" id="finMainTabs" style="margin-bottom:1.5rem">
+        <button class="tab active" onclick="setFinMainTab('prihodi',this)">💰 Prihodi</button>
+        <button class="tab" onclick="setFinMainTab('rashodi',this)">📉 Rashodi</button>
+      </div>
+
+      <!-- PRIHODI -->
+      <div id="fin-prihodi">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+          <select class="year-sel" id="finGodina" onchange="loadFinancije()"></select>
+          <div class="fin-tabs" id="finTabs">
+            <button class="fin-tab active" onclick="setFinTab('sve',this)">Sve zajedno</button>
+            <button class="fin-tab" onclick="setFinTab('gaga',this)">👤 Gaga</button>
+            <button class="fin-tab" onclick="setFinTab('ivan',this)">👤 Ivan</button>
+            <button class="fin-tab" onclick="setFinTab('1',this)">Apartman 1</button>
+            <button class="fin-tab" onclick="setFinTab('2',this)">Apartman 2</button>
+            <button class="fin-tab" onclick="setFinTab('3',this)">Apartman 3</button>
+            <button class="fin-tab" onclick="setFinTab('4',this)">Apartman 4</button>
+          </div>
+        </div>
+        <div class="fin-summary" style="grid-template-columns:repeat(4,1fr)">
+          <div class="fin-sum-card realizirana">
+            <div class="fs-label">Realizirana zarada</div>
+            <div class="fs-value" id="finRealizirana">0 €</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Otišli gosti + trenutno u objektu</div>
+          </div>
+          <div class="fin-sum-card buduca">
+            <div class="fs-label">Buduća zarada</div>
+            <div class="fs-value" id="finBuduca">0 €</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Potvrđene buduće rezervacije</div>
+          </div>
+          <div class="fin-sum-card ukupna">
+            <div class="fs-label">Ukupni prihodi</div>
+            <div class="fs-value" id="finUkupna">0 €</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Realizirani + budući</div>
+          </div>
+          <div class="fin-sum-card" style="border-left-color:#8e44ad">
+            <div class="fs-label">Neto (prihodi − rashodi)</div>
+            <div class="fs-value" id="finNeto" style="color:#8e44ad">0 €</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Ukupni prihodi − ukupni rashodi</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Detalji po gostu</h3></div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Gost</th><th>Apartman</th><th>Dolazak</th><th>Odlazak</th>
+                  <th>Noćenja</th><th>Status</th><th>Zarada</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="finBody">
+                <tr><td colspan="8" class="loading">Učitavanje...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RASHODI -->
+      <div id="fin-rashodi" style="display:none">
+        <div class="notice notice-info">
+          ℹ️ Rashodi se prikazuju za tekuću godinu. Jednokratni rashodi prikazuju se po datumu unosa.
+        </div>
+        <div class="rashodi-grid" id="rashodiGrid" style="margin-top:1rem">
+          <div class="rashod-kat">
+            <div class="rashod-kat-head">
+              <h4>⚡ Režije</h4>
+              <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" onclick="openRashodModal('rezije')">+ Dodaj</button>
+            </div>
+            <div id="rashodiRezije"><div class="loading">Učitavanje...</div></div>
+          </div>
+          <div class="rashod-kat">
+            <div class="rashod-kat-head">
+              <h4>📋 Porezi i članarine</h4>
+              <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" onclick="openRashodModal('porezi_clanarine')">+ Dodaj</button>
+            </div>
+            <div id="rashodiPorezi"><div class="loading">Učitavanje...</div></div>
+          </div>
+          <div class="rashod-kat">
+            <div class="rashod-kat-head">
+              <h4>📦 Ostalo</h4>
+              <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:none" onclick="openRashodModal('ostalo')">+ Dodaj</button>
+            </div>
+            <div id="rashodiOstalo"><div class="loading">Učitavanje...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: SADRŽAJ
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-sadrzaj">
+      <div class="content-nav">
+        <button class="cnt-btn active" onclick="setCntSection('baner',this)">Baner</button>
+        <button class="cnt-btn" onclick="setCntSection('popup',this)">Popup akcije</button>
+        <button class="cnt-btn" onclick="setCntSection('cijene',this)">Cijene</button>
+        <button class="cnt-btn" onclick="setCntSection('apartmani',this)">Apartmani</button>
+        <button class="cnt-btn" onclick="setCntSection('istrazi',this)">Sekcija Istraži</button>
+        <button class="cnt-btn" onclick="setCntSection('opcenito',this)">Opći podaci</button>
+        <button class="cnt-btn" onclick="setCntSection('recenzije',this)">Recenzije</button>
+      </div>
+
+      <!-- BANER -->
+      <div id="cnt-baner">
+        <div class="card">
+          <div class="card-head"><h3>Baner – postavke</h3></div>
+          <div class="card-body">
+            <div class="baner-preview" id="banerPreview">
+              <p id="banerPreviewText">Rezervirajte direktno i uštedite!</p>
+              <button style="background:none;border:none;color:inherit;font-size:1.1rem;cursor:pointer">✕</button>
+            </div>
+            <div class="form-grid">
+              <div class="fg">
+                <label>Vidljivost</label>
+                <div class="toggle-wrap">
+                  <label class="toggle"><input type="checkbox" id="banerVidljiv" onchange="updateBanerPreview()"><span class="toggle-slider"></span></label>
+                  <span class="toggle-label">Baner je vidljiv</span>
+                </div>
+              </div>
+              <div class="fg">
+                <label>Boja pozadine</label>
+                <input type="color" id="banerBojaPozadine" value="#1a2636" onchange="updateBanerPreview()">
+              </div>
+              <div class="fg">
+                <label>Boja teksta</label>
+                <input type="color" id="banerBojaTeksta" value="#ffffff" onchange="updateBanerPreview()">
+              </div>
+              <div class="fg full">
+                <label>Tekst (HR)</label>
+                <input type="text" id="banerTekstHr" oninput="updateBanerPreview()">
+              </div>
+              <div class="fg full">
+                <label>Tekst (EN)</label>
+                <input type="text" id="banerTekstEn">
+              </div>
+              <div class="fg full">
+                <label>Tekst (DE)</label>
+                <input type="text" id="banerTekstDe">
+              </div>
+              <div class="fg full">
+                <label>Tekst (IT)</label>
+                <input type="text" id="banerTekstIt">
+              </div>
+              <div class="fg full">
+                <label>Tekst (RU)</label>
+                <input type="text" id="banerTekstRu">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveBaner()">💾 Spremi baner</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POPUP -->
+      <div id="cnt-popup" style="display:none">
+        <div class="card">
+          <div class="card-head">
+            <h3>Popup akcije</h3>
+            <button class="btn btn-primary btn-sm" onclick="openPopupModal()">+ Nova akcija</button>
+          </div>
+          <div class="card-body">
+            <div id="popupList"><div class="loading">Učitavanje...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CIJENE -->
+      <div id="cnt-cijene" style="display:none">
+        <div class="card">
+          <div class="card-head"><h3>Cjenik po sezonama</h3></div>
+          <div class="card-body">
+            <div class="notice notice-info">ℹ️ Promjena cijena automatski ažurira kalkulator na web stranici.</div>
+            <table class="tbl" style="margin-top:1rem">
+              <thead><tr><th>Razdoblje</th><th>Cijena / noć</th><th></th></tr></thead>
+              <tbody id="cijeneBody">
+                <tr><td colspan="3" class="loading">Učitavanje...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- APARTMANI -->
+      <div id="cnt-apartmani" style="display:none">
+        <div class="tabs" id="aptContentTabs">
+          <button class="tab active" onclick="setAptTab(1,this)">Apartman 1</button>
+          <button class="tab" onclick="setAptTab(2,this)">Apartman 2</button>
+          <button class="tab" onclick="setAptTab(3,this)">Apartman 3</button>
+          <button class="tab" onclick="setAptTab(4,this)">Apartman 4</button>
+        </div>
+        <div id="aptContentBody">
+          <div class="notice notice-info">Odaberite apartman za uređivanje.</div>
+        </div>
+      </div>
+
+      <!-- ISTRAŽI -->
+      <div id="cnt-istrazi" style="display:none">
+        <div class="card">
+          <div class="card-head">
+            <h3>Atrakcije i plaže</h3>
+            <button class="btn btn-primary btn-sm" onclick="openAtrakModal()">+ Dodaj atrakciju</button>
+          </div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>Naziv</th><th>Kategorija</th><th>Aktivan</th><th></th></tr></thead>
+              <tbody id="atrakBody"><tr><td colspan="4" class="loading">Učitavanje...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPĆI PODACI -->
+      <div id="cnt-opcenito" style="display:none">
+        <div class="card">
+          <div class="card-head"><h3>Opći podaci</h3></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="fg">
+                <label>Check-in od</label>
+                <input type="time" id="checkinVrijeme" value="15:00">
+              </div>
+              <div class="fg">
+                <label>Check-out do</label>
+                <input type="time" id="checkoutVrijeme" value="10:00">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveOpcenito()">💾 Spremi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENZIJE -->
+      <div id="cnt-recenzije" style="display:none">
+        <div class="card">
+          <div class="card-head">
+            <h3>Recenzije</h3>
+            <button class="btn btn-primary btn-sm" onclick="openRecModal()">+ Dodaj recenziju</button>
+          </div>
+          <div class="card-body" style="padding:0;overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>Ime</th><th>Ocjena</th><th>Tekst</th><th>Aktivan</th><th></th></tr></thead>
+              <tbody id="recBody"><tr><td colspan="5" class="loading">Učitavanje...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: POSTAVKE
+    ═══════════════════════════════════════ -->
+    <div class="page" id="page-postavke">
+      <div class="card">
+        <div class="card-head"><h3>⚙️ Pravila kalendara</h3></div>
+        <div class="card-body">
+          <div class="content-nav" style="margin-bottom:1.5rem">
+            <button class="cnt-btn active" onclick="setPostavkeTab('minBoravak',this)">Minimalni boravak</button>
+            <button class="cnt-btn" onclick="setPostavkeTab('korekcija',this)">Cjenovna korekcija</button>
+            <button class="cnt-btn" onclick="setPostavkeTab('blokirano',this)">Blokirani datumi</button>
+          </div>
+          <div id="postavke-minBoravak">
+            <div class="notice notice-info">ℹ️ Definišite minimalni broj noćenja po sezonama. Gost neće moći odabrati kraći boravak.</div>
+            <div style="display:flex;align-items:center;gap:1rem;margin:1rem 0">
+              <div class="toggle-wrap">
+                <label class="toggle"><input type="checkbox" id="minBoravakAktivan" checked><span class="toggle-slider"></span></label>
+                <span class="toggle-label">Minimalni boravak aktivan globalno</span>
+              </div>
+            </div>
+            <table class="tbl" id="minBoravakTable">
+              <thead><tr><th>Naziv</th><th>Datum od</th><th>Datum do</th><th>Min. noćenja</th><th>Apartman</th><th>Aktivan</th><th></th></tr></thead>
+              <tbody id="minBoravakBody"><tr><td colspan="7" class="loading">Učitavanje...</td></tr></tbody>
+            </table>
+            <div style="margin-top:1rem">
+              <button class="btn btn-primary btn-sm" onclick="openPraviloModal('min_boravak')">+ Dodaj pravilo</button>
+            </div>
+          </div>
+          <div id="postavke-korekcija" style="display:none">
+            <div class="notice notice-info">ℹ️ Automatska cjenovna korekcija ovisno o duljini boravka. Npr. boravak kraći od 2 noći = +30%.</div>
+            <table class="tbl">
+              <thead><tr><th>Uvjet</th><th>Korekcija</th><th>Apartman</th><th>Aktivan</th><th></th></tr></thead>
+              <tbody id="korekcijaBody"><tr><td colspan="5" class="loading">Učitavanje...</td></tr></tbody>
+            </table>
+            <div style="margin-top:1rem">
+              <button class="btn btn-primary btn-sm" onclick="openPraviloModal('cjenovna_korekcija')">+ Dodaj pravilo</button>
+            </div>
+          </div>
+          <div id="postavke-blokirano" style="display:none">
+            <div class="notice notice-info">ℹ️ Blokirajte datume za vlastito korištenje, čišćenje ili održavanje.</div>
+            <table class="tbl">
+              <thead><tr><th>Naziv</th><th>Datum od</th><th>Datum do</th><th>Apartman</th><th></th></tr></thead>
+              <tbody id="blokiranoBody"><tr><td colspan="5" class="loading">Učitavanje...</td></tr></tbody>
+            </table>
+            <div style="margin-top:1rem">
+              <button class="btn btn-primary btn-sm" onclick="openPraviloModal('blokirano')">+ Dodaj blokadu</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══════════════════════════════════════════
+     MODALI
+═════════════════════════════════════════════ -->
+
+<!-- Modal: Rezervacija/Gost -->
+<div class="modal-overlay" id="rezModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="rezModalTitle">Nova rezervacija</h3>
+      <button class="modal-close" onclick="closeModal('rezModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Ime i prezime gosta</label>
+          <input type="text" id="rIme" placeholder="Marija Horvat">
+        </div>
+        <div class="fg">
+          <label>Apartman</label>
+          <select id="rApt">
+            <option value="1">Apartman 1 – Prizemlje</option>
+            <option value="2">Apartman 2 – Prizemlje</option>
+            <option value="3">Apartman 3 – 1. kat</option>
+            <option value="4">Apartman 4 – 1. kat</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Izvor rezervacije</label>
+          <select id="rIzvor">
+            <option value="vlastiti">Vlastiti</option>
+            <option value="airbnb">Airbnb</option>
+            <option value="estee">Estee agencija</option>
+            <option value="ostalo">Ostalo</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Datum dolaska</label>
+          <input type="date" id="rDolazak" onchange="calcRezZarada()">
+        </div>
+        <div class="fg">
+          <label>Datum odlaska</label>
+          <input type="date" id="rOdlazak" onchange="calcRezZarada()">
+        </div>
+        <div class="fg">
+          <label>Broj osoba</label>
+          <input type="number" id="rBrojOsoba" value="2" min="1" max="10">
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="rStatus">
+            <option value="upit">Upit</option>
+            <option value="potvrdjeno">Potvrđeno</option>
+            <option value="blokirano">Blokirano</option>
+            <option value="otkazano">Otkazano</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Zarada (€)</label>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <input type="number" id="rZarada" placeholder="Auto izračun" step="0.01">
+            <button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="calcRezZarada(true)">🔄</button>
+          </div>
+        </div>
+        <div class="fg full">
+          <label>Komentar</label>
+          <textarea id="rKomentar" placeholder="Posebni zahtjevi, napomene..."></textarea>
+        </div>
+        <div class="fg full">
+          <label>Račun (upload datoteke)</label>
+          <input type="file" id="rRacunFile" accept=".pdf,.jpg,.jpeg,.png" style="padding:.5rem;background:var(--sand)">
+          <div id="rRacunExisting" style="display:none;font-size:.75rem;color:var(--muted);margin-top:.3rem">
+            Postojeći: <a id="rRacunLink" href="#" target="_blank" style="color:var(--accent)">Pogledaj račun</a>
+            <button type="button" onclick="clearRacun()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.75rem;margin-left:.5rem">✕ Ukloni</button>
+          </div>
+        </div>
+      </div>
+      <div id="rezZaradaInfo" style="margin-top:.8rem;padding:.6rem .9rem;background:var(--sand);border-radius:2px;font-size:.78rem;color:var(--muted);display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('rezModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveRezervacija()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Rashod -->
+<div class="modal-overlay" id="rashodModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Novi rashod</h3>
+      <button class="modal-close" onclick="closeModal('rashodModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Vrsta rashoda</label>
+          <select id="rashodVrsta" id="rashodVrsta"></select>
+        </div>
+        <div class="fg full">
+          <label>Ili dodaj novu vrstu</label>
+          <input type="text" id="rashodNovaVrsta" placeholder="Naziv nove vrste...">
+        </div>
+        <div class="fg">
+          <label>Iznos (€)</label>
+          <input type="number" id="rashodIznos" step="0.01" placeholder="0.00">
+        </div>
+        <div class="fg">
+          <label>Učestalost</label>
+          <select id="rashodUcestalost">
+            <option value="godisnji">Godišnji</option>
+            <option value="polugodisnji">Polugodišnji</option>
+            <option value="kvartalni">Kvartalni</option>
+            <option value="mjesecni">Mjesečni</option>
+            <option value="jednokratni">Jednokratni</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Datum</label>
+          <input type="date" id="rashodDatum">
+        </div>
+        <div class="fg full">
+          <label>Komentar</label>
+          <textarea id="rashodKomentar" placeholder="Napomena..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('rashodModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveRashod()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Popup akcija -->
+<div class="modal-overlay" id="popupModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Nova popup akcija</h3>
+      <button class="modal-close" onclick="closeModal('popupModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Naslov</label>
+          <input type="text" id="popupNaslov" placeholder="🏖️ Ljetna akcija!">
+        </div>
+        <div class="fg full">
+          <label>Tekst poruke</label>
+          <textarea id="popupTekst" placeholder="20% popusta za boravak 7+ noći od 1.6. do 30.6."></textarea>
+        </div>
+        <div class="fg">
+          <label>Stil</label>
+          <select id="popupStil">
+            <option value="promocija">Promocija</option>
+            <option value="info">Info</option>
+            <option value="upozorenje">Upozorenje</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Aktivan</label>
+          <div class="toggle-wrap" style="margin-top:.5rem">
+            <label class="toggle"><input type="checkbox" id="popupAktivan"><span class="toggle-slider"></span></label>
+            <span class="toggle-label">Prikaži popup na stranici</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Prikazuj od</label>
+          <input type="date" id="popupOd">
+        </div>
+        <div class="fg">
+          <label>Prikazuj do</label>
+          <input type="date" id="popupDo">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('popupModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="savePopup()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Pravilo kalendara -->
+<div class="modal-overlay" id="praviloModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="praviloModalTitle">Novo pravilo</h3>
+      <button class="modal-close" onclick="closeModal('praviloModal')">✕</button>
+    </div>
+    <div class="modal-body" id="praviloModalBody">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('praviloModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="savePravilo()">💾 Spremi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="ico" id="confirmIco">⚠️</div>
+    <h3 id="confirmTitle">Jeste li sigurni?</h3>
+    <p id="confirmMsg">Ova radnja se ne može poništiti.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Odustani</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="confirmOk()">Potvrdi</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+const SUPABASE_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'balent_admin_session' } });
+
+let currentUser = null;
+let allRezervacije = [];
+let currentRezId = null;
+let currentRezStatus = null;
+let currentRashodKat = 'rezije';
+let currentFinTab = 'sve';
+let confirmCallback = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let currentPraviloTip = 'min_boravak';
+let rezervacijeChannel = null;
+let currentPageName = 'kalendar';
+
+// Auth check
+async function initApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  // AUTH TEMPORARILY DISABLED FOR TESTING
+  // if (!session) { window.location.href = 'admin-login.html'; return; }
+  currentUser = session ? session.user : { email: 'test@test.com' };
+  document.getElementById('userEmail').textContent = currentUser.email;
+
+  // Set today
+  const now = new Date();
+  document.getElementById('todayDate').textContent = now.toLocaleDateString('hr-HR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Fill year selects
+  const curY = now.getFullYear();
+  [document.getElementById('finGodina'), document.getElementById('filterGodina')].forEach(sel => {
+    if (!sel) return;
+    for (let y = curY; y >= curY - 5; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === curY) o.selected = true;
+      sel.appendChild(o);
+    }
+  });
+
+  await refreshUpitIndicators();
+  setupRezervacijeSubscription();
+  loadPage('kalendar');
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+const pageTitles = {
+  kalendar:'Kalendar i rezervacije', gosti:'Gosti', financije:'Financije',
+  sadrzaj:'Upravljanje sadržajem', postavke:'Postavke'
+};
+
+function showPage(name) {
+  currentPageName = name;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+name+"'")) n.classList.add('active');
+  });
+  document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+  loadPage(name);
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function loadPage(name) {
+  if (name === 'kalendar') { loadKalendar(); loadKalendarStats(); }
+  else if (name === 'gosti') loadGosti();
+  else if (name === 'financije') { loadFinancije(); loadRashodi(); }
+  else if (name === 'sadrzaj') loadBaner();
+  else if (name === 'postavke') loadPravila();
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function fmtDate(d) {
+  if (!d) return '–';
+  const [y,m,day] = d.split('-');
+  return `${day}.${m}.${y}.`;
+}
+function fmtEur(n) { return (parseFloat(n)||0).toFixed(2).replace('.',',') + ' €'; }
+function aptLabel(n) { return ['','Apt 1','Apt 2','Apt 3','Apt 4'][n] || 'Apt '+n; }
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function rezSourceLabel(s) {
+  return {vlastiti:'Vlastiti', airbnb:'Airbnb', estee:'Estee', ostalo:'Ostalo'}[s] || (s || 'â€“');
+}
+function rezZarada(rez) {
+  return rez?.zarada_je_rucna ? rez.zarada_rucna : rez?.zarada_auto;
+}
+function rezTooltip(rez) {
+  return [
+    rez?.ime || 'Gost',
+    `${fmtDate(rez?.datum_dolaska)} - ${fmtDate(rez?.datum_odlaska)}`,
+    `Izvor: ${rezSourceLabel(rez?.izvor)}`,
+    `Zarada: ${fmtEur(rezZarada(rez))}`
+  ].join('\n');
+}
+function statusBadge(s) {
+  const map = {
+    potvrdjeno: ['badge-green','Potvrđeno'],
+    upit: ['badge-yellow','Upit'],
+    blokirano: ['badge-red','Blokirano'],
+    otkazano: ['badge-grey','Otkazano']
+  };
+  const [cls,lbl] = map[s] || ['badge-grey',s];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+function izvorBadge(s) {
+  const map = {vlastiti:['badge-blue','Vlastiti'],airbnb:['badge-green','Airbnb'],estee:['badge-yellow','Estee'],ostalo:['badge-grey','Ostalo']};
+  const [cls,lbl] = map[s] || ['badge-grey',s];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+
+function updateUpitIndicators(records) {
+  const pending = (records || []).filter(r => r.status === 'upit');
+  const count = pending.length;
+  const nav = document.getElementById('navUpitCount');
+  const chip = document.getElementById('topbarUpitChip');
+  const chipText = document.getElementById('topbarUpitText');
+  const notice = document.getElementById('upitNotice');
+  const noticeText = document.getElementById('upitNoticeText');
+  const hasPending = count > 0;
+
+  if (nav) {
+    nav.textContent = count;
+    nav.style.display = hasPending ? 'inline-flex' : 'none';
+  }
+  if (chip && chipText) {
+    chip.classList.toggle('attention', hasPending);
+    chipText.textContent = count === 1
+      ? 'Imate 1 nepotvrđenu rezervaciju'
+      : `Imate ${count} nepotvrđenih rezervacija`;
+  }
+  if (notice && noticeText) {
+    notice.style.display = 'flex';
+    notice.classList.toggle('notice-warn', hasPending);
+    notice.classList.toggle('notice-info', !hasPending);
+    notice.classList.toggle('attention', hasPending);
+    noticeText.textContent = count === 1
+      ? 'Imate 1 nepotvrđenu rezervaciju.'
+      : `Imate ${count} nepotvrđenih rezervacija.`;
+  }
+}
+
+async function refreshUpitIndicators() {
+  const { data } = await sb.from('rezervacije').select('id, ime, apartman, status, created_at, datum_dolaska').eq('status','upit');
+  updateUpitIndicators(data || []);
+}
+
+async function refreshAfterRezervacijeChange() {
+  await refreshUpitIndicators();
+  if (currentPageName === 'kalendar') {
+    await Promise.all([loadKalendar(), loadKalendarStats()]);
+  } else if (currentPageName === 'gosti') {
+    await loadGosti();
+  } else if (currentPageName === 'financije') {
+    await loadFinancije();
+  }
+}
+
+function setupRezervacijeSubscription() {
+  if (rezervacijeChannel) return;
+  rezervacijeChannel = sb.channel('dashboard-rezervacije-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'rezervacije' }, async payload => {
+      if (payload.eventType === 'INSERT' && payload.new?.status === 'upit') {
+        const apt = payload.new.apartman ? `Apartman ${payload.new.apartman}` : 'apartman';
+        const guest = payload.new.ime || 'Novi gost';
+        showToast(`🔔 Stigao je novi upit: ${guest} (${apt})`);
+      }
+      await refreshAfterRezervacijeChange();
+    })
+    .subscribe();
+}
+
+// Price calculator
+function calcPrice(dateIn, dateOut) {
+  if (!dateIn || !dateOut) return 0;
+  const d1 = new Date(dateIn), d2 = new Date(dateOut);
+  if (d2 <= d1) return 0;
+  const nights = Math.round((d2-d1)/86400000);
+  function getNightPrice(date) {
+    const m=date.getMonth()+1, d=date.getDate(), md=m*100+d;
+    if(md>=601&&md<=610) return 70;
+    if(md>=611&&md<=619) return 85;
+    if(md>=620&&md<=630) return 95;
+    if(md>=701&&md<=705) return 115;
+    if(md>=706&&md<=712) return 119;
+    if(md>=713&&md<=724) return 130;
+    if(md>=725||(m===8&&d<=15)) return 150;
+    if(md>=816&&md<=830) return 130;
+    if(md>=831||(m===9&&d<=6)) return 100;
+    if(m===9&&d>=7&&d<=13) return 90;
+    return 85;
+  }
+  let total=0, cur=new Date(d1);
+  for(let i=0;i<nights;i++){total+=getNightPrice(cur);cur.setDate(cur.getDate()+1);}
+  return total;
+}
+
+// ══════════════════════════════════════
+// KALENDAR
+// ══════════════════════════════════════
+async function loadKalendarStats() {
+  const { data } = await sb.from('rezervacije').select('*').in('status',['potvrdjeno','upit']);
+  if (!data) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const aktivnih = data.filter(r => {
+    const d1=new Date(r.datum_dolaska);
+    return d1 > today && d1.getFullYear() === 2026;
+  }).length;
+  const trenutno = data.filter(r => {
+    const d1=new Date(r.datum_dolaska), d2=new Date(r.datum_odlaska);
+    return d1<=today && d2>today && r.status==='potvrdjeno';
+  });
+  const zauzetiDanas = new Set(trenutno.map(r=>r.apartman));
+  document.getElementById('kSlobodno').textContent = 4 - zauzetiDanas.size;
+  document.getElementById('kAktivnih').textContent = aktivnih;
+  document.getElementById('kTrenutno').textContent = trenutno.length;
+  // Popunjenost ovaj mjesec
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  let zauzetoDana = 0;
+  data.filter(r=>r.status==='potvrdjeno').forEach(r => {
+    const d1=new Date(r.datum_dolaska), d2=new Date(r.datum_odlaska);
+    const mStart=new Date(today.getFullYear(),today.getMonth(),1);
+    const mEnd=new Date(today.getFullYear(),today.getMonth()+1,0);
+    const start=d1<mStart?mStart:d1, end=d2>mEnd?mEnd:d2;
+    if(start<end) zauzetoDana+=Math.round((end-start)/86400000);
+  });
+  const popunjenost = Math.round(zauzetoDana/(daysInMonth*4)*100);
+  document.getElementById('kPopunjenost').textContent = popunjenost + '%';
+}
+
+async function loadKalendar() {
+  const { data } = await sb.from('rezervacije').select('*').in('status',['potvrdjeno','upit','blokirano']);
+  allRezervacije = data || [];
+  updateUpitIndicators(allRezervacije);
+  renderKalendar();
+}
+
+function renderKalendar() {
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+  const monthStart = `${calYear}-${String(calMonth+1).padStart(2,'0')}-01`;
+  const monthEndExclusive = new Date(calYear, calMonth + 1, daysInMonth + 1).toISOString().split('T')[0];
+  document.getElementById('calMonthLabel').textContent = `${mNames[calMonth]} ${calYear}`;
+
+  let html = '<div class="cal-header">';
+  html += '<div>Apartman</div>';
+  for (let d=1; d<=daysInMonth; d++) {
+    const isTodayHeader = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    html += `<div class="${isTodayHeader ? 'today' : ''}">${d}</div>`;
+  }
+  html += '</div>';
+
+  for (let apt=1; apt<=4; apt++) {
+    html += `<div class="cal-row">`;
+    html += `<div class="cal-apt-label">${aptLabel(apt)}</div>`;
+    for (let d=1; d<=daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=dateStr && r.datum_odlaska>dateStr);
+      let cls = '';
+      if (rez) cls = rez.status==='potvrdjeno'?'confirmed':rez.status==='upit'?'pending':'blocked';
+      const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+      if (isToday) cls += ' today';
+      html += `<div class="cal-cell ${cls}" title="${rez ? escapeHtml(rezTooltip(rez)) : ''}" onclick="calCellClick(${apt},'${dateStr}')"></div>`;
+    }
+    html += `<div class="cal-overlays">`;
+    allRezervacije
+      .filter(r => r.apartman == apt && r.datum_dolaska < monthEndExclusive && r.datum_odlaska > monthStart)
+      .sort((a,b) => a.datum_dolaska.localeCompare(b.datum_dolaska))
+      .forEach(rez => {
+        const visibleStart = rez.datum_dolaska > monthStart ? rez.datum_dolaska : monthStart;
+        const visibleEnd = rez.datum_odlaska < monthEndExclusive ? rez.datum_odlaska : monthEndExclusive;
+        const startDay = parseInt(visibleStart.split('-')[2], 10);
+        const endDay = parseInt(visibleEnd.split('-')[2], 10) - 1;
+        if (endDay < startDay) return;
+        const startCol = startDay + 1;
+        const endCol = endDay + 2;
+        const spanDays = endDay - startDay + 1;
+        const spanCls = rez.status==='potvrdjeno'?'confirmed':rez.status==='upit'?'pending':'blocked';
+        const label = spanDays > 1 ? escapeHtml(rez.ime || '') : '';
+        html += `<div class="cal-span ${spanCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
+      });
+    html += `</div>`;
+    html += '</div>';
+  }
+  document.getElementById('calendarGrid').innerHTML = html;
+}
+
+function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderKalendar(); }
+function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderKalendar(); }
+function calToday() { calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); renderKalendar(); }
+function openRezById(id) {
+  const rez = allRezervacije.find(r => String(r.id) === String(id));
+  if (rez) editRezervacija(rez);
+}
+function calCellClick(apt, date) {
+  const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=date && r.datum_odlaska>date);
+  if (rez) editRezervacija(rez);
+  else { openRezModal(); document.getElementById('rApt').value=apt; document.getElementById('rDolazak').value=date; }
+}
+
+// ══════════════════════════════════════
+// REZERVACIJE / GOSTI
+// ══════════════════════════════════════
+async function loadGosti() {
+  const { data } = await sb.from('rezervacije').select('*').order('datum_dolaska',{ascending:false});
+  allRezervacije = data || [];
+  updateUpitIndicators(allRezervacije);
+  populateGodinaFilter(data);
+  filterGosti();
+}
+
+function populateGodinaFilter(data) {
+  const sel = document.getElementById('filterGodina');
+  const years = [...new Set((data||[]).map(r=>new Date(r.datum_dolaska).getFullYear()))].sort((a,b)=>b-a);
+  sel.innerHTML = '<option value="">Sve</option>';
+  years.forEach(y => { const o=document.createElement('option'); o.value=y; o.textContent=y; sel.appendChild(o); });
+}
+
+function filterGosti() {
+  const ime = document.getElementById('filterIme').value.toLowerCase();
+  const apt = document.getElementById('filterApt').value;
+  const izvor = document.getElementById('filterIzvor').value;
+  const od = document.getElementById('filterDatumOd').value;
+  const do_ = document.getElementById('filterDatumDo').value;
+  const god = document.getElementById('filterGodina').value;
+
+  let filtered = allRezervacije.filter(r => {
+    if (ime && !r.ime.toLowerCase().includes(ime)) return false;
+    if (apt && r.apartman != apt) return false;
+    if (izvor && r.izvor !== izvor) return false;
+    if (od && r.datum_dolaska < od) return false;
+    if (do_ && r.datum_dolaska > do_) return false;
+    if (god && new Date(r.datum_dolaska).getFullYear() != god) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('gostiBody');
+  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>'; return; }
+
+  tbody.innerHTML = filtered.map(r => {
+    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
+    return `<tr>
+      <td><strong>${r.ime}</strong></td>
+      <td>${aptLabel(r.apartman)}</td>
+      <td>${fmtDate(r.datum_dolaska)}</td>
+      <td>${fmtDate(r.datum_odlaska)}</td>
+      <td>${r.broj_osoba}</td>
+      <td>${izvorBadge(r.izvor)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td class="${zaradaCls}">${fmtEur(zarada)}</td>
+      <td>${r.racun_url ? `<a href="${r.racun_url}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Račun">📄</a>` : '–'}</td>
+      <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openRezModal(rez=null) {
+  currentRezId = rez ? rez.id : null;
+  currentRezStatus = rez ? rez.status : null;
+  document.getElementById('rezModalTitle').textContent = rez ? 'Uredi rezervaciju' : 'Nova rezervacija';
+  document.getElementById('rIme').value = rez?.ime || '';
+  document.getElementById('rApt').value = rez?.apartman || 1;
+  document.getElementById('rIzvor').value = rez?.izvor || 'vlastiti';
+  document.getElementById('rDolazak').value = rez?.datum_dolaska || '';
+  document.getElementById('rOdlazak').value = rez?.datum_odlaska || '';
+  document.getElementById('rBrojOsoba').value = rez?.broj_osoba || 2;
+  document.getElementById('rStatus').value = rez?.status || 'upit';
+  document.getElementById('rKomentar').value = rez?.komentar || '';
+  document.getElementById('rRacunFile').value = '';
+  if (rez?.racun_url) {
+    document.getElementById('rRacunExisting').style.display = 'block';
+    document.getElementById('rRacunLink').href = rez.racun_url;
+  } else {
+    document.getElementById('rRacunExisting').style.display = 'none';
+    document.getElementById('rRacunLink').href = '#';
+  }
+  const zarada = rez ? (rez.zarada_je_rucna ? rez.zarada_rucna : rez.zarada_auto) : '';
+  document.getElementById('rZarada').value = zarada || '';
+  document.getElementById('rezZaradaInfo').style.display = 'none';
+  openModal('rezModal');
+}
+
+function editRezervacija(rez) { openRezModal(rez); }
+
+function calcRezZarada(force=false) {
+  const d1 = document.getElementById('rDolazak').value;
+  const d2 = document.getElementById('rOdlazak').value;
+  const zEl = document.getElementById('rZarada');
+  const info = document.getElementById('rezZaradaInfo');
+  if (!d1 || !d2) return;
+  const total = calcPrice(d1, d2);
+  if (force || !zEl.value) {
+    zEl.value = total;
+    if (total > 0) {
+      const nights = Math.round((new Date(d2)-new Date(d1))/86400000);
+      info.textContent = `Auto izračun: ${nights} noćenja × prosječno ${(total/nights).toFixed(0)} €/noć = ${total} €`;
+      info.style.display = 'block';
+    }
+  }
+}
+
+async function saveRezervacija() {
+  const ime = document.getElementById('rIme').value.trim();
+  const dolazak = document.getElementById('rDolazak').value;
+  const odlazak = document.getElementById('rOdlazak').value;
+  if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
+
+  const zaradaAuto = calcPrice(dolazak, odlazak);
+  const zaradaRucnaVal = parseFloat(document.getElementById('rZarada').value) || null;
+  const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
+
+  // Handle file upload
+  let racunUrl = currentRezId ? (document.getElementById('rRacunLink').href !== '#' ? document.getElementById('rRacunLink').href : null) : null;
+  const fileInput = document.getElementById('rRacunFile');
+  if (fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const { data: uploadData, error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
+    if (uploadErr) { alert('Greška pri uploadu: '+uploadErr.message); return; }
+    const { data: urlData } = sb.storage.from('dokumenti').getPublicUrl(fileName);
+    racunUrl = urlData.publicUrl;
+  }
+
+  const payload = {
+    ime, apartman: parseInt(document.getElementById('rApt').value),
+    datum_dolaska: dolazak, datum_odlaska: odlazak,
+    broj_osoba: parseInt(document.getElementById('rBrojOsoba').value)||1,
+    izvor: document.getElementById('rIzvor').value,
+    status: document.getElementById('rStatus').value,
+    komentar: document.getElementById('rKomentar').value||null,
+    racun_url: racunUrl,
+    zarada_auto: zaradaAuto, zarada_rucna: zaradaJeRucna ? zaradaRucnaVal : null,
+    zarada_je_rucna: zaradaJeRucna, updated_at: new Date().toISOString()
+  };
+
+  let err;
+  if (currentRezId) ({ error: err } = await sb.from('rezervacije').update(payload).eq('id',currentRezId));
+  else ({ error: err } = await sb.from('rezervacije').insert([payload]));
+
+  if (err) { alert('Greška: '+err.message); return; }
+  closeModal('rezModal');
+  loadGosti(); loadKalendar(); loadKalendarStats();
+}
+
+const _origSaveRezervacija = saveRezervacija;
+saveRezervacija = async function() {
+  const nextStatus = document.getElementById('rStatus').value;
+  if (currentRezId && currentRezStatus === 'upit' && nextStatus === 'otkazano') {
+    showConfirm('⚠️','Otkaži upit?','Upit će biti označen kao otkazan. Jeste li sigurni da želite nastaviti?', async () => {
+      currentRezStatus = nextStatus;
+      await _origSaveRezervacija();
+    });
+    return;
+  }
+  currentRezStatus = nextStatus;
+  await _origSaveRezervacija();
+};
+
+function clearRacun() {
+  document.getElementById('rRacunFile').value = '';
+  document.getElementById('rRacunExisting').style.display = 'none';
+  document.getElementById('rRacunLink').href = '#';
+}
+
+async function deleteRez(id) {
+  showConfirm('🗑️','Brisanje rezervacije','Ova rezervacija će biti trajno obrisana.', async () => {
+    await sb.from('rezervacije').delete().eq('id',id);
+    loadGosti(); loadKalendar(); loadKalendarStats();
+  });
+}
+
+// ══════════════════════════════════════
+// FINANCIJE
+// ══════════════════════════════════════
+function setFinMainTab(tab, el) {
+  document.querySelectorAll('#finMainTabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('fin-prihodi').style.display = tab==='prihodi' ? 'block' : 'none';
+  document.getElementById('fin-rashodi').style.display = tab==='rashodi' ? 'block' : 'none';
+  if (tab==='rashodi') loadRashodi();
+}
+
+function setFinTab(tab, el) {
+  currentFinTab = tab;
+  document.querySelectorAll('.fin-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  loadFinancije();
+}
+
+async function loadFinancije() {
+  const god = parseInt(document.getElementById('finGodina').value);
+  let q = sb.from('rezervacije').select('*').neq('status','otkazano')
+    .gte('datum_dolaska', god+'-01-01').lte('datum_dolaska', god+'-12-31');
+
+  // Filter by tab
+  if (currentFinTab === 'gaga') q = q.in('apartman', [1,2]);
+  else if (currentFinTab === 'ivan') q = q.in('apartman', [3,4]);
+  else if (currentFinTab !== 'sve') q = q.eq('apartman', parseInt(currentFinTab));
+
+  const { data } = await q;
+  const all = data || [];
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  let realizirana = 0, buduca = 0;
+
+  all.forEach(r => {
+    const zarada = r.zarada_je_rucna ? (r.zarada_rucna||0) : (r.zarada_auto||0);
+    const dolazak = new Date(r.datum_dolaska);
+    const odlazak = new Date(r.datum_odlaska);
+    if (odlazak <= today || (dolazak <= today && odlazak > today)) realizirana += zarada;
+    else if (dolazak > today) buduca += zarada;
+  });
+
+  // Calculate rashodi for neto (all categories, current year)
+  let rashodiFilter = sb.from('rashodi').select('iznos,ucestalost');
+  if (currentFinTab === 'gaga' || currentFinTab === 'ivan') {
+    // Rashodi are shared - show full amount for 'sve', half for gaga/ivan
+  }
+  const { data: rashodiData } = await rashodiFilter;
+  let ukupnoRashodi = 0;
+  (rashodiData||[]).forEach(r => {
+    const iznos = parseFloat(r.iznos)||0;
+    if (r.ucestalost === 'godisnji') ukupnoRashodi += iznos;
+    else if (r.ucestalost === 'polugodisnji') ukupnoRashodi += iznos * 2;
+    else if (r.ucestalost === 'kvartalni') ukupnoRashodi += iznos * 4;
+    else if (r.ucestalost === 'mjesecni') ukupnoRashodi += iznos * 12;
+    else ukupnoRashodi += iznos; // jednokratni
+  });
+  // For gaga/ivan split rashodi 50/50
+  if (currentFinTab === 'gaga' || currentFinTab === 'ivan') ukupnoRashodi = ukupnoRashodi / 2;
+
+  const ukupnoP = realizirana + buduca;
+  const netoEl = document.getElementById('finNeto');
+  const netoCard = netoEl ? netoEl.closest('.fin-sum-card') : null;
+
+  document.getElementById('finRealizirana').textContent = fmtEur(realizirana);
+  document.getElementById('finBuduca').textContent = fmtEur(buduca);
+  document.getElementById('finUkupna').textContent = fmtEur(ukupnoP);
+
+  // Neto samo za "sve zajedno"
+  if (currentFinTab === 'sve') {
+    if (netoCard) netoCard.style.display = 'block';
+    const neto = ukupnoP - ukupnoRashodi;
+    netoEl.textContent = fmtEur(neto);
+    netoEl.style.color = neto >= 0 ? '#27ae60' : '#c0392b';
+  } else {
+    if (netoCard) netoCard.style.display = 'none';
+  }
+
+  const tbody = document.getElementById('finBody');
+  if (!all.length) { tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ico">💰</div><p>Nema podataka za odabrano razdoblje.</p></div></td></tr>'; return; }
+
+  tbody.innerHTML = all.map(r => {
+    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
+    const nights = Math.round((new Date(r.datum_odlaska)-new Date(r.datum_dolaska))/86400000);
+    return `<tr>
+      <td><strong>${r.ime}</strong></td>
+      <td>${aptLabel(r.apartman)}</td>
+      <td>${fmtDate(r.datum_dolaska)}</td>
+      <td>${fmtDate(r.datum_odlaska)}</td>
+      <td>${nights}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td class="${zaradaCls}"><strong>${fmtEur(zarada)}</strong>${r.zarada_je_rucna?' 🖊️':''}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
+        ${r.zarada_je_rucna ? `<button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="resetZarada('${r.id}')">🔄</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function resetZarada(id) {
+  showConfirm('🔄','Vrati izračun iz kalendara?','Ručno unesena zarada bit će obrisana i zamijenjena automatskim izračunom po cjeniku. Ova radnja se ne može poništiti.', async () => {
+    const { data } = await sb.from('rezervacije').select('datum_dolaska,datum_odlaska').eq('id',id).single();
+    const auto = calcPrice(data.datum_dolaska, data.datum_odlaska);
+    await sb.from('rezervacije').update({zarada_auto:auto, zarada_rucna:null, zarada_je_rucna:false}).eq('id',id);
+    loadFinancije();
+  });
+}
+
+// ══════════════════════════════════════
+// RASHODI
+// ══════════════════════════════════════
+async function loadRashodi() {
+  const { data } = await sb.from('rashodi').select('*').order('created_at',{ascending:false});
+  const all = data || [];
+  ['rezije','porezi_clanarine','ostalo'].forEach(kat => {
+    const items = all.filter(r=>r.kategorija===kat);
+    const el = document.getElementById('rashodi'+kat.charAt(0).toUpperCase()+kat.slice(1).replace('_clanarine','Porezi').replace('rezije','Rezije').replace('ostalo','Ostalo'));
+    const elId = {rezije:'rashodiRezije',porezi_clanarine:'rashodiPorezi',ostalo:'rashodiOstalo'}[kat];
+    document.getElementById(elId).innerHTML = items.length ? items.map(r=>`
+      <div class="rashod-item">
+        <div class="rashod-info">
+          <div class="rashod-naziv">${r.vrsta}</div>
+          <div class="rashod-meta">${r.ucestalost}${r.komentar?' · '+r.komentar:''}</div>
+        </div>
+        <div class="rashod-iznos">${fmtEur(r.iznos)}</div>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRashod('${r.id}')">🗑️</button>
+      </div>`).join('') : '<div style="padding:1rem 1.2rem;font-size:.82rem;color:var(--muted)">Nema unesenih rashoda.</div>';
+  });
+}
+
+function openRashodModal(kat) {
+  currentRashodKat = kat;
+  // Load vrsta za tu kategoriju
+  sb.from('vrste_rashoda').select('*').eq('kategorija',kat).then(({data}) => {
+    const sel = document.getElementById('rashodVrsta');
+    sel.innerHTML = (data||[]).map(v=>`<option value="${v.naziv}">${v.naziv}</option>`).join('');
+  });
+  document.getElementById('rashodIznos').value='';
+  document.getElementById('rashodKomentar').value='';
+  document.getElementById('rashodDatum').value=new Date().toISOString().split('T')[0];
+  openModal('rashodModal');
+}
+
+async function saveRashod() {
+  const novaVrsta = document.getElementById('rashodNovaVrsta').value.trim();
+  const vrsta = novaVrsta || document.getElementById('rashodVrsta').value;
+  const iznos = parseFloat(document.getElementById('rashodIznos').value);
+  if (!vrsta || !iznos) { alert('Unesite vrstu i iznos.'); return; }
+
+  // Spremi novu vrstu ako je unesena
+  if (novaVrsta) {
+    await sb.from('vrste_rashoda').insert([{kategorija:currentRashodKat, naziv:novaVrsta}]);
+    document.getElementById('rashodNovaVrsta').value='';
+  }
+
+  const { error } = await sb.from('rashodi').insert([{
+    kategorija: currentRashodKat, vrsta, iznos,
+    ucestalost: document.getElementById('rashodUcestalost').value,
+    datum: document.getElementById('rashodDatum').value||null,
+    komentar: document.getElementById('rashodKomentar').value||null
+  }]);
+  if (error) { alert('Greška: '+error.message); return; }
+  closeModal('rashodModal');
+  loadRashodi();
+}
+
+async function deleteRashod(id) {
+  showConfirm('🗑️','Brisanje rashoda','Ovaj rashod bit će trajno obrisan.', async ()=>{
+    await sb.from('rashodi').delete().eq('id',id);
+    loadRashodi();
+  });
+}
+
+// ══════════════════════════════════════
+// SADRŽAJ – BANER
+// ══════════════════════════════════════
+async function loadBaner() {
+  const { data } = await sb.from('sadrzaj').select('*').in('kljuc',['baner_tekst_hr','baner_tekst_en','baner_tekst_de','baner_tekst_it','baner_tekst_ru','baner_vidljiv','baner_boja_pozadine','baner_boja_teksta']);
+  const map = {};
+  (data||[]).forEach(r=>map[r.kljuc]=r.vrijednost);
+  document.getElementById('banerTekstHr').value = map.baner_tekst_hr||'';
+  document.getElementById('banerTekstEn').value = map.baner_tekst_en||'';
+  document.getElementById('banerTekstDe').value = map.baner_tekst_de||'';
+  document.getElementById('banerTekstIt').value = map.baner_tekst_it||'';
+  document.getElementById('banerTekstRu').value = map.baner_tekst_ru||'';
+  document.getElementById('banerVidljiv').checked = map.baner_vidljiv==='true';
+  document.getElementById('banerBojaPozadine').value = map.baner_boja_pozadine||'#1a2636';
+  document.getElementById('banerBojaTeksta').value = map.baner_boja_teksta||'#ffffff';
+  updateBanerPreview();
+}
+
+function updateBanerPreview() {
+  const preview = document.getElementById('banerPreview');
+  const bg = document.getElementById('banerBojaPozadine').value;
+  const fg = document.getElementById('banerBojaTeksta').value;
+  const tekst = document.getElementById('banerTekstHr').value;
+  const vidljiv = document.getElementById('banerVidljiv').checked;
+  preview.style.background = bg;
+  preview.style.color = fg;
+  preview.querySelector('p').textContent = tekst || '(bez teksta)';
+  preview.style.opacity = vidljiv ? '1' : '0.4';
+}
+
+async function saveBaner() {
+  const updates = [
+    {kljuc:'baner_tekst_hr', vrijednost:document.getElementById('banerTekstHr').value},
+    {kljuc:'baner_tekst_en', vrijednost:document.getElementById('banerTekstEn').value},
+    {kljuc:'baner_tekst_de', vrijednost:document.getElementById('banerTekstDe').value},
+    {kljuc:'baner_tekst_it', vrijednost:document.getElementById('banerTekstIt').value},
+    {kljuc:'baner_tekst_ru', vrijednost:document.getElementById('banerTekstRu').value},
+    {kljuc:'baner_vidljiv', vrijednost:document.getElementById('banerVidljiv').checked?'true':'false'},
+    {kljuc:'baner_boja_pozadine', vrijednost:document.getElementById('banerBojaPozadine').value},
+    {kljuc:'baner_boja_teksta', vrijednost:document.getElementById('banerBojaTeksta').value},
+  ];
+  for (const u of updates) {
+    await sb.from('sadrzaj').upsert({...u, updated_at:new Date().toISOString()},{onConflict:'kljuc'});
+  }
+  showToast('✅ Baner spremljen!');
+}
+
+// ══════════════════════════════════════
+// POPUP AKCIJE
+// ══════════════════════════════════════
+async function loadPopup() {
+  const { data } = await sb.from('popup_akcije').select('*').order('created_at',{ascending:false});
+  const el = document.getElementById('popupList');
+  el.innerHTML = (data||[]).length ? (data||[]).map(p=>`
+    <div style="border:1px solid var(--sand-dark);border-radius:2px;padding:1rem;margin-bottom:.8rem;display:flex;align-items:center;gap:1rem">
+      <div style="flex:1">
+        <strong>${p.naslov}</strong>
+        <div style="font-size:.8rem;color:var(--muted);margin-top:.2rem">${p.tekst}</div>
+        <div style="margin-top:.4rem">${p.aktivan?'<span class="badge badge-green">Aktivno</span>':'<span class="badge badge-grey">Neaktivno</span>'}</div>
+      </div>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deletePopup('${p.id}')">🗑️</button>
+    </div>`).join('') : '<div class="empty"><div class="ico">📢</div><p>Nema popup akcija.</p></div>';
+}
+
+function openPopupModal() {
+  document.getElementById('popupNaslov').value='';
+  document.getElementById('popupTekst').value='';
+  document.getElementById('popupAktivan').checked=false;
+  document.getElementById('popupOd').value='';
+  document.getElementById('popupDo').value='';
+  openModal('popupModal');
+}
+
+async function savePopup() {
+  const naslov = document.getElementById('popupNaslov').value.trim();
+  const tekst = document.getElementById('popupTekst').value.trim();
+  if (!naslov||!tekst) { alert('Unesite naslov i tekst.'); return; }
+  await sb.from('popup_akcije').insert([{
+    naslov, tekst, aktivan:document.getElementById('popupAktivan').checked,
+    stil:document.getElementById('popupStil').value,
+    datum_od:document.getElementById('popupOd').value||null,
+    datum_do:document.getElementById('popupDo').value||null
+  }]);
+  closeModal('popupModal');
+  loadPopup();
+}
+
+async function deletePopup(id) {
+  showConfirm('🗑️','Brisanje popup akcije','Ova akcija bit će trajno obrisana.', async ()=>{
+    await sb.from('popup_akcije').delete().eq('id',id);
+    loadPopup();
+  });
+}
+
+// ══════════════════════════════════════
+// PRAVILA KALENDARA
+// ══════════════════════════════════════
+async function loadPravila() {
+  loadMinBoravak(); loadKorekcija(); loadBlokirano();
+}
+
+async function loadMinBoravak() {
+  const { data } = await sb.from('pravila_kalendara').select('*').eq('tip','min_boravak').order('datum_od');
+  document.getElementById('minBoravakBody').innerHTML = (data||[]).length ?
+    (data||[]).map(p=>`<tr>
+      <td>${p.naziv||'–'}</td><td>${fmtDate(p.datum_od)}</td><td>${fmtDate(p.datum_do)}</td>
+      <td><strong>${p.vrijednost} noćenja</strong></td>
+      <td>${p.apartman?aptLabel(p.apartman):'Svi'}</td>
+      <td>${p.aktivan?'<span class="badge badge-green">Da</span>':'<span class="badge badge-grey">Ne</span>'}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon" onclick="deletePravilo('${p.id}')">🗑️</button></td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--muted)">Nema definiranih pravila.</td></tr>';
+}
+
+async function loadKorekcija() {
+  const { data } = await sb.from('pravila_kalendara').select('*').eq('tip','cjenovna_korekcija');
+  document.getElementById('korekcijaBody').innerHTML = (data||[]).length ?
+    (data||[]).map(p=>`<tr>
+      <td>Kraće od <strong>${p.vrijednost} noćenja</strong></td>
+      <td>${p.korekcija_postotak?'+'+p.korekcija_postotak+'%':'+'+p.korekcija_eur+' €'}</td>
+      <td>${p.apartman?aptLabel(p.apartman):'Svi'}</td>
+      <td>${p.aktivan?'<span class="badge badge-green">Da</span>':'<span class="badge badge-grey">Ne</span>'}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon" onclick="deletePravilo('${p.id}')">🗑️</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--muted)">Nema definiranih pravila.</td></tr>';
+}
+
+async function loadBlokirano() {
+  const { data } = await sb.from('pravila_kalendara').select('*').eq('tip','blokirano').order('datum_od');
+  document.getElementById('blokiranoBody').innerHTML = (data||[]).length ?
+    (data||[]).map(p=>`<tr>
+      <td>${p.naziv||'Blokada'}</td><td>${fmtDate(p.datum_od)}</td><td>${fmtDate(p.datum_do)}</td>
+      <td>${p.apartman?aptLabel(p.apartman):'Svi'}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon" onclick="deletePravilo('${p.id}')">🗑️</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--muted)">Nema blokiranih datuma.</td></tr>';
+}
+
+function openPraviloModal(tip) {
+  currentPraviloTip = tip;
+  const titles = {min_boravak:'Novo pravilo – minimalni boravak', cjenovna_korekcija:'Nova cjenovna korekcija', blokirano:'Blokada datuma'};
+  document.getElementById('praviloModalTitle').textContent = titles[tip];
+  const body = document.getElementById('praviloModalBody');
+  if (tip === 'min_boravak') {
+    body.innerHTML = `<div class="form-grid">
+      <div class="fg full"><label>Naziv (npr. Glavna sezona)</label><input type="text" id="pNaziv"></div>
+      <div class="fg"><label>Datum od</label><input type="date" id="pOd"></div>
+      <div class="fg"><label>Datum do</label><input type="date" id="pDo"></div>
+      <div class="fg"><label>Minimalno noćenja</label><input type="number" id="pVrijednost" value="7" min="1"></div>
+      <div class="fg"><label>Apartman</label><select id="pApt"><option value="">Svi</option><option value="1">Apt 1</option><option value="2">Apt 2</option><option value="3">Apt 3</option><option value="4">Apt 4</option></select></div>
+      <div class="fg"><label>Aktivno</label><div class="toggle-wrap" style="margin-top:.5rem"><label class="toggle"><input type="checkbox" id="pAktivan" checked><span class="toggle-slider"></span></label></div></div>
+    </div>`;
+  } else if (tip === 'cjenovna_korekcija') {
+    body.innerHTML = `<div class="form-grid">
+      <div class="fg"><label>Kraće od (noćenja)</label><input type="number" id="pVrijednost" value="2" min="1"></div>
+      <div class="fg"><label>Korekcija (%)</label><input type="number" id="pPostotak" placeholder="npr. 30" step="0.1"></div>
+      <div class="fg"><label>Ili fiksno (€)</label><input type="number" id="pEur" placeholder="npr. 20" step="0.01"></div>
+      <div class="fg"><label>Apartman</label><select id="pApt"><option value="">Svi</option><option value="1">Apt 1</option><option value="2">Apt 2</option><option value="3">Apt 3</option><option value="4">Apt 4</option></select></div>
+      <div class="fg"><label>Aktivno</label><div class="toggle-wrap" style="margin-top:.5rem"><label class="toggle"><input type="checkbox" id="pAktivan" checked><span class="toggle-slider"></span></label></div></div>
+    </div>`;
+  } else {
+    body.innerHTML = `<div class="form-grid">
+      <div class="fg full"><label>Naziv (npr. Čišćenje, Vlastito korištenje)</label><input type="text" id="pNaziv"></div>
+      <div class="fg"><label>Datum od</label><input type="date" id="pOd"></div>
+      <div class="fg"><label>Datum do</label><input type="date" id="pDo"></div>
+      <div class="fg"><label>Apartman</label><select id="pApt"><option value="">Svi</option><option value="1">Apt 1</option><option value="2">Apt 2</option><option value="3">Apt 3</option><option value="4">Apt 4</option></select></div>
+    </div>`;
+  }
+  openModal('praviloModal');
+}
+
+async function savePravilo() {
+  const payload = { tip: currentPraviloTip };
+  payload.naziv = document.getElementById('pNaziv')?.value||null;
+  payload.datum_od = document.getElementById('pOd')?.value||null;
+  payload.datum_do = document.getElementById('pDo')?.value||null;
+  payload.vrijednost = parseInt(document.getElementById('pVrijednost')?.value)||null;
+  payload.korekcija_postotak = parseFloat(document.getElementById('pPostotak')?.value)||null;
+  payload.korekcija_eur = parseFloat(document.getElementById('pEur')?.value)||null;
+  payload.apartman = parseInt(document.getElementById('pApt')?.value)||null;
+  payload.aktivan = document.getElementById('pAktivan')?.checked ?? true;
+  const { error } = await sb.from('pravila_kalendara').insert([payload]);
+  if (error) { alert('Greška: '+error.message); return; }
+  closeModal('praviloModal');
+  loadPravila();
+}
+
+async function deletePravilo(id) {
+  showConfirm('🗑️','Brisanje pravila','Ovo pravilo bit će trajno obrisano.', async ()=>{
+    await sb.from('pravila_kalendara').delete().eq('id',id);
+    loadPravila();
+  });
+}
+
+// ══════════════════════════════════════
+// ATRAKCIJE
+// ══════════════════════════════════════
+async function loadAtrakcije() {
+  const { data } = await sb.from('atrakcije').select('*').order('redoslijed');
+  const katLabels = {silo:'Šilo i okolica',kultura:'Krk i kultura',izleti:'Izleti',plaze:'Plaže'};
+  document.getElementById('atrakBody').innerHTML = (data||[]).length ?
+    (data||[]).map(a=>`<tr>
+      <td>${a.ikonica||''} <strong>${a.naziv}</strong></td>
+      <td>${katLabels[a.kategorija]||a.kategorija}</td>
+      <td>${a.aktivan?'<span class="badge badge-green">Da</span>':'<span class="badge badge-grey">Ne</span>'}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon" onclick="deleteAtrak('${a.id}')">🗑️</button></td>
+    </tr>`).join('') : '<tr><td colspan="4" class="loading">Nema atrakcija.</td></tr>';
+}
+
+function openAtrakModal() { /* TODO */ }
+async function deleteAtrak(id) {
+  showConfirm('🗑️','Brisanje atrakcije','Ova atrakcija bit će trajno obrisana.', async ()=>{
+    await sb.from('atrakcije').delete().eq('id',id);
+    loadAtrakcije();
+  });
+}
+
+// ══════════════════════════════════════
+// RECENZIJE
+// ══════════════════════════════════════
+async function loadRecenzije() {
+  const { data } = await sb.from('recenzije').select('*').order('created_at',{ascending:false});
+  document.getElementById('recBody').innerHTML = (data||[]).length ?
+    (data||[]).map(r=>`<tr>
+      <td><strong>${r.ime}</strong></td>
+      <td>${'★'.repeat(r.ocjena)}${'☆'.repeat(5-r.ocjena)}</td>
+      <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.tekst}</td>
+      <td>${r.aktivan?'<span class="badge badge-green">Da</span>':'<span class="badge badge-grey">Ne</span>'}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon" onclick="deleteRec('${r.id}')">🗑️</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" class="loading">Nema recenzija.</td></tr>';
+}
+function openRecModal() { /* TODO */ }
+async function deleteRec(id) {
+  showConfirm('🗑️','Brisanje recenzije','Ova recenzija bit će trajno obrisana.', async ()=>{
+    await sb.from('recenzije').delete().eq('id',id);
+    loadRecenzije();
+  });
+}
+
+// ══════════════════════════════════════
+// OPĆI PODACI
+// ══════════════════════════════════════
+async function saveOpcenito() {
+  await sb.from('sadrzaj').upsert([
+    {kljuc:'checkin_vrijeme', vrijednost:document.getElementById('checkinVrijeme').value},
+    {kljuc:'checkout_vrijeme', vrijednost:document.getElementById('checkoutVrijeme').value}
+  ],{onConflict:'kljuc'});
+  showToast('✅ Podaci spremljeni!');
+}
+
+// ══════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════
+function setCntSection(sec, el) {
+  document.querySelectorAll('.cnt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['baner','popup','cijene','apartmani','istrazi','opcenito','recenzije'].forEach(s=>{
+    const el2 = document.getElementById('cnt-'+s);
+    if(el2) el2.style.display = s===sec?'block':'none';
+  });
+  if(sec==='popup') loadPopup();
+  if(sec==='istrazi') loadAtrakcije();
+  if(sec==='recenzije') loadRecenzije();
+}
+
+function setPostavkeTab(tab, el) {
+  document.querySelectorAll('#page-postavke .cnt-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['minBoravak','korekcija','blokirano'].forEach(t=>{
+    const e=document.getElementById('postavke-'+t);
+    if(e) e.style.display=t===tab?'block':'none';
+  });
+}
+
+function setAptTab(n, el) {
+  document.querySelectorAll('#aptContentTabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('aptContentBody').innerHTML = `
+    <div class="notice notice-info">✏️ Uređivanje sadržaja apartmana ${n} – uskoro dostupno.</div>`;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showConfirm(ico, title, msg, cb) {
+  confirmCallback = cb;
+  document.getElementById('confirmIco').textContent = ico;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmModal').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmModal').classList.remove('open'); confirmCallback=null; }
+async function confirmOk() { closeConfirm(); if(confirmCallback) await confirmCallback(); }
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') {
+    document.querySelectorAll('.modal-overlay.open,.confirm-modal.open').forEach(m=>m.classList.remove('open'));
+  }
+});
+
+// Toast notification
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if(!t) { t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:.7rem 1.4rem;border-radius:2px;font-size:.82rem;z-index:9999;opacity:0;transition:opacity .3s'; document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0', 3000);
+}
+
+// Hamburger menu
+if (window.innerWidth <= 900) document.getElementById('hamburger').style.display='block';
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'admin-login.html';
+}
+
+// Start
+initApp();
+</script>
+</body>
+</html>
