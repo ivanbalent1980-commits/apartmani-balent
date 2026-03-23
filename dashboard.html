@@ -46,7 +46,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .topbar-title{font-family:var(--serif);font-size:1.4rem;font-weight:400;color:var(--navy)}
 .topbar-right{display:flex;align-items:center;gap:1rem;font-size:.8rem;color:var(--muted)}
 .topbar-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:999px;background:#eef4f8;color:#466178;border:1px solid rgba(70,97,120,.18);font-size:.74rem;font-weight:600}
-.topbar-chip.attention{background:#fff4cc;color:#8a6500;border-color:rgba(193,154,0,.35)}
+.topbar-chip.attention{background:#ffd95a;color:#5f4300;border-color:#c19100;box-shadow:0 8px 24px rgba(193,145,0,.22);font-size:.82rem;font-weight:700;padding:.55rem 1rem}
 .content{padding:2rem;flex:1}
 
 /* ── CARDS ───────────────────────────────── */
@@ -237,7 +237,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .notice-info{background:#ebf5fb;border-left:3px solid var(--blue);color:#1a5276}
 .notice-warn{background:#fef9e7;border-left:3px solid var(--yellow);color:#7d6608}
 .notice-success{background:#eafaf1;border-left:3px solid var(--green);color:#1e8449}
-.notice.attention{background:#fff4cc;border-left-color:#c19a00;color:#6f5200}
+.notice.attention{background:#ffd95a;border-left:5px solid #b07f00;color:#4f3900;font-size:.98rem;font-weight:700;padding:1rem 1.2rem;box-shadow:0 10px 28px rgba(176,127,0,.18)}
 </style>
 </head>
 <body>
@@ -1076,6 +1076,14 @@ function rezTooltip(rez) {
     `Zarada: ${fmtEur(rezZarada(rez))}`
   ].join('\n');
 }
+function normalizeRezStatus(status) {
+  const s = String(status || '').trim().toLowerCase();
+  if (s === 'potvrdjeno' || s === 'potvrđeno') return 'potvrdjeno';
+  if (s === 'upit') return 'upit';
+  if (s === 'blokirano') return 'blokirano';
+  if (s === 'otkazano') return 'otkazano';
+  return s;
+}
 function statusBadge(s) {
   const map = {
     potvrdjeno: ['badge-green','Potvrđeno'],
@@ -1093,7 +1101,7 @@ function izvorBadge(s) {
 }
 
 function updateUpitIndicators(records) {
-  const pending = (records || []).filter(r => r.status === 'upit');
+  const pending = (records || []).filter(r => normalizeRezStatus(r.status) === 'upit');
   const count = pending.length;
   const nav = document.getElementById('navUpitCount');
   const chip = document.getElementById('topbarUpitChip');
@@ -1212,8 +1220,8 @@ async function loadKalendarStats() {
 }
 
 async function loadKalendar() {
-  const { data } = await sb.from('rezervacije').select('*').in('status',['potvrdjeno','upit','blokirano']);
-  allRezervacije = data || [];
+  const { data } = await sb.from('rezervacije').select('*').neq('status','otkazano');
+  allRezervacije = (data || []).filter(r => ['potvrdjeno','upit','blokirano'].includes(normalizeRezStatus(r.status)));
   updateUpitIndicators(allRezervacije);
   renderKalendar();
 }
@@ -1241,7 +1249,10 @@ function renderKalendar() {
       const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=dateStr && r.datum_odlaska>dateStr);
       let cls = '';
-      if (rez) cls = rez.status==='potvrdjeno'?'confirmed':rez.status==='upit'?'pending':'blocked';
+      if (rez) {
+        const status = normalizeRezStatus(rez.status);
+        cls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+      }
       const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
       if (isToday) cls += ' today';
       html += `<div class="cal-cell ${cls}" title="${rez ? escapeHtml(rezTooltip(rez)) : ''}" onclick="calCellClick(${apt},'${dateStr}')"></div>`;
@@ -1259,7 +1270,8 @@ function renderKalendar() {
         const startCol = startDay + 1;
         const endCol = endDay + 2;
         const spanDays = endDay - startDay + 1;
-        const spanCls = rez.status==='potvrdjeno'?'confirmed':rez.status==='upit'?'pending':'blocked';
+        const status = normalizeRezStatus(rez.status);
+        const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
         const label = spanDays > 1 ? escapeHtml(rez.ime || '') : '';
         html += `<div class="cal-span ${spanCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
       });

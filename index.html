@@ -2589,7 +2589,7 @@ function sendMsg() {
           </div>
           <div class="modal-fg full"><label><span data-lang="hr" class="lang-active">Poruka / Pitanje</span><span data-lang="en">Message / Question</span><span data-lang="de">Nachricht / Frage</span><span data-lang="it">Messaggio / Domanda</span><span data-lang="ru">Сообщение / Вопрос</span></label><textarea id="m-msg" placeholder="Vaša poruka, posebni zahtjevi..."></textarea></div>
           <div class="modal-fg full">
-            <button class="btn-primary" onclick="submitModal()" style="width:100%;border:none;font-family:var(--sans);padding:1rem"><span data-lang="hr" class="lang-active">Pošalji upit →</span><span data-lang="en">Send enquiry →</span><span data-lang="de">Anfrage senden →</span><span data-lang="it">Invia richiesta →</span><span data-lang="ru">Отправить запрос →</span></button>
+            <button class="btn-primary" onclick="submitModalFinal()" style="width:100%;border:none;font-family:var(--sans);padding:1rem"><span data-lang="hr" class="lang-active">Pošalji upit →</span><span data-lang="en">Send enquiry →</span><span data-lang="de">Anfrage senden →</span><span data-lang="it">Invia richiesta →</span><span data-lang="ru">Отправить запрос →</span></button>
           </div>
         </div>
       </div>
@@ -3483,7 +3483,7 @@ submitModal = async function() {
   }
 
   try {
-    await sbWeb.from('rezervacije').insert([{
+    const { error: insertError } = await sbWeb.from('rezervacije').insert([{
       apartman: aptNum,
       ime: name,
       datum_dolaska: inVal,
@@ -3494,6 +3494,7 @@ submitModal = async function() {
       komentar: (phone ? 'Tel: ' + phone + '\n' : '') + msg,
       zarada_auto: calcPriceLocal(inVal, outVal)
     }]);
+    if (insertError) throw insertError;
 
     if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
 
@@ -3749,6 +3750,133 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(renderAvailCalendar, 500);
 });
 
+</script>
+<script>
+// Final override for booking enquiry flow
+submitModal = async function() {
+  const { inVal, outVal } = getModalDates();
+  const aptValue = document.getElementById('m-apt')?.value || '';
+  const aptNum = parseInt(aptValue || '0', 10);
+  const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+  const lang = localStorage.getItem('balent_lang') || 'hr';
+
+  const overlapMsg = {
+    hr: 'Odabrani raspon ukljucuje zauzete datume. Molimo odaberite slobodan termin.',
+    en: 'The selected range includes unavailable dates. Please choose an available stay.',
+    de: 'Der gewahlte Zeitraum enthalt belegte Daten. Bitte wahlen Sie einen freien Termin.',
+    it: 'L\'intervallo selezionato include date non disponibili. Scegli un periodo libero.',
+    ru: 'The selected range includes unavailable dates. Please choose an available stay.'
+  }[lang] || 'Odabrani raspon ukljucuje zauzete datume. Molimo odaberite slobodan termin.';
+
+  if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
+    alert(overlapMsg);
+    return;
+  }
+
+  const name = document.getElementById('m-name').value.trim();
+  const email = document.getElementById('m-email').value.trim();
+  const phone = document.getElementById('m-phone').value.trim();
+  const guests = document.getElementById('m-guests').value;
+  const children = document.getElementById('m-children').value;
+  const msg = document.getElementById('m-msg').value.trim();
+  const btn = document.querySelector('.modal-submit-btn') || document.querySelector('#modalForm .btn-primary');
+
+  if (!name || !email || !aptNum || !inVal || !outVal) {
+    alert('Molimo unesite ime, email i odaberite apartman.');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Slanje...';
+  }
+
+  let insertError = null;
+  try {
+    const { error } = await sbWeb.from('rezervacije').insert([{
+      apartman: aptNum,
+      ime: name,
+      datum_dolaska: inVal,
+      datum_odlaska: outVal,
+      broj_osoba: parseInt(guests, 10) || 1,
+      izvor: 'vlastiti',
+      status: 'upit',
+      komentar: (phone ? 'Tel: ' + phone + '\n' : '') + msg,
+      zarada_auto: calcPriceLocal(inVal, outVal)
+    }]);
+    insertError = error;
+  } catch (err) {
+    insertError = err;
+  }
+
+  if (insertError) {
+    console.warn('Supabase insert failed:', insertError);
+    alert('Greska pri spremanju upita: ' + (insertError.message || insertError.details || JSON.stringify(insertError)));
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Posalji upit ->';
+    }
+    return;
+  }
+
+  if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
+
+  document.getElementById('m-checkin')._fpVal = inVal;
+  document.getElementById('m-checkout')._fpVal = outVal;
+  document.getElementById('modalForm').style.display = 'none';
+  document.getElementById('modalSuccess').style.display = 'block';
+
+  const fmtDate = iso => {
+    if (!iso) return '-';
+    const [y, m, d] = iso.split('-');
+    return d + '.' + m + '.' + y + '.';
+  };
+  const nights = Math.round((new Date(outVal) - new Date(inVal)) / 86400000);
+  const nightsStr = nights > 0 ? nights + (nights === 1 ? ' nocenje' : ' nocenja') : '-';
+  const line = '------------------------------------------';
+  const plainText =
+`APARTMANI BALENT - Novi upit s web stranice
+${line}
+
+PODACI O GOSTU
+Ime i prezime:  ${name}
+Email:          ${email}
+Telefon:        ${phone || '-'}
+
+DETALJI REZERVACIJE
+Apartman:       Apartman ${aptNum}
+Datum dolaska:  ${fmtDate(inVal)}
+Datum odlaska:  ${fmtDate(outVal)}
+Broj nocenja:   ${nightsStr}
+Broj gostiju:   ${guests}
+Djeca:          ${children}
+${msg ? `\nPORUKA GOSTA\n${msg}\n` : ''}
+${line}`;
+
+  try {
+    const formData = new FormData();
+    formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
+    formData.append('subject', 'Novi upit - Apartman ' + aptNum + ' - ' + fmtDate(inVal) + ' do ' + fmtDate(outVal));
+    formData.append('from_name', 'Apartmani Balent - Web upit');
+    formData.append('replyto', email);
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('message', plainText);
+    formData.append('botcheck', '');
+
+    const mailRes = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      body: formData
+    });
+    const mailJson = await mailRes.json().catch(() => null);
+    if (!mailRes.ok || !mailJson || !mailJson.success) {
+      console.warn('Web3Forms send failed:', mailJson || mailRes.status);
+    }
+  } catch (err) {
+    console.warn('Web3Forms request failed:', err);
+  }
+};
+window.submitModalFinal = submitModal;
 </script>
 </body>
 </html>
