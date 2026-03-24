@@ -6,6 +6,15 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<script>
+(() => {
+  const buildVersion = '20260323-1';
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('v') === buildVersion) return;
+  url.searchParams.set('v', buildVersion);
+  window.location.replace(url.toString());
+})();
+</script>
 <title>Apartmani Balent – Šilo, otok Krk | Direktna rezervacija</title>
 <meta name="description" content="Apartmani Balent – četiri moderna apartmana u Šilu na otoku Krku, 200m od pješčane plaže. Direktna rezervacija s najboljim cijenama. ★4.9">
 <meta name="keywords" content="apartmani Šilo, apartmani Krk, smještaj Krk, odmor Hrvatska, plaža Šilo, Balent apartmani, Šilo Krk, vacation rental Krk island, Ferienwohnung Krk, appartamenti Krk">
@@ -200,7 +209,7 @@ section{padding:5.5rem 3rem}
 #o-nama{background:var(--sand)}
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
 .about-img-wrap{position:relative}
-.about-img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:2px;display:block}
+.about-img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:68% center;border-radius:2px;display:block}
 .about-badge{position:absolute;bottom:-1.4rem;right:-1.4rem;background:var(--navy);color:#fff;padding:1.6rem;text-align:center;border-radius:2px;min-width:120px}
 .about-badge .num{font-family:var(--serif);font-size:2.8rem;font-weight:300;line-height:1;display:block;color:var(--accent-light)}
 .about-badge .lbl{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65;margin-top:.3rem;display:block}
@@ -3880,6 +3889,607 @@ ${line}`;
   }
 };
 window.submitModalFinal = submitModal;
+</script>
+<script>
+(() => {
+  const langMap = {
+    hr: { question: 'Imate pitanje?', sendQuestion: 'Pošalji pitanje →', sending: 'Slanje...', success: 'Poruka je poslana!', note: 'Pošaljite nam pitanje i javit ćemo vam se što prije.', placeholderName: 'Marija Horvat', placeholderMsg: 'Vaše pitanje...', validation: 'Molimo unesite ime, email i poruku.', error: 'Greška pri slanju poruke. Pokušajte ponovo ili nas kontaktirajte direktno.' },
+    en: { question: 'Have a question?', sendQuestion: 'Send question →', sending: 'Sending...', success: 'Message sent!', note: 'Send us your question and we will get back to you as soon as possible.', placeholderName: 'John Smith', placeholderMsg: 'Your question...', validation: 'Please enter your name, email and message.', error: 'There was an error sending your message. Please try again or contact us directly.' },
+    de: { question: 'Haben Sie eine Frage?', sendQuestion: 'Frage senden →', sending: 'Wird gesendet...', success: 'Nachricht gesendet!', note: 'Senden Sie uns Ihre Frage und wir melden uns schnellstmöglich bei Ihnen.', placeholderName: 'Max Mustermann', placeholderMsg: 'Ihre Frage...', validation: 'Bitte Name, E-Mail und Nachricht eingeben.', error: 'Fehler beim Senden der Nachricht. Bitte erneut versuchen oder uns direkt kontaktieren.' },
+    it: { question: 'Hai una domanda?', sendQuestion: 'Invia domanda →', sending: 'Invio...', success: 'Messaggio inviato!', note: 'Inviaci la tua domanda e ti risponderemo al più presto.', placeholderName: 'Mario Rossi', placeholderMsg: 'La tua domanda...', validation: 'Inserisci nome, email e messaggio.', error: 'Errore durante l\'invio del messaggio. Riprova o contattaci direttamente.' },
+    ru: { question: 'Есть вопрос?', sendQuestion: 'Отправить вопрос →', sending: 'Отправка...', success: 'Сообщение отправлено!', note: 'Отправьте нам вопрос, и мы ответим вам как можно скорее.', placeholderName: 'Иван Иванов', placeholderMsg: 'Ваш вопрос...', validation: 'Пожалуйста, введите имя, email и сообщение.', error: 'Ошибка при отправке сообщения. Попробуйте снова или свяжитесь с нами напрямую.' }
+  };
+
+  const currentLang = () => localStorage.getItem('balent_lang') || 'hr';
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .cta-stack{display:inline-flex;flex-direction:column;gap:.6rem;align-items:stretch}
+    .question-secondary-btn{background:transparent;color:var(--navy);border:1px solid rgba(26,38,54,.18);padding:.82rem 1.5rem;font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;border-radius:2px;cursor:pointer;transition:all .2s}
+    .question-secondary-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(255,255,255,.06)}
+    .question-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .question-modal-grid .full{grid-column:1/-1}
+    @media(max-width:700px){.question-modal-grid{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(style);
+
+  function ensureQuestionModal() {
+    if (document.getElementById('questionModal')) return;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div id="questionModal" class="modal-overlay" onclick="questionModalBgClose(event)">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h2>
+              <span data-lang="hr" class="lang-active">Imate <em>pitanje</em>?</span>
+              <span data-lang="en">Have a <em>question</em>?</span>
+              <span data-lang="de">Haben Sie eine <em>Frage</em>?</span>
+              <span data-lang="it">Hai una <em>domanda</em>?</span>
+              <span data-lang="ru">Есть <em>вопрос</em>?</span>
+            </h2>
+            <button class="modal-close" onclick="closeQuestionModal()">&#10005;</button>
+          </div>
+          <div class="modal-body">
+            <div id="questionForm">
+              <div class="modal-note">
+                <span id="questionModalNote">Pošaljite nam pitanje i javit ćemo vam se što prije.</span>
+              </div>
+              <div class="question-modal-grid">
+                <div class="modal-fg"><label><span data-lang="hr" class="lang-active">Ime i prezime</span><span data-lang="en">Full name</span><span data-lang="de">Vor- und Nachname</span><span data-lang="it">Nome e cognome</span><span data-lang="ru">Имя и фамилия</span></label><input type="text" id="q-name"></div>
+                <div class="modal-fg"><label>Email</label><input type="email" id="q-email"></div>
+                <div class="modal-fg full"><label><span data-lang="hr" class="lang-active">Telefon (neobavezno)</span><span data-lang="en">Phone (optional)</span><span data-lang="de">Telefon (optional)</span><span data-lang="it">Telefono (opzionale)</span><span data-lang="ru">Телефон (необязательно)</span></label><input type="tel" id="q-phone" placeholder="+385 91 000 0000"></div>
+                <div class="modal-fg full"><label><span data-lang="hr" class="lang-active">Poruka</span><span data-lang="en">Message</span><span data-lang="de">Nachricht</span><span data-lang="it">Messaggio</span><span data-lang="ru">Сообщение</span></label><textarea id="q-msg"></textarea></div>
+                <div class="modal-fg full"><button id="questionSubmitBtn" class="btn-primary" onclick="submitQuestionModal()" style="width:100%;border:none;font-family:var(--sans);padding:1rem"><span data-lang="hr" class="lang-active">Pošalji pitanje →</span><span data-lang="en">Send question →</span><span data-lang="de">Frage senden →</span><span data-lang="it">Invia domanda →</span><span data-lang="ru">Отправить вопрос →</span></button></div>
+              </div>
+            </div>
+            <div class="modal-success" id="questionSuccess" style="display:none">
+              <span class="checkmark">✓</span>
+              <h3><span id="questionSuccessText">Poruka je poslana!</span></h3>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap.firstElementChild);
+  }
+
+  function updateQuestionModalTexts() {
+    const lang = currentLang();
+    const copy = langMap[lang] || langMap.hr;
+    const note = document.getElementById('questionModalNote');
+    const qName = document.getElementById('q-name');
+    const qMsg = document.getElementById('q-msg');
+    const success = document.getElementById('questionSuccessText');
+    if (note) note.textContent = copy.note;
+    if (qName) qName.placeholder = copy.placeholderName;
+    if (qMsg) qMsg.placeholder = copy.placeholderMsg;
+    if (success) success.textContent = copy.success;
+  }
+
+  function addQuestionCtas() {
+    const targets = Array.from(document.querySelectorAll('button[onclick="openModal()"], a[onclick="openModal()"], .fab[onclick="openModal()"]'))
+      .filter(el => !el.closest('.apt-card') && !el.closest('#contactModal') && !el.closest('.hero-btns'));
+
+    targets.forEach(target => {
+      if (target.dataset.questionEnhanced === '1') return;
+      target.dataset.questionEnhanced = '1';
+      if (target.classList.contains('fab')) {
+        target.setAttribute('onclick', 'openQuestionModal()');
+        return;
+      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'cta-stack';
+      target.parentNode.insertBefore(wrapper, target);
+      wrapper.appendChild(target);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'question-secondary-btn';
+      btn.setAttribute('onclick', 'openQuestionModal()');
+      btn.innerHTML = '<span data-lang="hr" class="lang-active">Imate pitanje?</span><span data-lang="en">Have a question?</span><span data-lang="de">Haben Sie eine Frage?</span><span data-lang="it">Hai una domanda?</span><span data-lang="ru">Есть вопрос?</span>';
+      wrapper.appendChild(btn);
+    });
+
+    document.querySelectorAll('.btn-outline[onclick="openModal()"]').forEach(link => {
+      if (!link.closest('.hero-btns')) return;
+      link.setAttribute('onclick', 'openQuestionModal()');
+    });
+  }
+
+  function localizeBookingCtas() {
+    const bookingHtml = '<span data-lang="hr" class="lang-active">Rezerviraj</span><span data-lang="en">Book now</span><span data-lang="de">Buchen</span><span data-lang="it">Prenota</span><span data-lang="ru">Забронировать</span>';
+    document.querySelectorAll('[onclick="openModal()"]').forEach(el => {
+      if (el.classList.contains('fab')) return;
+      if (el.closest('#contactModal')) return;
+      el.innerHTML = bookingHtml;
+    });
+  }
+
+  function enhanceBookingModalActions() {
+    const submitBtn = document.querySelector('#contactModal button[onclick="submitModalFinal()"]');
+    if (!submitBtn || submitBtn.dataset.questionLink === '1') return;
+    submitBtn.dataset.questionLink = '1';
+    const helperBtn = document.createElement('button');
+    helperBtn.type = 'button';
+    helperBtn.className = 'question-secondary-btn';
+    helperBtn.style.width = '100%';
+    helperBtn.style.marginTop = '.75rem';
+    helperBtn.setAttribute('onclick', 'closeModal();setTimeout(()=>openQuestionModal(),120)');
+    helperBtn.innerHTML = '<span data-lang="hr" class="lang-active">Imate pitanje?</span><span data-lang="en">Have a question?</span><span data-lang="de">Haben Sie eine Frage?</span><span data-lang="it">Hai una domanda?</span><span data-lang="ru">Есть вопрос?</span>';
+    submitBtn.parentNode.appendChild(helperBtn);
+  }
+
+  window.openQuestionModal = function() {
+    ensureQuestionModal();
+    updateQuestionModalTexts();
+    const modal = document.getElementById('questionModal');
+    if (!modal) return;
+    document.getElementById('questionForm').style.display = 'block';
+    document.getElementById('questionSuccess').style.display = 'none';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeQuestionModal = function() {
+    const modal = document.getElementById('questionModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.questionModalBgClose = function(e) {
+    if (e.target === document.getElementById('questionModal')) closeQuestionModal();
+  };
+
+  window.submitQuestionModal = async function() {
+    const lang = currentLang();
+    const copy = langMap[lang] || langMap.hr;
+    const name = (document.getElementById('q-name')?.value || '').trim();
+    const email = (document.getElementById('q-email')?.value || '').trim();
+    const phone = (document.getElementById('q-phone')?.value || '').trim();
+    const message = (document.getElementById('q-msg')?.value || '').trim();
+    const btn = document.getElementById('questionSubmitBtn');
+
+    if (!name || !email || !message) {
+      alert(copy.validation);
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = copy.sending;
+    }
+
+    try {
+      let porukaInsertError = null;
+      try {
+        const { error } = await sbWeb.from('poruke').insert([{
+          tip: 'obicna',
+          ime: name,
+          email: email,
+          telefon: phone || null,
+          original_text: message,
+          translated_text_hr: lang === 'hr' ? message : null,
+          original_language: lang,
+          status: 'nova',
+          procitano: false
+        }]);
+        porukaInsertError = error;
+      } catch (dbErr) {
+        porukaInsertError = dbErr;
+      }
+      if (porukaInsertError) throw porukaInsertError;
+
+      const plainText = `APARTMANI BALENT - Nova poruka s web stranice\n------------------------------------------\nIme i prezime: ${name}\nEmail: ${email}\nTelefon: ${phone || '-'}\nJezik: ${lang}\n\nPORUKA\n${message}\n------------------------------------------`;
+      const formData = new FormData();
+      formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
+      formData.append('subject', 'Nova poruka s web stranice - ' + name);
+      formData.append('from_name', 'Apartmani Balent - Web poruka');
+      formData.append('replyto', email);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', plainText);
+      formData.append('botcheck', '');
+
+      const mailRes = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData });
+      const mailJson = await mailRes.json().catch(() => null);
+      if (!mailRes.ok || !mailJson || !mailJson.success) {
+        console.warn('Question Web3Forms send failed:', mailJson || mailRes.status);
+      }
+
+      document.getElementById('questionForm').style.display = 'none';
+      document.getElementById('questionSuccess').style.display = 'block';
+    } catch (err) {
+      console.warn('Question send failed:', err);
+      alert(copy.error);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span data-lang="hr" class="lang-active">Pošalji pitanje →</span><span data-lang="en">Send question →</span><span data-lang="de">Frage senden →</span><span data-lang="it">Invia domanda →</span><span data-lang="ru">Отправить вопрос →</span>';
+        const lang = currentLang();
+        document.querySelectorAll('[data-lang]').forEach(el => {
+          el.classList.toggle('lang-active', el.dataset.lang === lang);
+        });
+      }
+    }
+  };
+
+  const _origSetLangQuestion = window.setLang;
+  window.setLang = function(lang) {
+    _origSetLangQuestion(lang);
+    updateQuestionModalTexts();
+  };
+
+  ensureQuestionModal();
+  addQuestionCtas();
+  localizeBookingCtas();
+  enhanceBookingModalActions();
+  updateQuestionModalTexts();
+})();
+</script>
+<script>
+(() => {
+  const langPairMap = { hr: 'hr', en: 'en', de: 'de', it: 'it', ru: 'ru', cs: 'cs', sk: 'sk', sl: 'sl', pl: 'pl' };
+
+  async function translateViaGoogle(clean, source, target) {
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(source || 'auto')}&tl=${encodeURIComponent(target)}&dt=t&q=${encodeURIComponent(clean)}`;
+      const res = await fetch(url);
+      const data = await res.json().catch(() => null);
+      if (!Array.isArray(data) || !Array.isArray(data[0])) return '';
+      return data[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim();
+    } catch (err) {
+      console.warn('Google translation unavailable:', err);
+      return '';
+    }
+  }
+
+  async function translateWithDetection(text, fromLang, toLang = 'hr') {
+    const clean = String(text || '').trim();
+    if (!clean) return { translated: '', detectedLang: String(fromLang || 'hr').toLowerCase() };
+    const source = langPairMap[fromLang] || fromLang || 'auto';
+    const target = langPairMap[toLang] || toLang || 'hr';
+    if (source !== 'auto' && source === target) return { translated: clean, detectedLang: source };
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(source || 'auto')}&tl=${encodeURIComponent(target)}&dt=t&q=${encodeURIComponent(clean)}`;
+      const res = await fetch(url);
+      const data = await res.json().catch(() => null);
+      if (Array.isArray(data) && Array.isArray(data[0])) {
+        const translated = data[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim();
+        let detectedLang = String(data?.[2] || source || 'auto').toLowerCase();
+        if (source === 'auto' && (!detectedLang || detectedLang === 'auto' || detectedLang === 'hr')) {
+          detectedLang = detectLikelyLanguage(clean, detectedLang || 'hr');
+        }
+        if (translated) return { translated, detectedLang };
+      }
+    } catch (err) {
+      console.warn('Google detection unavailable:', err);
+    }
+    const guessedLang = detectLikelyLanguage(clean, String(source === 'auto' ? fromLang || 'hr' : source).toLowerCase());
+    let translated = await translateText(clean, source, target);
+    if ((!translated || translated === clean) && guessedLang && guessedLang !== 'hr' && guessedLang !== source) {
+      translated = await translateText(clean, guessedLang, target);
+    }
+    return { translated, detectedLang: guessedLang };
+  }
+
+  function detectLikelyLanguage(text, fallback = 'hr') {
+    const clean = String(text || '').toLowerCase();
+    if (!clean) return fallback;
+    const score = (patterns) => patterns.reduce((sum, pattern) => sum + (pattern.test(clean) ? 1 : 0), 0);
+    const scores = {
+      en: score([/\bhello\b/, /\bnice to see you\b/, /\bthank you\b/, /\bplease\b/, /\bapartment\b/, /\bbooking\b/]),
+      cs: score([/\bdobr(ý|y) den\b/, /\bpros[ií]m\b/, /\bděkuji\b/, /\bubytov[aá]n[ií]\b/, /\brezervace\b/, /[čřžěš]/]),
+      de: score([/\bguten tag\b/, /\bdanke\b/, /\bbitte\b/, /\bwohnung\b/, /\bbuchung\b/, /[äöüß]/]),
+      it: score([/\bciao\b/, /\bgrazie\b/, /\bprenotazione\b/, /\bappartamento\b/, /\bbuongiorno\b/])
+    };
+    const best = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+    return best && best[1] > 0 ? best[0] : fallback;
+  }
+
+  async function translateText(text, fromLang, toLang = 'hr') {
+    const source = langPairMap[fromLang] || fromLang || 'auto';
+    const target = langPairMap[toLang] || toLang || 'hr';
+    const clean = String(text || '').trim();
+    if (!clean) return '';
+    if (source === target) return clean;
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=${encodeURIComponent(source)}|${encodeURIComponent(target)}`;
+      const res = await fetch(url);
+      const data = await res.json().catch(() => null);
+      const translated = data?.responseData?.translatedText?.trim();
+      if (translated) return translated;
+    } catch (err) {
+      console.warn('Translation unavailable:', err);
+    }
+    return await translateViaGoogle(clean, source, target);
+  }
+
+  function buildRezComment({ email, phone, lang, msg, translated }) {
+    const parts = [];
+    if (email) parts.push(`Email: ${email}`);
+    if (phone) parts.push(`Tel: ${phone}`);
+    if (lang) parts.push(`Jezik: ${lang}`);
+    if (msg) parts.push(`Poruka: ${msg}`);
+    if (translated && translated !== msg) parts.push(`Prijevod HR: ${translated}`);
+    return parts.join('\n');
+  }
+
+  function applyBookingTestDefaults() {
+    const nameEl = document.getElementById('m-name');
+    const emailEl = document.getElementById('m-email');
+    const msgEl = document.getElementById('m-msg');
+    const aptEl = document.getElementById('m-apt');
+    const guestsEl = document.getElementById('m-guests');
+    const childrenEl = document.getElementById('m-children');
+    const checkinEl = document.getElementById('m-checkin');
+    const checkoutEl = document.getElementById('m-checkout');
+    if (nameEl) nameEl.value = 'Ivan Ivic';
+    if (emailEl) emailEl.value = 'a@b.com';
+    if (msgEl) msgEl.value = 'hello world, nice to see you.';
+    if (aptEl) {
+      aptEl.value = '4';
+      try { showModalCal(4); } catch (err) {}
+      try { calcModalPrice(); } catch (err) {}
+    }
+    if (guestsEl && !guestsEl.value) guestsEl.value = '2';
+    if (childrenEl && !childrenEl.value) childrenEl.value = '0';
+    if (checkinEl) {
+      checkinEl.value = '22.04.2026.';
+      checkinEl._fpVal = '2026-04-22';
+      if (checkinEl._flatpickr) checkinEl._flatpickr.setDate('2026-04-22', false, 'Y-m-d');
+    }
+    if (checkoutEl) {
+      checkoutEl.value = '24.04.2026.';
+      checkoutEl._fpVal = '2026-04-24';
+      if (checkoutEl._flatpickr) checkoutEl._flatpickr.setDate('2026-04-24', false, 'Y-m-d');
+    }
+    try { calcModalPrice(); } catch (err) {}
+  }
+
+  function applyQuestionTestDefaults() {
+    const nameEl = document.getElementById('q-name');
+    const emailEl = document.getElementById('q-email');
+    const msgEl = document.getElementById('q-msg');
+    if (nameEl) nameEl.value = 'Ivan Ivic';
+    if (emailEl) emailEl.value = 'a@b.com';
+    if (msgEl) msgEl.value = 'hello world, nice to see you.';
+  }
+
+  const originalOpenModalForDefaults = window.openModal;
+  if (typeof originalOpenModalForDefaults === 'function') {
+    window.openModal = function(...args) {
+      const result = originalOpenModalForDefaults.apply(this, args);
+      setTimeout(applyBookingTestDefaults, 0);
+      return result;
+    };
+  }
+
+  const originalOpenQuestionModalForDefaults = window.openQuestionModal;
+  if (typeof originalOpenQuestionModalForDefaults === 'function') {
+    window.openQuestionModal = function(...args) {
+      const result = originalOpenQuestionModalForDefaults.apply(this, args);
+      setTimeout(applyQuestionTestDefaults, 0);
+      return result;
+    };
+  }
+
+  const originalQuestionSubmit = window.submitQuestionModal;
+  window.submitQuestionModal = async function() {
+    const lang = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+    const name = (document.getElementById('q-name')?.value || '').trim();
+    const email = (document.getElementById('q-email')?.value || '').trim();
+    const phone = (document.getElementById('q-phone')?.value || '').trim();
+    const message = (document.getElementById('q-msg')?.value || '').trim();
+    const btn = document.getElementById('questionSubmitBtn');
+    const copy = {
+      hr: { validation: 'Molimo unesite ime, email i poruku.', error: 'Greška pri slanju poruke. Pokušajte ponovo ili nas kontaktirajte direktno.', sending: 'Slanje...' },
+      en: { validation: 'Please enter your name, email and message.', error: 'There was an error sending your message. Please try again or contact us directly.', sending: 'Sending...' },
+      de: { validation: 'Bitte Name, E-Mail und Nachricht eingeben.', error: 'Fehler beim Senden der Nachricht. Bitte erneut versuchen oder uns direkt kontaktieren.', sending: 'Wird gesendet...' },
+      it: { validation: 'Inserisci nome, email e messaggio.', error: 'Errore durante l\'invio del messaggio. Riprova o contattaci direttamente.', sending: 'Invio...' },
+      ru: { validation: 'Пожалуйста, введите имя, email и сообщение.', error: 'Ошибка при отправке сообщения. Попробуйте снова или свяжитесь с нами напрямую.', sending: 'Отправка...' }
+    }[lang] || { validation: 'Molimo unesite ime, email i poruku.', error: 'Greška pri slanju poruke. Pokušajte ponovo ili nas kontaktirajte direktno.', sending: 'Slanje...' };
+
+    if (!name || !email || !message) {
+      alert(copy.validation);
+      return;
+    }
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = copy.sending;
+    }
+
+    try {
+      const sourceLang = lang === 'hr' ? 'auto' : lang;
+      const translatedInfo = await translateWithDetection(message, sourceLang, 'hr');
+      const translated = translatedInfo.translated || message;
+      const detectedLang = translatedInfo.detectedLang || lang;
+      let porukaInsertError = null;
+      try {
+        const { error } = await sbWeb.from('poruke').insert([{
+          tip: 'obicna',
+          ime: name,
+          email: email,
+          telefon: phone || null,
+          original_text: message,
+          translated_text_hr: translated || null,
+          original_language: detectedLang,
+          status: 'nova',
+          procitano: false
+        }]);
+        porukaInsertError = error;
+      } catch (dbErr) {
+        porukaInsertError = dbErr;
+      }
+      if (porukaInsertError) throw porukaInsertError;
+
+      const line = '------------------------------------------';
+      const plainText =
+`APARTMANI BALENT - Nova poruka s web stranice
+${line}
+Ime i prezime: ${name}
+Email: ${email}
+Telefon: ${phone || '-'}
+Jezik: ${detectedLang}
+
+ORIGINALNA PORUKA
+${message}
+${translated && translated !== message ? `\nHRVATSKI PRIJEVOD\n${translated}\n` : '\n'}
+${line}`;
+
+      const formData = new FormData();
+      formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
+      formData.append('subject', 'Nova poruka s web stranice - ' + name);
+      formData.append('from_name', 'Apartmani Balent - Web poruka');
+      formData.append('replyto', email);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', plainText);
+      formData.append('botcheck', '');
+      const mailRes = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData });
+      const mailJson = await mailRes.json().catch(() => null);
+      if (!mailRes.ok || !mailJson || !mailJson.success) {
+        console.warn('Question Web3Forms send failed:', mailJson || mailRes.status);
+      }
+
+      document.getElementById('questionForm').style.display = 'none';
+      document.getElementById('questionSuccess').style.display = 'block';
+    } catch (err) {
+      console.warn('Question send failed:', err);
+      alert(copy.error + ' ' + (err?.message || err?.details || JSON.stringify(err)));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span data-lang="hr" class="lang-active">Pošalji pitanje →</span><span data-lang="en">Send question →</span><span data-lang="de">Frage senden →</span><span data-lang="it">Invia domanda →</span><span data-lang="ru">Отправить вопрос →</span>';
+        const current = localStorage.getItem('balent_lang') || 'hr';
+        document.querySelectorAll('[data-lang]').forEach(el => el.classList.toggle('lang-active', el.dataset.lang === current));
+      }
+    }
+  };
+
+  window.submitModal = async function() {
+    const { inVal, outVal } = getModalDates();
+    const aptValue = document.getElementById('m-apt')?.value || '';
+    const aptNum = parseInt(aptValue || '0', 10);
+    const lang = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+    const overlapMsg = {
+      hr: 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.',
+      en: 'The selected range includes unavailable dates. Please choose an available stay.',
+      de: 'Der gewählte Zeitraum enthält belegte Daten. Bitte wählen Sie einen freien Termin.',
+      it: 'L\'intervallo selezionato include date non disponibili. Scegli un periodo libero.',
+      ru: 'Выбранный диапазон включает занятые даты. Пожалуйста, выберите свободный период.'
+    }[lang] || 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.';
+
+    const name = document.getElementById('m-name').value.trim();
+    const email = document.getElementById('m-email').value.trim();
+    const phone = document.getElementById('m-phone').value.trim();
+    const guests = document.getElementById('m-guests').value;
+    const children = document.getElementById('m-children').value;
+    const msg = document.getElementById('m-msg').value.trim();
+    const btn = document.querySelector('.modal-submit-btn') || document.querySelector('#modalForm .btn-primary');
+
+    if (!name || !email || !aptNum) {
+      alert('Molimo unesite ime, email i odaberite apartman.');
+      return;
+    }
+
+    if (!inVal || !outVal) {
+      alert('Za rezervaciju odaberite oba datuma. Ako želite poslati samo poruku, koristite opciju "Imate pitanje?".');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Slanje...';
+    }
+
+    try {
+      if (!inVal || !outVal) {
+        alert('Za rezervaciju odaberite oba datuma. Ako želite poslati samo poruku, koristite opciju "Imate pitanje?".');
+        return;
+      }
+
+      const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+      if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
+        alert(overlapMsg);
+        return;
+      }
+
+      const translatedInfo = msg ? await translateWithDetection(msg, lang === 'hr' ? 'auto' : lang, 'hr') : { translated: '', detectedLang: lang };
+      const translated = msg ? (translatedInfo.translated || msg) : '';
+      const detectedLang = translatedInfo.detectedLang || lang;
+      const komentar = buildRezComment({ email, phone, lang: detectedLang, msg, translated });
+      const { error } = await sbWeb.from('rezervacije').insert([{
+        apartman: aptNum,
+        ime: name,
+        datum_dolaska: inVal,
+        datum_odlaska: outVal,
+        broj_osoba: parseInt(guests, 10) || 1,
+        izvor: 'vlastiti',
+        status: 'upit',
+        komentar: komentar || null,
+        zarada_auto: calcPriceLocal(inVal, outVal)
+      }]);
+      if (error) throw error;
+
+      if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
+      document.getElementById('m-checkin')._fpVal = inVal;
+      document.getElementById('m-checkout')._fpVal = outVal;
+      document.getElementById('modalForm').style.display = 'none';
+      document.getElementById('modalSuccess').style.display = 'block';
+
+      const fmtDate = iso => {
+        if (!iso) return '-';
+        const [y, m, d] = iso.split('-');
+        return d + '.' + m + '.' + y + '.';
+      };
+      const nights = Math.round((new Date(outVal) - new Date(inVal)) / 86400000);
+      const nightsStr = nights > 0 ? nights + (nights === 1 ? ' noćenje' : ' noćenja') : '-';
+      const line = '------------------------------------------';
+      const plainText =
+`APARTMANI BALENT - Novi upit s web stranice
+${line}
+
+PODACI O GOSTU
+Ime i prezime: ${name}
+Email: ${email}
+Telefon: ${phone || '-'}
+Jezik: ${lang}
+
+DETALJI REZERVACIJE
+Apartman: Apartman ${aptNum}
+Datum dolaska: ${fmtDate(inVal)}
+Datum odlaska: ${fmtDate(outVal)}
+Broj noćenja: ${nightsStr}
+Broj gostiju: ${guests}
+Djeca: ${children}
+${msg ? `\nORIGINALNA PORUKA\n${msg}\n` : ''}
+${translated && translated !== msg ? `\nHRVATSKI PRIJEVOD\n${translated}\n` : ''}
+${line}`;
+
+      const formData = new FormData();
+      formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
+      formData.append('subject', 'Novi upit - Apartman ' + aptNum + ' - ' + fmtDate(inVal) + ' do ' + fmtDate(outVal));
+      formData.append('from_name', 'Apartmani Balent - Web upit');
+      formData.append('replyto', email);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', plainText);
+      formData.append('botcheck', '');
+      fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => { if (!data.success) console.warn('Web3Forms send failed:', data); })
+        .catch(err => console.warn('Web3Forms request failed:', err));
+    } catch (saveErr) {
+      console.warn('Supabase insert failed:', saveErr);
+      alert('Greška pri spremanju upita. Pokušajte ponovo ili nas kontaktirajte direktno.');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Rezerviraj';
+      }
+    }
+  };
+
+  window.submitModalFinal = window.submitModal;
+})();
 </script>
 </body>
 </html>
