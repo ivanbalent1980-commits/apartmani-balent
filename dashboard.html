@@ -239,6 +239,29 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 @media(max-width:540px){
   .stat-grid{grid-template-columns:1fr}
 }
+@media(max-width:1180px){
+  .topbar{padding:.85rem 1rem;gap:.8rem;align-items:flex-start}
+  .topbar > div:first-child{min-width:0}
+  .topbar-title{font-size:1.15rem;line-height:1.2}
+  .topbar-right{gap:.65rem;flex-wrap:wrap;justify-content:flex-end}
+  .card{padding:1rem}
+  .pending-card{grid-template-columns:1fr;gap:.65rem}
+  .cal-wrap{overflow-x:auto}
+  .cal-header,.cal-row,.cal-overlays{min-width:980px}
+}
+@media(max-width:760px){
+  .topbar{flex-direction:column;align-items:stretch}
+  .topbar > div:first-child{display:flex;align-items:center;gap:.75rem}
+  .topbar-right{justify-content:space-between}
+  .content{padding:1rem}
+  .content-nav{gap:.4rem}
+  .btn,.btn-primary,.btn-secondary{width:100%}
+  .filters,.form-grid,.fin-summary,.rashodi-grid{grid-template-columns:1fr}
+  .inbox-top{flex-direction:column;gap:.3rem}
+  .inbox-date{padding-top:0}
+  .inbox-body{min-height:0;font-size:.9rem}
+  #page-poruke .card-body{padding:1rem}
+}
 
 /* PAGE SECTIONS */
 .page{display:none}
@@ -255,6 +278,30 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .pending-main strong{display:block;font-size:.92rem;color:var(--navy);margin-bottom:.2rem}
 .pending-main div,.pending-meta div{font-size:.78rem;color:var(--muted);line-height:1.45}
 .pending-meta{display:grid;gap:.18rem}
+.inbox-list{display:grid;gap:.85rem}
+.inbox-item{background:#fff;border:1px solid var(--sand-dark);border-left:4px solid var(--accent);border-radius:4px;padding:1.15rem 1.2rem;box-shadow:0 10px 22px rgba(26,38,54,.04)}
+.inbox-item.unread{background:#fffaf0;border-left-color:#c19100}
+.inbox-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.55rem}
+.inbox-title{font-size:1.02rem;font-weight:600;color:var(--navy);line-height:1.35}
+.inbox-date{font-size:.76rem;color:var(--muted);white-space:nowrap;padding-top:.12rem}
+.inbox-meta{display:flex;flex-wrap:wrap;gap:.45rem .9rem;margin-bottom:.8rem;font-size:.79rem;color:var(--muted)}
+.inbox-meta span{display:inline-flex;align-items:center;gap:.35rem}
+.inbox-body{background:#fbf7f0;border:1px solid #eee3d3;border-radius:3px;padding:1rem 1.1rem;font-size:.95rem;color:var(--navy);line-height:1.75;white-space:pre-wrap;min-height:112px}
+.inbox-translation{margin-top:.6rem;padding:.9rem 1rem;border-radius:3px;background:#f5efe4;border:1px solid #eadfc9;color:var(--navy);line-height:1.68}
+.inbox-translation strong{display:block;font-size:.76rem;font-weight:600;color:var(--muted);margin-bottom:.28rem;letter-spacing:.02em}
+.inbox-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem;padding-top:.8rem;border-top:1px solid var(--sand-dark)}
+.inbox-actions .btn{width:auto}
+.inbox-empty{padding:1rem 1.1rem;background:#fff;border:1px dashed var(--sand-dark);border-radius:3px;color:var(--muted);font-size:.82rem}
+.inbox-empty{padding:1rem 1.1rem;background:#fff;border:1px dashed var(--sand-dark);border-radius:3px;color:var(--muted);font-size:.82rem}
+#page-poruke .card{max-width:1120px}
+#page-poruke .card-body{padding:1.25rem 1.35rem}
+#page-poruke .tabs{margin-bottom:1.2rem!important}
+#page-poruke .tab{font-size:.82rem}
+#replyModal .modal-box{max-width:920px}
+#replyModal .modal-body{padding-top:1rem}
+#replyModal #replyOriginal{min-height:180px;font-size:.92rem;line-height:1.7;background:#fbf7f0!important;border:1px solid #eee3d3}
+#replyModal #replyBodyHr{min-height:220px;font-size:.96rem;line-height:1.7}
+#replyModal #replyTranslatedPreview{min-height:220px;font-size:.92rem;line-height:1.7;background:#f5efe4}
 .pending-actions{display:flex;justify-content:flex-end}
 .pending-empty{background:#f7f9fb;border:1px solid var(--sand-dark);border-radius:3px;padding:1rem 1.1rem;font-size:.8rem;color:#5f6f7f}
 .stat-card .pending-list{margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--sand-dark);margin-bottom:0}
@@ -595,7 +642,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         <div class="card-body">
           <div class="tabs" id="porukeTabs" style="margin-bottom:1rem">
             <button class="tab active" onclick="setPorukeTab('rezervacije',this)">Rezervacije</button>
-            <button class="tab" onclick="setPorukeTab('obicne',this)">Obične poruke</button>
+            <button class="tab" onclick="setPorukeTab('obicne',this)">Poruke</button>
           </div>
 
           <div id="poruke-rezervacije">
@@ -2949,7 +2996,8 @@ function ensureReplyModal() {
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('replyModal')">Odustani</button>
-        <button class="btn btn-primary" onclick="sendReplyDraft()">Otvori email</button>
+        <button class="btn btn-secondary" onclick="sendReplyDraft()">Otvori email</button>
+        <button class="btn btn-primary" id="replyDashboardSendBtn" onclick="sendReplyViaDashboard()">Pošalji iz dashboarda</button>
       </div>
     </div>
   `;
@@ -3083,7 +3131,7 @@ loadPoruke = async function() {
             </div>
           `;
         }));
-        obicneWrap.innerHTML = rows.length ? rows.join('') : '<div class="pending-empty">Trenutno nema običnih poruka.</div>';
+        obicneWrap.innerHTML = rows.length ? rows.join('') : '<div class="pending-empty">Trenutno nema poruka.</div>';
       }
     } catch (err) {
       obicneWrap.innerHTML = '<div class="pending-empty">Obične poruke će se prikazivati ovdje čim tablica poruka bude dostupna.</div>';
@@ -3209,8 +3257,180 @@ window.sendReplyDraft = async function() {
   window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${subject}&body=${body}`;
 };
 
+window.sendReplyViaDashboard = async function() {
+  const recipient = (document.getElementById('replyRecipientEmail')?.value || '').trim();
+  if (!recipient) {
+    alert('Nema primatelja za odgovor.');
+    return;
+  }
+  const hrText = (document.getElementById('replyBodyHr')?.value || '').trim();
+  if (!hrText) {
+    alert('Upišite odgovor.');
+    return;
+  }
+
+  let translated = (document.getElementById('replyTranslatedPreview')?.value || '').trim();
+  if (!translated) {
+    const targetLang = currentReplyPayload?.jezik || 'hr';
+    const translatedBody = targetLang === 'hr' ? hrText : (await balentTranslate(hrText, 'hr', targetLang)) || hrText;
+    const note = await translatedFromCroatianNote(targetLang);
+    translated = note ? `${note}\n\n${translatedBody}` : translatedBody;
+    document.getElementById('replyTranslatedPreview').value = translated;
+  }
+
+  const btn = document.getElementById('replyDashboardSendBtn');
+  const prevText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Slanje...';
+  }
+
+  try {
+    const { data, error } = await sb.functions.invoke('send-gmail', {
+      body: {
+        to: recipient,
+        subject: 'Odgovor na vaš upit - Apartmani Balent',
+        text: translated,
+        replyTo: 'ivana.balent1@gmail.com',
+        meta: {
+          guest_name: currentReplyPayload?.ime || '',
+          language: currentReplyPayload?.jezik || 'hr',
+          source: 'dashboard-reply'
+        }
+      }
+    });
+
+    if (error) throw error;
+    if (!data?.ok) throw new Error(data?.error || 'Slanje nije uspjelo.');
+
+    alert('Email je poslan iz dashboarda.');
+    closeModal('replyModal');
+  } catch (err) {
+    console.warn('Dashboard Gmail send failed:', err);
+    alert('Slanje iz dashboarda trenutno nije dostupno. Otvorite email kao fallback dok ne završimo Gmail setup.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = prevText || 'Pošalji iz dashboarda';
+    }
+  }
+};
+
 // Start
 initApp();
+</script>
+<script>
+(() => {
+  const infoNotice = document.querySelector('#page-poruke .notice.notice-info');
+  if (infoNotice) infoNotice.style.display = 'none';
+})();
+</script>
+<script>
+(() => {
+  function renderInboxReservation(r, meta, detectedLang, translated, showTranslation, guestsLabel, replyBtn) {
+    return `
+      <div class="inbox-item unread">
+        <div class="inbox-top">
+          <div class="inbox-title">${escapeHtml(r.ime || 'Gost')}</div>
+          <div class="inbox-date">${fmtDate(r.datum_dolaska)} - ${fmtDate(r.datum_odlaska)}</div>
+        </div>
+        <div class="inbox-meta">
+          <span>${aptLabel(r.apartman)}</span>
+          <span>${escapeHtml(guestsLabel)}</span>
+          <span>${meta.lang ? `Jezik: ${escapeHtml((detectedLang || meta.lang).toUpperCase())}` : 'Jezik: HR/—'}</span>
+        </div>
+        <div class="inbox-body">${escapeHtml(meta.original || r.komentar || 'Bez dodatne poruke.')}</div>
+        ${showTranslation ? `<div class="inbox-translation"><strong>${escapeHtml(translatedFromSourceLabel(detectedLang || 'hr'))}</strong><div>${escapeHtml(translated)}</div></div>` : ''}
+        <div class="inbox-actions">
+          <button class="btn btn-secondary btn-sm" onclick='openRezById("${escapeHtml(r.id)}")'>Otvori</button>
+          ${replyBtn}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderInboxMessage(p, lang, detectedLang, translatedHr, showTranslation) {
+    return `
+      <div class="inbox-item ${p.procitano === false ? 'unread' : ''}">
+        <div class="inbox-top">
+          <div class="inbox-title">${escapeHtml(p.ime || 'Gost')}</div>
+          <div class="inbox-date">${p.created_at ? escapeHtml(new Date(p.created_at).toLocaleDateString('hr-HR')) : ''}</div>
+        </div>
+        <div class="inbox-meta">
+          <span>${escapeHtml(p.email || 'Bez emaila')}</span>
+          <span>Jezik: ${escapeHtml(String(detectedLang || lang).toUpperCase())}</span>
+          <span>Status: ${escapeHtml(p.status || 'nova')}</span>
+        </div>
+        <div class="inbox-body">${escapeHtml(p.original_text || p.poruka || 'Bez poruke')}</div>
+        ${showTranslation ? `<div class="inbox-translation"><strong>${escapeHtml(translatedFromSourceLabel(detectedLang || 'hr'))}</strong><div>${escapeHtml(translatedHr)}</div></div>` : ''}
+        <div class="inbox-actions">
+          <button class="btn btn-secondary btn-sm" onclick='togglePorukaRead("${escapeHtml(p.id)}", ${p.procitano === false ? "true" : "false"})'>${p.procitano === false ? 'Označi pročitano' : 'Označi nepročitano'}</button>
+          <button class="btn btn-secondary btn-sm" onclick='replyToPoruka(${JSON.stringify({ ime: p.ime || '', email: p.email || '', jezik: detectedLang || lang, poruka: p.original_text || p.poruka || '' })})'>Odgovori</button>
+        </div>
+      </div>
+    `;
+  }
+
+  loadPoruke = async function() {
+    const rezWrap = document.getElementById('porukeRezBody');
+    const obicneWrap = document.getElementById('porukeObicneBody');
+
+    if (rezWrap) {
+      const rezervacije = (allRezervacije || [])
+        .filter(r => normalizeRezStatus(r.status) === 'upit')
+        .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
+
+      const rezCards = await Promise.all(rezervacije.map(async r => {
+        const meta = parseRezKomentar(r.komentar);
+        const translatedInfo = meta.original ? await balentTranslateWithDetection(meta.original, (meta.lang && meta.lang !== 'hr') ? meta.lang : 'auto', 'hr') : { translated: '', detectedLang: meta.lang || 'hr' };
+        const detectedLang = (meta.lang && meta.lang !== 'hr') ? meta.lang : (translatedInfo.detectedLang || meta.lang || 'hr');
+        const translated = meta.translatedHr || translatedInfo.translated || '';
+        const showTranslation = detectedLang && detectedLang !== 'hr' && translated && translated !== (meta.original || r.komentar || '');
+        const adults = parseInt(r.broj_osoba || 0, 10) || 0;
+        const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
+        const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+        const replyBtn = meta.email ? `<button class="btn btn-secondary btn-sm" onclick='replyToPoruka(${JSON.stringify({ ime: r.ime || '', email: meta.email, jezik: detectedLang || 'hr', poruka: meta.original || r.komentar || '' })})'>Odgovori</button>` : '';
+        return renderInboxReservation(r, meta, detectedLang, translated, showTranslation, guestsLabel, replyBtn);
+      }));
+
+      rezWrap.innerHTML = rezCards.length ? `<div class="inbox-list">${rezCards.join('')}</div>` : '<div class="inbox-empty">Trenutno nema rezervacijskih upita.</div>';
+    }
+
+    if (obicneWrap) {
+      try {
+        const { data, error } = await sb.from('poruke').select('*').order('created_at', { ascending: false });
+        if (error) {
+          obicneWrap.innerHTML = '<div class="inbox-empty">Poruke će se prikazivati ovdje čim tablica poruka bude dostupna.</div>';
+        } else {
+          const rows = await Promise.all((data || []).map(async p => {
+            const lang = String(p.jezik || p.language || p.original_language || 'hr').toLowerCase();
+            let detectedLang = lang;
+            let translatedHr = p.translated_text_hr || '';
+            const originalMessage = String(p.original_text || p.poruka || '').trim();
+            const hasFakeTranslation = !!translatedHr && !!originalMessage && translatedHr.trim() === originalMessage;
+            if ((!translatedHr || hasFakeTranslation) && originalMessage) {
+              const translatedInfo = await balentTranslateWithDetection(p.original_text || p.poruka, lang !== 'hr' ? lang : 'auto', 'hr');
+              translatedHr = translatedInfo.translated || '';
+              detectedLang = lang !== 'hr' ? lang : (translatedInfo.detectedLang || lang);
+              if (translatedHr) {
+                try {
+                  await sb.from('poruke').update({ translated_text_hr: translatedHr, original_language: detectedLang }).eq('id', p.id);
+                } catch (err) {
+                  console.warn('Saving translation failed:', err);
+                }
+              }
+            }
+            const showTranslation = detectedLang && detectedLang !== 'hr' && translatedHr && translatedHr !== (p.original_text || p.poruka || '');
+            return renderInboxMessage(p, lang, detectedLang, translatedHr, showTranslation);
+          }));
+          obicneWrap.innerHTML = rows.length ? `<div class="inbox-list">${rows.join('')}</div>` : '<div class="inbox-empty">Trenutno nema poruka.</div>';
+        }
+      } catch (err) {
+        obicneWrap.innerHTML = '<div class="inbox-empty">Poruke će se prikazivati ovdje čim tablica poruka bude dostupna.</div>';
+      }
+    }
+  };
+})();
 </script>
 </body>
 </html>
