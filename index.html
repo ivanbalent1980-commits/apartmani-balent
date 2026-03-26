@@ -163,7 +163,7 @@ nav.scrolled{padding:.85rem 3rem;box-shadow:0 2px 24px rgba(0,0,0,.07)}
 .nav-logo{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--navy);text-decoration:none;letter-spacing:.02em}
 .nav-logo span{color:var(--accent)}
 .nav-links{display:flex;gap:2.2rem;list-style:none;align-items:center}
-.nav-links a{font-size:.78rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);text-decoration:none;transition:color .2s}
+.nav-links a{font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);text-decoration:none;transition:color .2s}
 .nav-links a:hover{color:var(--accent)}
 .nav-cta{background:var(--navy)!important;color:var(--white)!important;padding:.55rem 1.3rem;border-radius:2px;transition:background .2s!important;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;min-width:max-content}
 .nav-cta:hover{background:var(--accent)!important}
@@ -209,7 +209,7 @@ section{padding:5.5rem 3rem}
 #o-nama{background:var(--sand)}
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
 .about-img-wrap{position:relative}
-.about-img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:68% center;border-radius:2px;display:block}
+.about-img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:34% center;border-radius:2px;display:block}
 .about-badge{position:absolute;bottom:-1.4rem;right:-1.4rem;background:var(--navy);color:#fff;padding:1.6rem;text-align:center;border-radius:2px;min-width:120px}
 .about-badge .num{font-family:var(--serif);font-size:2.8rem;font-weight:300;line-height:1;display:block;color:var(--accent-light)}
 .about-badge .lbl{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65;margin-top:.3rem;display:block}
@@ -249,16 +249,16 @@ section{padding:5.5rem 3rem}
 .btn-sm:hover{background:var(--navy);color:#fff}
 
 /* GALLERY with apt tabs */
-#galerija{background:var(--sand);padding:5.5rem 3rem}
-.gal-head{text-align:center;margin-bottom:2rem}
-.gal-tabs{display:flex;justify-content:center;gap:.5rem;margin-bottom:2.5rem;flex-wrap:wrap}
+#galerija{background:var(--sand);padding:4.25rem 3rem}
+.gal-head{text-align:center;margin-bottom:1.35rem}
+.gal-tabs{display:flex;justify-content:center;gap:.4rem;margin-bottom:.9rem;flex-wrap:wrap}
 .gal-tab{font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1.2rem;border:1px solid var(--sand-dark);background:var(--white);color:var(--muted);cursor:pointer;border-radius:2px;transition:all .2s}
 .gal-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .gal-panel{display:none}
 .gal-panel.active{display:block}
-.gal-masonry{columns:4 200px;gap:.6rem}
-.gal-masonry .gi{break-inside:avoid;margin-bottom:.6rem;cursor:pointer;overflow:hidden;border-radius:2px;display:block}
-.gal-masonry .gi img{width:100%;display:block;transition:transform .45s}
+.gal-masonry{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
+.gal-masonry .gi{cursor:pointer;overflow:hidden;border-radius:2px;display:block;aspect-ratio:4/3}
+.gal-masonry .gi img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s}
 .gal-masonry .gi:hover img{transform:scale(1.05)}
 
 /* LIGHTBOX */
@@ -276,6 +276,11 @@ section{padding:5.5rem 3rem}
 .map-wrap{border-radius:2px;overflow:hidden;height:380px}
 .map-wrap iframe{width:100%;height:100%;border:none;display:block}
 .contact-items{margin-bottom:1.8rem}
+.host-card{display:flex;gap:1rem;align-items:flex-start;background:var(--sand);padding:1rem;border-radius:2px;border-left:2px solid var(--accent);margin:1rem 0 1.6rem}
+.host-card img{width:92px;height:132px;object-fit:cover;object-position:center top;border-radius:2px;flex-shrink:0}
+.host-card h4{font-size:.95rem;color:var(--navy);margin:0 0 .35rem}
+.host-card p{font-size:.84rem;line-height:1.65;color:var(--muted);margin:0}
+@media(max-width:640px){.host-card{align-items:center}.host-card img{width:84px;height:118px}}
 .ci{display:flex;gap:1rem;align-items:flex-start;padding:1rem 0;border-bottom:1px solid var(--sand-dark)}
 .ci-icon{width:38px;height:38px;background:var(--sand);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
 .ci-text p{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.18rem}
@@ -323,7 +328,8 @@ footer{background:var(--navy);color:rgba(255,255,255,.65);padding:3.5rem 3rem 2r
   .footer-bottom{flex-direction:column;text-align:center}
   .form-grid{grid-template-columns:1fr}
   .fg.full{grid-column:span 1}
-  .gal-masonry{columns:2 120px}
+  .gal-masonry{grid-template-columns:repeat(2,minmax(0,1fr));gap:.3rem}
+  .gal-masonry .gi{aspect-ratio:3/2}
 }
 @media(max-width:540px){
   .hero h1{font-size:2.6rem}
@@ -759,10 +765,10 @@ img { max-width: 100%; height: auto; }
       <span data-lang="ru">Посмотреть апартаменты</span>
     </a>
       <a href="javascript:void(0)" class="btn-outline" onclick="openModal()">
-      <span data-lang="hr" class="lang-active">Kontaktiraj nas</span>
-      <span data-lang="en">Contact us</span>
-      <span data-lang="de">Kontaktiere uns</span>
-      <span data-lang="it">Contattaci</span>
+      <span data-lang="hr" class="lang-active">Rezerviraj</span>
+      <span data-lang="en">Book now</span>
+      <span data-lang="de">Buchen</span>
+      <span data-lang="it">Prenota</span>
       <span data-lang="ru">Связаться с нами</span>
     </a>
     </div>
@@ -2330,66 +2336,45 @@ const SUPA_IMGS4 = supabasePublicUrls('apartman 4', [
   'Apartmani Balent - 4-36.jpg','Apartmani Balent - 4-37.jpg','Apartmani Balent - 4-38.jpg','Apartmani Balent - 4-39.jpg','Apartmani Balent - 4-40.jpg'
 ]);
 const SUPA_IMGS1 = supabasePublicUrls('apartman 1', [
-  'WhatsApp Image 2026-03-19 at 20.25.54 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (10).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (11).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (12).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (13).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (4).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (5).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (6).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (7).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (8).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54 (9).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.25.54.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (4).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (5).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01 (6).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.01.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.50 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.50 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.50 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.27.50.jpeg'
+  'b3e5f9ec-80da-4496-92ff-b919a268f3c9.avif',
+  '0c77ceba-99f8-48de-bc43-07732a4cb166.avif',
+  '0d5e2267-e7c1-4c3f-9b6c-403086bbddcf.jpg',
+  '107848c1-78a8-4508-ac4b-c28160ec7ddd.avif',
+  '12c84094-ff58-4115-87f8-844a1b5fa780.avif',
+  '5e8f1069-e269-408a-bf08-b614fe397063.avif',
+  '642922bc-6213-49ca-885e-d7a9080a99d5.avif',
+  '64cfa512-cc0f-4ea5-9e4e-41b90374126b.avif',
+  '6ad1c430-f5d1-47f1-bc8a-8351588b608a.avif',
+  '8b35cbef-c480-448c-a540-fa03030d41f9.avif',
+  '9290a7a3-fcff-41a1-92fe-1aa25d2182a1.avif',
+  'a06f3b17-561c-41b6-be69-c00d7b6017b0.avif',
+  'a758b774-52e3-4d02-aba5-ebc1f8dce195.avif',
+  'ac4fabd8-e0b1-4752-811e-87a15ec17f0a.avif',
+  'f2ae4fe5-4022-403b-9696-4353b2359a1f.avif',
+  'c180e18b-69dc-44f3-ace1-083a9e83b3f0.avif',
+  'f2421b70-f43b-4de5-bbf9-fd86ea5747ee.avif',
+  'fa4d1278-18a1-45bb-ad54-90273916e3aa.avif'
 ]);
 const SUPA_IMGS2 = supabasePublicUrls('apartman 2', [
-  'WhatsApp Image 2026-03-19 at 20.30.30 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.30 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.30 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.30.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (4).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (5).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (6).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31 (7).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.31.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.30.48.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.08.jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (1).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (10).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (11).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (12).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (13).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (14).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (15).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (16).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (17).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (18).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (2).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (3).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (4).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (5).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (6).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (7).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (8).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09 (9).jpeg',
-  'WhatsApp Image 2026-03-19 at 20.31.09.jpeg'
+  'b45474b3-62bf-4ae2-aad9-7bb102da1fd6.avif',
+  '03e533b1-ece1-4007-9315-dc3489fbe24b.avif',
+  '16584564-bb61-427b-9684-99bd2a17f01d.avif',
+  '18e5fe60-b498-4ed1-8db9-b5d2120f6cb4.avif',
+  '26a0e6b9-8ee2-4568-824e-59db2dc5a686.avif',
+  '2d7dad8f-5598-451d-8094-3d9ac4865151.avif',
+  '4caa3f3b-bbe2-45c9-9c4a-23b4e82c17f1.avif',
+  '51c63f6d-3a32-4bc5-bd31-91844cba6881.avif',
+  '6bd8741c-97a8-4692-9322-887fbd8fe361.avif',
+  '758c3686-88cc-4f12-bf3e-54e55105d045.avif',
+  '82823525-d178-4e92-b4e5-a484a525f865.avif',
+  '92b4ae29-fa4e-41cc-8168-4832c262bb95.avif',
+  'a8195c3f-3a65-434b-99e5-415dae603b14.avif',
+  'a8cb1383-86d5-45bb-8614-472cc6e79489.avif',
+  'b220c840-0bb7-4ab0-bf3d-f6bbbe2199fd.avif',
+  'c9b188b6-25d2-466a-b58f-152ccd1d4283.avif',
+  'd40c6f30-9923-48ca-81d8-3e6930d50e42.avif',
+  'd90ccc91-0d53-4e34-8f6a-8227ee5481f0.avif',
+  'e1831f77-6265-4fdd-87bb-dd04e360f7e5.avif'
 ]);
 
 // Apartment card sliders
@@ -2399,17 +2384,28 @@ const cardIdx = {1: 0, 2: 0, 3: 0, 4: 0};
 function aptNav(card, dir) {
   const imgs = cardImgs[card];
   cardIdx[card] = (cardIdx[card] + dir + imgs.length) % imgs.length;
-  document.getElementById('card'+card+'-img').src = imgs[cardIdx[card]];
+  const cardImg = document.getElementById('card'+card+'-img');
+  if (cardImg) {
+    cardImg.src = imgs[cardIdx[card]];
+    cardImg.decoding = 'async';
+  }
   document.getElementById('card'+card+'-counter').textContent = (cardIdx[card]+1) + ' / ' + imgs.length;
 }
 
 // Gallery tabs
 function showGal(which) {
+  const gridMap = {
+    apt1: ['galGrid1', SUPA_IMGS1],
+    apt2: ['galGrid2', SUPA_IMGS2],
+    apt3: ['galGrid3', SUPA_IMGS3],
+    apt4: ['galGrid4', SUPA_IMGS4]
+  };
   const order = ['apt1','apt2','apt3','apt4'];
   document.querySelectorAll('.gal-tab').forEach((t,i) => t.classList.toggle('active', order[i]===which));
   document.querySelectorAll('.gal-panel').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
   const panel = document.getElementById('gal-'+which);
   if (panel) { panel.classList.add('active'); panel.style.display='block'; }
+  if (gridMap[which]) buildGrid(gridMap[which][0], gridMap[which][1]);
 }
 
 // Build gallery grids
@@ -2423,6 +2419,7 @@ function buildGrid(gridId, imgs) {
     img.src = src;
     img.alt = 'Foto ' + (i+1);
     img.loading = 'lazy';
+    img.decoding = 'async';
     div.appendChild(img);
     div.onclick = () => lbOpen(imgs, i);
     grid.appendChild(div);
@@ -2430,14 +2427,10 @@ function buildGrid(gridId, imgs) {
 }
 
 buildGrid('galGrid1', SUPA_IMGS1);
-buildGrid('galGrid2', SUPA_IMGS2);
-buildGrid('galGrid3', SUPA_IMGS3);
-buildGrid('galGrid4', SUPA_IMGS4);
 
 // Temporary image mapping while bucket curation is in progress
 const siteImgPool = [
   SUPA_IMGS3[0],
-  SUPA_IMGS4[32],
   SUPA_IMGS3[12],
   SUPA_IMGS3[18],
   SUPA_IMGS3[24],
@@ -2451,16 +2444,20 @@ if (heroBg && siteImgPool[0]) {
 }
 
 const aboutImg = document.querySelector('.about-img');
-if (aboutImg && siteImgPool[1]) aboutImg.src = siteImgPool[1];
+if (aboutImg && SUPA_IMGS4[32]) {
+  aboutImg.src = SUPA_IMGS4[32];
+  aboutImg.loading = 'lazy';
+  aboutImg.decoding = 'async';
+}
 
 const card1Img = document.getElementById('card1-img');
-if (card1Img && SUPA_IMGS1[0]) card1Img.src = SUPA_IMGS1[0];
+if (card1Img && SUPA_IMGS1[0]) { card1Img.src = SUPA_IMGS1[0]; card1Img.decoding = 'async'; }
 const card2Img = document.getElementById('card2-img');
-if (card2Img && SUPA_IMGS2[0]) card2Img.src = SUPA_IMGS2[0];
+if (card2Img && SUPA_IMGS2[0]) { card2Img.src = SUPA_IMGS2[0]; card2Img.loading = 'lazy'; card2Img.decoding = 'async'; }
 const card3Img = document.getElementById('card3-img');
-if (card3Img && SUPA_IMGS3[0]) card3Img.src = SUPA_IMGS3[0];
+if (card3Img && SUPA_IMGS3[0]) { card3Img.src = SUPA_IMGS3[0]; card3Img.loading = 'lazy'; card3Img.decoding = 'async'; }
 const card4Img = document.getElementById('card4-img');
-if (card4Img && SUPA_IMGS4[4]) card4Img.src = SUPA_IMGS4[4];
+if (card4Img && SUPA_IMGS4[4]) { card4Img.src = SUPA_IMGS4[4]; card4Img.loading = 'lazy'; card4Img.decoding = 'async'; }
 const card1Counter = document.getElementById('card1-counter');
 if (card1Counter) card1Counter.textContent = `1 / ${SUPA_IMGS1.length}`;
 const card2Counter = document.getElementById('card2-counter');
@@ -2526,10 +2523,10 @@ function sendMsg() {
 <button class="fab" onclick="openModal()">
   <span class="fab-icon">✉</span>
   <span class="fab-text">
-    <span data-lang="hr" class="lang-active">Kontaktiraj nas</span>
-    <span data-lang="en">Contact us</span>
-    <span data-lang="de">Kontakt</span>
-    <span data-lang="it">Contattaci</span>
+    <span data-lang="hr" class="lang-active">Rezerviraj</span>
+    <span data-lang="en">Book now</span>
+    <span data-lang="de">Buchen</span>
+    <span data-lang="it">Prenota</span>
     <span data-lang="ru">Написать нам</span>
   </span>
 </button>
@@ -4489,6 +4486,299 @@ ${line}`;
   };
 
   window.submitModalFinal = window.submitModal;
+})();
+</script>
+<script>
+(() => {
+  function setTextByLang(container, values) {
+    if (!container) return;
+    container.querySelectorAll('[data-lang]').forEach(el => {
+      const lang = el.dataset.lang;
+      if (Object.prototype.hasOwnProperty.call(values, lang)) el.textContent = values[lang];
+    });
+  }
+
+  function applyBalentCopyTweaks() {
+    const outlineBookingBtn = document.querySelector('.hero-btns .btn-outline[onclick="openModal()"]');
+    setTextByLang(outlineBookingBtn, {
+      hr: 'Rezerviraj',
+      en: 'Book now',
+      de: 'Buchen',
+      it: 'Prenota',
+      ru: 'Забронировать'
+    });
+
+    const fabText = document.querySelector('.fab .fab-text');
+    setTextByLang(fabText, {
+      hr: 'Rezerviraj',
+      en: 'Book now',
+      de: 'Buchen',
+      it: 'Prenota',
+      ru: 'Забронировать'
+    });
+
+    const storyBlock = document.querySelector('#o-nama blockquote p');
+    if (storyBlock) {
+      storyBlock.style.fontStyle = 'normal';
+      storyBlock.innerHTML =
+        '<span data-lang="hr" class="lang-active">Naša obitelj bavi se gostoprimstvom već generacijama. Ono što su naši roditelji započeli, danas brat i ja nastavljamo vodeći četiri moderno uređena apartmana na otoku, nastojeći svakom gostu pružiti ugodan i opušten boravak.</span>' +
+        '<span data-lang="en">Our family has been in hospitality for generations. What our parents began, my brother and I continue today by running four modern apartments on the island and doing our best to give every guest a pleasant and relaxing stay.</span>' +
+        '<span data-lang="de">Unsere Familie ist seit Generationen im Gastgewerbe tätig. Was unsere Eltern begonnen haben, führen mein Bruder und ich heute weiter, indem wir vier modern eingerichtete Apartments auf der Insel betreiben und jedem Gast einen angenehmen und entspannten Aufenthalt bieten.</span>' +
+        '<span data-lang="it">La nostra famiglia si occupa di ospitalità da generazioni. Ciò che i nostri genitori hanno iniziato, oggi io e mio fratello continuiamo gestendo quattro appartamenti modernamente arredati sull\'isola e cercando di offrire a ogni ospite un soggiorno piacevole e rilassante.</span>' +
+        '<span data-lang="ru">Наша семья занимается гостеприимством уже не одно поколение. То, что начали наши родители, сегодня продолжаем мы с братом, управляя четырьмя современно оборудованными апартаментами на острове и стараясь обеспечить каждому гостю приятный и спокойный отдых.</span>';
+      const lang = localStorage.getItem('balent_lang') || 'hr';
+      storyBlock.querySelectorAll('[data-lang]').forEach(el => el.classList.toggle('lang-active', el.dataset.lang === lang));
+    }
+
+    const contactItems = document.querySelector('#lokacija .contact-items');
+    if (contactItems && !document.getElementById('hostCard')) {
+      const hostCard = document.createElement('div');
+      hostCard.className = 'host-card';
+      hostCard.id = 'hostCard';
+      hostCard.innerHTML =
+        '<img src="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/ostalo/mica_Image%202026-03-26%20at%2013.25.25.jpeg" alt="Domaćica apartmana">' +
+        '<div>' +
+          '<h4><span data-lang="hr" class="lang-active">Vaša domaćica</span><span data-lang="en">Your host</span><span data-lang="de">Ihre Gastgeberin</span><span data-lang="it">La vostra host</span><span data-lang="ru">Ваша хозяйка</span></h4>' +
+          '<p><span data-lang="hr" class="lang-active">Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica.</span><span data-lang="en">Your host is available for all questions, information and reservations.</span><span data-lang="de">Ihre Gastgeberin steht Ihnen für alle Fragen, Informationen und Reservierungen zur Verfügung.</span><span data-lang="it">La vostra host è a disposizione per domande, informazioni e prenotazioni.</span><span data-lang="ru">Ваша хозяйка всегда на связи по всем вопросам, информации и бронированиям.</span></p>' +
+        '</div>';
+      contactItems.insertAdjacentElement('afterend', hostCard);
+      const lang = localStorage.getItem('balent_lang') || 'hr';
+      hostCard.querySelectorAll('[data-lang]').forEach(el => el.classList.toggle('lang-active', el.dataset.lang === lang));
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyBalentCopyTweaks, { once: true });
+  } else {
+    applyBalentCopyTweaks();
+  }
+})();
+</script>
+<script>
+(() => {
+  function applyHostAndEmailFixes() {
+    const hostCard = document.getElementById('hostCard');
+    if (hostCard) {
+      const titleHr = hostCard.querySelector('h4 [data-lang="hr"]');
+      const textHr = hostCard.querySelector('p [data-lang="hr"]');
+      if (titleHr) titleHr.textContent = 'Vaša domaćica';
+      if (textHr) textHr.textContent = 'Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica Mica.';
+    }
+
+    const contactEmailRow = document.querySelector('#lokacija .contact-items .ci:nth-child(2)');
+    if (contactEmailRow) {
+      const emailText = contactEmailRow.querySelector('.ci-text');
+      if (emailText) {
+        emailText.innerHTML =
+          '<p><span data-lang="hr" class="lang-active">Kontakt forma</span><span data-lang="en">Contact form</span><span data-lang="de">Kontaktformular</span><span data-lang="it">Modulo di contatto</span><span data-lang="ru">Форма контакта</span></p>' +
+          '<span><span data-lang="hr" class="lang-active">Pošaljite upit kroz formu ispod ili nas kontaktirajte putem WhatsAppa.</span><span data-lang="en">Send your enquiry through the form below or contact us via WhatsApp.</span><span data-lang="de">Senden Sie Ihre Anfrage über das Formular unten oder kontaktieren Sie uns per WhatsApp.</span><span data-lang="it">Invia la tua richiesta tramite il modulo qui sotto o contattaci su WhatsApp.</span><span data-lang="ru">Отправьте запрос через форму ниже или свяжитесь с нами через WhatsApp.</span></span>';
+        const lang = localStorage.getItem('balent_lang') || 'hr';
+        emailText.querySelectorAll('[data-lang]').forEach(node => node.classList.toggle('lang-active', node.dataset.lang === lang));
+      }
+    }
+
+    document.querySelectorAll('a[href*="/cdn-cgi/l/email-protection"], .__cf_email__').forEach(el => {
+      const anchor = el.tagName === 'A' ? el : el.closest('a');
+      if (!anchor) return;
+      anchor.removeAttribute('href');
+      anchor.textContent = '';
+      anchor.style.display = 'none';
+    });
+
+    document.querySelectorAll('p').forEach(p => {
+      if (p.textContent.includes('Apartmani Balent') && p.textContent.includes('Email:')) {
+        p.innerHTML = p.innerHTML.replace(/<br>\s*Email:[\s\S]*?<\/a>/, '');
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyHostAndEmailFixes, { once: true });
+  } else {
+    applyHostAndEmailFixes();
+  }
+})();
+</script>
+<script>
+(() => {
+  function movePricingBelowGallery() {
+    const gallery = document.getElementById('galerija');
+    const kalkulator = document.getElementById('kalkulator');
+    const cjenik = document.getElementById('cjenik');
+    if (!gallery || !kalkulator || !cjenik) return;
+    gallery.insertAdjacentElement('afterend', cjenik);
+    gallery.insertAdjacentElement('afterend', kalkulator);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', movePricingBelowGallery, { once: true });
+  } else {
+    movePricingBelowGallery();
+  }
+})();
+</script>
+<script>
+(() => {
+  const datePlaceholders = {
+    hr: 'Odaberite datum',
+    en: 'Select date',
+    de: 'Datum wählen',
+    it: 'Seleziona data',
+    ru: 'Выберите дату'
+  };
+  const aptLabels = {
+    hr: ['Odaberi apartman','Apartman 1 – Prizemlje','Apartman 2 – Prizemlje','Apartman 3 – 1. kat','Apartman 4 – 1. kat'],
+    en: ['Select apartment','Apartment 1 – Ground floor','Apartment 2 – Ground floor','Apartment 3 – 1st floor','Apartment 4 – 1st floor'],
+    de: ['Apartment auswählen','Apartment 1 – Erdgeschoss','Apartment 2 – Erdgeschoss','Apartment 3 – 1. OG','Apartment 4 – 1. OG'],
+    it: ['Seleziona appartamento','Appartamento 1 – Piano terra','Appartamento 2 – Piano terra','Appartamento 3 – 1° piano','Appartamento 4 – 1° piano'],
+    ru: ['Выберите апартамент','Апартамент 1 – первый этаж','Апартамент 2 – первый этаж','Апартамент 3 – 2-й этаж','Апартамент 4 – 2-й этаж']
+  };
+  const guestLabels = {
+    hr: ['1 gost','2 gosta','3 gosta','4 gosta'],
+    en: ['1 guest','2 guests','3 guests','4 guests'],
+    de: ['1 Gast','2 Gäste','3 Gäste','4 Gäste'],
+    it: ['1 ospite','2 ospiti','3 ospiti','4 ospiti'],
+    ru: ['1 гость','2 гостя','3 гостя','4 гостя']
+  };
+
+  function ensureLegacyDetailFormIds() {
+    const detailForm = document.querySelector('#lokacija .form-grid');
+    if (!detailForm) return;
+    const dateInputs = detailForm.querySelectorAll('input[type="date"], input#detail-checkin, input#detail-checkout');
+    if (dateInputs[0]) {
+      dateInputs[0].id = 'detail-checkin';
+      dateInputs[0].type = 'text';
+      dateInputs[0].readOnly = true;
+      dateInputs[0].style.cursor = 'pointer';
+      dateInputs[0].style.background = 'var(--white)';
+    }
+    if (dateInputs[1]) {
+      dateInputs[1].id = 'detail-checkout';
+      dateInputs[1].type = 'text';
+      dateInputs[1].readOnly = true;
+      dateInputs[1].style.cursor = 'pointer';
+      dateInputs[1].style.background = 'var(--white)';
+    }
+    const selects = detailForm.querySelectorAll('select');
+    if (selects[0]) selects[0].id = 'detail-apt';
+    if (selects[1]) selects[1].id = 'detail-guests';
+  }
+
+  function applyLanguageToLegacyForms(lang) {
+    const safeLang = aptLabels[lang] ? lang : 'hr';
+    const calcIn = document.getElementById('calc-in');
+    const calcOut = document.getElementById('calc-out');
+    const detailIn = document.getElementById('detail-checkin');
+    const detailOut = document.getElementById('detail-checkout');
+    [calcIn, calcOut, detailIn, detailOut].forEach(el => {
+      if (el) el.placeholder = datePlaceholders[safeLang];
+    });
+
+    const calcApt = document.getElementById('calc-apt');
+    if (calcApt) {
+      Array.from(calcApt.options).forEach((opt, i) => {
+        if (aptLabels[safeLang][i]) opt.textContent = aptLabels[safeLang][i];
+      });
+    }
+    const detailApt = document.getElementById('detail-apt');
+    if (detailApt) {
+      Array.from(detailApt.options).forEach((opt, i) => {
+        if (aptLabels[safeLang][i]) opt.textContent = aptLabels[safeLang][i];
+      });
+    }
+    const detailGuests = document.getElementById('detail-guests');
+    if (detailGuests) {
+      Array.from(detailGuests.options).forEach((opt, i) => {
+        if (guestLabels[safeLang][i]) opt.textContent = guestLabels[safeLang][i];
+      });
+    }
+  }
+
+  function initLegacyDatePickers() {
+    if (typeof flatpickr === 'undefined') return;
+    const today = new Date().toISOString().split('T')[0];
+    const calcIn = document.getElementById('calc-in');
+    const calcOut = document.getElementById('calc-out');
+    const detailIn = document.getElementById('detail-checkin');
+    const detailOut = document.getElementById('detail-checkout');
+
+    if (calcIn && !calcIn._flatpickr) {
+      flatpickr(calcIn, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: () => {
+          updateCalcOutMin();
+          calcPrice();
+        }
+      });
+    }
+    if (calcOut && !calcOut._flatpickr) {
+      flatpickr(calcOut, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: () => calcPrice()
+      });
+    }
+    if (detailIn && !detailIn._flatpickr) {
+      flatpickr(detailIn, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: (_, dateStr) => {
+          if (detailOut && detailOut._flatpickr) {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + 1);
+            detailOut._flatpickr.set('minDate', d.toISOString().split('T')[0]);
+            if (detailOut.value && detailOut.value <= dateStr) detailOut._flatpickr.clear();
+          }
+        }
+      });
+    }
+    if (detailOut && !detailOut._flatpickr) {
+      flatpickr(detailOut, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default'
+      });
+    }
+  }
+
+  const originalUpdateCalcOutMin = window.updateCalcOutMin;
+  window.updateCalcOutMin = function() {
+    if (typeof originalUpdateCalcOutMin === 'function') originalUpdateCalcOutMin();
+    const inEl = document.getElementById('calc-in');
+    const outEl = document.getElementById('calc-out');
+    if (!inEl || !outEl || !inEl.value) return;
+    const d = new Date(inEl.value);
+    d.setDate(d.getDate() + 1);
+    const minDate = d.toISOString().split('T')[0];
+    if (outEl._flatpickr) outEl._flatpickr.set('minDate', minDate);
+    if (outEl.value && outEl.value <= inEl.value) {
+      if (outEl._flatpickr) outEl._flatpickr.clear();
+      else outEl.value = '';
+    }
+  };
+
+  const originalSetLang = window.setLang;
+  window.setLang = function(lang) {
+    if (typeof originalSetLang === 'function') originalSetLang(lang);
+    ensureLegacyDetailFormIds();
+    applyLanguageToLegacyForms(lang);
+  };
+
+  function initLegacyFormFixes() {
+    ensureLegacyDetailFormIds();
+    initLegacyDatePickers();
+    applyLanguageToLegacyForms(localStorage.getItem('balent_lang') || 'hr');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLegacyFormFixes, { once: true });
+  } else {
+    initLegacyFormFixes();
+  }
 })();
 </script>
 </body>
