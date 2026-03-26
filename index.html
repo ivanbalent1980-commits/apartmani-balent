@@ -2336,6 +2336,7 @@ const SUPA_IMGS4 = supabasePublicUrls('apartman 4', [
   'Apartmani Balent - 4-36.jpg','Apartmani Balent - 4-37.jpg','Apartmani Balent - 4-38.jpg','Apartmani Balent - 4-39.jpg','Apartmani Balent - 4-40.jpg'
 ]);
 const SUPA_IMGS1 = supabasePublicUrls('apartman 1', [
+  'b3e5f9ec-80da-4496-92ff-b919a268f3c9.avif',
   '0c77ceba-99f8-48de-bc43-07732a4cb166.avif',
   '0d5e2267-e7c1-4c3f-9b6c-403086bbddcf.jpg',
   '107848c1-78a8-4508-ac4b-c28160ec7ddd.avif',
@@ -2349,13 +2350,13 @@ const SUPA_IMGS1 = supabasePublicUrls('apartman 1', [
   'a06f3b17-561c-41b6-be69-c00d7b6017b0.avif',
   'a758b774-52e3-4d02-aba5-ebc1f8dce195.avif',
   'ac4fabd8-e0b1-4752-811e-87a15ec17f0a.avif',
-  'b3e5f9ec-80da-4496-92ff-b919a268f3c9.avif',
+  'f2ae4fe5-4022-403b-9696-4353b2359a1f.avif',
   'c180e18b-69dc-44f3-ace1-083a9e83b3f0.avif',
   'f2421b70-f43b-4de5-bbf9-fd86ea5747ee.avif',
-  'f2ae4fe5-4022-403b-9696-4353b2359a1f.avif',
   'fa4d1278-18a1-45bb-ad54-90273916e3aa.avif'
 ]);
 const SUPA_IMGS2 = supabasePublicUrls('apartman 2', [
+  'b45474b3-62bf-4ae2-aad9-7bb102da1fd6.avif',
   '03e533b1-ece1-4007-9315-dc3489fbe24b.avif',
   '16584564-bb61-427b-9684-99bd2a17f01d.avif',
   '18e5fe60-b498-4ed1-8db9-b5d2120f6cb4.avif',
@@ -2370,9 +2371,7 @@ const SUPA_IMGS2 = supabasePublicUrls('apartman 2', [
   'a8195c3f-3a65-434b-99e5-415dae603b14.avif',
   'a8cb1383-86d5-45bb-8614-472cc6e79489.avif',
   'b220c840-0bb7-4ab0-bf3d-f6bbbe2199fd.avif',
-  'b45474b3-62bf-4ae2-aad9-7bb102da1fd6.avif',
   'c9b188b6-25d2-466a-b58f-152ccd1d4283.avif',
-  'cfb4180a-1adf-424f-8e2b-e2d8baf1f04e.avif',
   'd40c6f30-9923-48ca-81d8-3e6930d50e42.avif',
   'd90ccc91-0d53-4e34-8f6a-8227ee5481f0.avif',
   'e1831f77-6265-4fdd-87bb-dd04e360f7e5.avif'
@@ -2432,7 +2431,6 @@ buildGrid('galGrid1', SUPA_IMGS1);
 // Temporary image mapping while bucket curation is in progress
 const siteImgPool = [
   SUPA_IMGS3[0],
-  SUPA_IMGS4[32],
   SUPA_IMGS3[12],
   SUPA_IMGS3[18],
   SUPA_IMGS3[24],
@@ -2446,8 +2444,8 @@ if (heroBg && siteImgPool[0]) {
 }
 
 const aboutImg = document.querySelector('.about-img');
-if (aboutImg && siteImgPool[1]) {
-  aboutImg.src = siteImgPool[1];
+if (aboutImg && SUPA_IMGS4[32]) {
+  aboutImg.src = SUPA_IMGS4[32];
   aboutImg.loading = 'lazy';
   aboutImg.decoding = 'async';
 }
@@ -4538,7 +4536,7 @@ ${line}`;
       hostCard.className = 'host-card';
       hostCard.id = 'hostCard';
       hostCard.innerHTML =
-        '<img src="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/ostalo/gaga%20portret.png" alt="Domaćica apartmana">' +
+        '<img src="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/ostalo/mica_Image%202026-03-26%20at%2013.25.25.jpeg" alt="Domaćica apartmana">' +
         '<div>' +
           '<h4><span data-lang="hr" class="lang-active">Vaša domaćica</span><span data-lang="en">Your host</span><span data-lang="de">Ihre Gastgeberin</span><span data-lang="it">La vostra host</span><span data-lang="ru">Ваша хозяйка</span></h4>' +
           '<p><span data-lang="hr" class="lang-active">Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica.</span><span data-lang="en">Your host is available for all questions, information and reservations.</span><span data-lang="de">Ihre Gastgeberin steht Ihnen für alle Fragen, Informationen und Reservierungen zur Verfügung.</span><span data-lang="it">La vostra host è a disposizione per domande, informazioni e prenotazioni.</span><span data-lang="ru">Ваша хозяйка всегда на связи по всем вопросам, информации и бронированиям.</span></p>' +
@@ -4564,7 +4562,7 @@ ${line}`;
       const titleHr = hostCard.querySelector('h4 [data-lang="hr"]');
       const textHr = hostCard.querySelector('p [data-lang="hr"]');
       if (titleHr) titleHr.textContent = 'Vaša domaćica';
-      if (textHr) textHr.textContent = 'Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica Ivana.';
+      if (textHr) textHr.textContent = 'Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica Mica.';
     }
 
     const contactEmailRow = document.querySelector('#lokacija .contact-items .ci:nth-child(2)');
@@ -4598,6 +4596,188 @@ ${line}`;
     document.addEventListener('DOMContentLoaded', applyHostAndEmailFixes, { once: true });
   } else {
     applyHostAndEmailFixes();
+  }
+})();
+</script>
+<script>
+(() => {
+  function movePricingBelowGallery() {
+    const gallery = document.getElementById('galerija');
+    const kalkulator = document.getElementById('kalkulator');
+    const cjenik = document.getElementById('cjenik');
+    if (!gallery || !kalkulator || !cjenik) return;
+    gallery.insertAdjacentElement('afterend', cjenik);
+    gallery.insertAdjacentElement('afterend', kalkulator);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', movePricingBelowGallery, { once: true });
+  } else {
+    movePricingBelowGallery();
+  }
+})();
+</script>
+<script>
+(() => {
+  const datePlaceholders = {
+    hr: 'Odaberite datum',
+    en: 'Select date',
+    de: 'Datum wählen',
+    it: 'Seleziona data',
+    ru: 'Выберите дату'
+  };
+  const aptLabels = {
+    hr: ['Odaberi apartman','Apartman 1 – Prizemlje','Apartman 2 – Prizemlje','Apartman 3 – 1. kat','Apartman 4 – 1. kat'],
+    en: ['Select apartment','Apartment 1 – Ground floor','Apartment 2 – Ground floor','Apartment 3 – 1st floor','Apartment 4 – 1st floor'],
+    de: ['Apartment auswählen','Apartment 1 – Erdgeschoss','Apartment 2 – Erdgeschoss','Apartment 3 – 1. OG','Apartment 4 – 1. OG'],
+    it: ['Seleziona appartamento','Appartamento 1 – Piano terra','Appartamento 2 – Piano terra','Appartamento 3 – 1° piano','Appartamento 4 – 1° piano'],
+    ru: ['Выберите апартамент','Апартамент 1 – первый этаж','Апартамент 2 – первый этаж','Апартамент 3 – 2-й этаж','Апартамент 4 – 2-й этаж']
+  };
+  const guestLabels = {
+    hr: ['1 gost','2 gosta','3 gosta','4 gosta'],
+    en: ['1 guest','2 guests','3 guests','4 guests'],
+    de: ['1 Gast','2 Gäste','3 Gäste','4 Gäste'],
+    it: ['1 ospite','2 ospiti','3 ospiti','4 ospiti'],
+    ru: ['1 гость','2 гостя','3 гостя','4 гостя']
+  };
+
+  function ensureLegacyDetailFormIds() {
+    const detailForm = document.querySelector('#lokacija .form-grid');
+    if (!detailForm) return;
+    const dateInputs = detailForm.querySelectorAll('input[type="date"], input#detail-checkin, input#detail-checkout');
+    if (dateInputs[0]) {
+      dateInputs[0].id = 'detail-checkin';
+      dateInputs[0].type = 'text';
+      dateInputs[0].readOnly = true;
+      dateInputs[0].style.cursor = 'pointer';
+      dateInputs[0].style.background = 'var(--white)';
+    }
+    if (dateInputs[1]) {
+      dateInputs[1].id = 'detail-checkout';
+      dateInputs[1].type = 'text';
+      dateInputs[1].readOnly = true;
+      dateInputs[1].style.cursor = 'pointer';
+      dateInputs[1].style.background = 'var(--white)';
+    }
+    const selects = detailForm.querySelectorAll('select');
+    if (selects[0]) selects[0].id = 'detail-apt';
+    if (selects[1]) selects[1].id = 'detail-guests';
+  }
+
+  function applyLanguageToLegacyForms(lang) {
+    const safeLang = aptLabels[lang] ? lang : 'hr';
+    const calcIn = document.getElementById('calc-in');
+    const calcOut = document.getElementById('calc-out');
+    const detailIn = document.getElementById('detail-checkin');
+    const detailOut = document.getElementById('detail-checkout');
+    [calcIn, calcOut, detailIn, detailOut].forEach(el => {
+      if (el) el.placeholder = datePlaceholders[safeLang];
+    });
+
+    const calcApt = document.getElementById('calc-apt');
+    if (calcApt) {
+      Array.from(calcApt.options).forEach((opt, i) => {
+        if (aptLabels[safeLang][i]) opt.textContent = aptLabels[safeLang][i];
+      });
+    }
+    const detailApt = document.getElementById('detail-apt');
+    if (detailApt) {
+      Array.from(detailApt.options).forEach((opt, i) => {
+        if (aptLabels[safeLang][i]) opt.textContent = aptLabels[safeLang][i];
+      });
+    }
+    const detailGuests = document.getElementById('detail-guests');
+    if (detailGuests) {
+      Array.from(detailGuests.options).forEach((opt, i) => {
+        if (guestLabels[safeLang][i]) opt.textContent = guestLabels[safeLang][i];
+      });
+    }
+  }
+
+  function initLegacyDatePickers() {
+    if (typeof flatpickr === 'undefined') return;
+    const today = new Date().toISOString().split('T')[0];
+    const calcIn = document.getElementById('calc-in');
+    const calcOut = document.getElementById('calc-out');
+    const detailIn = document.getElementById('detail-checkin');
+    const detailOut = document.getElementById('detail-checkout');
+
+    if (calcIn && !calcIn._flatpickr) {
+      flatpickr(calcIn, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: () => {
+          updateCalcOutMin();
+          calcPrice();
+        }
+      });
+    }
+    if (calcOut && !calcOut._flatpickr) {
+      flatpickr(calcOut, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: () => calcPrice()
+      });
+    }
+    if (detailIn && !detailIn._flatpickr) {
+      flatpickr(detailIn, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onChange: (_, dateStr) => {
+          if (detailOut && detailOut._flatpickr) {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + 1);
+            detailOut._flatpickr.set('minDate', d.toISOString().split('T')[0]);
+            if (detailOut.value && detailOut.value <= dateStr) detailOut._flatpickr.clear();
+          }
+        }
+      });
+    }
+    if (detailOut && !detailOut._flatpickr) {
+      flatpickr(detailOut, {
+        dateFormat: 'Y-m-d',
+        minDate: today,
+        locale: window.flatpickr?.l10ns?.hr || 'default'
+      });
+    }
+  }
+
+  const originalUpdateCalcOutMin = window.updateCalcOutMin;
+  window.updateCalcOutMin = function() {
+    if (typeof originalUpdateCalcOutMin === 'function') originalUpdateCalcOutMin();
+    const inEl = document.getElementById('calc-in');
+    const outEl = document.getElementById('calc-out');
+    if (!inEl || !outEl || !inEl.value) return;
+    const d = new Date(inEl.value);
+    d.setDate(d.getDate() + 1);
+    const minDate = d.toISOString().split('T')[0];
+    if (outEl._flatpickr) outEl._flatpickr.set('minDate', minDate);
+    if (outEl.value && outEl.value <= inEl.value) {
+      if (outEl._flatpickr) outEl._flatpickr.clear();
+      else outEl.value = '';
+    }
+  };
+
+  const originalSetLang = window.setLang;
+  window.setLang = function(lang) {
+    if (typeof originalSetLang === 'function') originalSetLang(lang);
+    ensureLegacyDetailFormIds();
+    applyLanguageToLegacyForms(lang);
+  };
+
+  function initLegacyFormFixes() {
+    ensureLegacyDetailFormIds();
+    initLegacyDatePickers();
+    applyLanguageToLegacyForms(localStorage.getItem('balent_lang') || 'hr');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLegacyFormFixes, { once: true });
+  } else {
+    initLegacyFormFixes();
   }
 })();
 </script>
