@@ -59,6 +59,9 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .topbar-right{display:flex;align-items:center;gap:1rem;font-size:.8rem;color:var(--muted)}
 .topbar-chip{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:999px;background:#eef4f8;color:#466178;border:1px solid rgba(70,97,120,.18);font-size:.74rem;font-weight:600}
 .topbar-chip.attention{background:#ffd95a;color:#5f4300;border-color:#c19100;box-shadow:0 8px 24px rgba(193,145,0,.22);font-size:.82rem;font-weight:700;padding:.55rem 1rem}
+.topbar-chip-split{display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .8rem;border-radius:3px;background:#f8f4ec;color:#5f6f7f;border:1px solid var(--sand-dark);font-size:.74rem;font-weight:600;cursor:pointer}
+.topbar-chip-count{font-weight:700;color:#5f6f7f}
+.topbar-chip-count.attention{color:#b42318}
 .content{padding:2rem;flex:1}
 
 /* ── CARDS ───────────────────────────────── */
@@ -150,16 +153,17 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .cal-cell{border-right:1px solid var(--sand-dark);min-height:38px;position:relative;cursor:pointer;transition:background .15s;z-index:1}
 .cal-cell:hover{background:rgba(181,144,90,.1)}
 .cal-header div.today{background:#2f6ea6;color:#eef6ff;font-weight:700}
-.cal-cell.confirmed{background:#dff3e4}
-.cal-cell.pending{background:#fff2b8}
-.cal-cell.blocked{background:#f9dddd}
+.cal-cell.confirmed,.cal-cell.pending,.cal-cell.blocked{background:transparent}
 .cal-cell.today{background:#2f6ea6!important;outline:none}
 .cal-cell.today:hover{background:#2f6ea6!important}
 .cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3}
-.cal-span{grid-row:1;align-self:center;height:28px;margin:0 1px;border-radius:3px;display:flex;align-items:center;padding:0 .45rem;font-size:.66rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;pointer-events:auto}
+.cal-span{grid-row:1;align-self:stretch;height:100%;margin:0;border-radius:0;display:flex;align-items:center;padding:0 .45rem;font-size:.66rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;pointer-events:auto}
 .cal-span.confirmed{background:#7bc67e;color:#103d17}
 .cal-span.pending{background:#f3d24d;color:#5f4300;border:1px solid #c19a00}
 .cal-span.blocked{background:#e26b6b;color:#fff2f2}
+.cal-span.start-cut{clip-path:polygon(12px 0,100% 0,100% 100%,0 100%)}
+.cal-span.end-cut{clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%)}
+.cal-span.start-cut.end-cut{clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%)}
 .cal-span-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .cal-nav{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
 .cal-nav-btns{display:flex;gap:.4rem}
@@ -304,6 +308,13 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 #replyModal #replyTranslatedPreview{min-height:220px;font-size:.92rem;line-height:1.7;background:#f5efe4}
 .pending-actions{display:flex;justify-content:flex-end}
 .pending-empty{background:#f7f9fb;border:1px solid var(--sand-dark);border-radius:3px;padding:1rem 1.1rem;font-size:.8rem;color:#5f6f7f}
+.pending-overlap{margin-top:.45rem;display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:600;color:#8a6400;background:#fff4cf;border:1px solid #e5c15b;border-radius:3px;padding:.18rem .5rem;cursor:pointer}
+.pending-overlap-list{margin-top:.65rem;padding-top:.65rem;border-top:1px dashed #e6d7b0;display:grid;gap:.45rem}
+.pending-overlap-item{display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-size:.74rem;color:var(--muted)}
+.pending-overlap-item strong{color:var(--navy);font-size:.76rem}
+.rez-overlap-box{margin-top:1rem;padding:.8rem .95rem;background:#fff8e3;border:1px solid #e7c568;border-left:4px solid #c19100;border-radius:3px;display:none}
+.rez-overlap-box h4{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#6d4f00;margin-bottom:.45rem}
+.rez-overlap-box .pending-overlap-list{margin-top:0;padding-top:0;border-top:none}
 .stat-card .pending-list{margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--sand-dark);margin-bottom:0}
 .stat-card .pending-card{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) auto;padding:.75rem .85rem;gap:.75rem}
 .stat-card .pending-main strong{font-size:.84rem}
@@ -372,6 +383,8 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
     </div>
     <div class="topbar-right">
       <div class="topbar-chip" id="topbarUpitChip" style="display:none">🔔 <span id="topbarUpitText">Novi upiti: 0</span></div>
+      <div class="topbar-chip-split" id="topbarUpitiChip" onclick="showPage('kalendar')">Upiti: <span class="topbar-chip-count" id="topbarUpitiCount">0</span></div>
+      <div class="topbar-chip-split" id="topbarPorukeChip" onclick="openPorukeMessages()">Poruke: <span class="topbar-chip-count" id="topbarPorukeCount">0</span></div>
       <span id="todayDate"></span>
     </div>
   </div>
@@ -957,6 +970,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
       </div>
       <div id="rezZaradaInfo" style="margin-top:.8rem;padding:.6rem .9rem;background:var(--sand);border-radius:2px;font-size:.78rem;color:var(--muted);display:none"></div>
+      <div id="rezOverlapBox" class="rez-overlap-box"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('rezModal')">Odustani</button>
@@ -1179,6 +1193,12 @@ function loadPage(name) {
   else if (name === 'postavke') loadPravila();
 }
 
+function openPorukeMessages() {
+  showPage('poruke');
+  const porukeBtn = document.querySelector('#porukeTabs .tab:nth-child(2)');
+  if (porukeBtn) setPorukeTab('obicne', porukeBtn);
+}
+
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
@@ -1186,6 +1206,57 @@ function fmtDate(d) {
   if (!d) return '–';
   const [y,m,day] = d.split('-');
   return `${day}.${m}.${y}.`;
+}
+
+function fmtDateTime(value) {
+  if (!value) return '–';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return '–';
+  return dt.toLocaleString('hr-HR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function formatUpitCountLabel(count) {
+  const n = Number(count) || 0;
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (n === 1) return `${n} upit`;
+  if (mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14)) return `${n} upita`;
+  return `${n} upita`;
+}
+
+function rangesOverlap(aStart, aEnd, bStart, bEnd) {
+  if (!aStart || !aEnd || !bStart || !bEnd) return false;
+  return aStart < bEnd && aEnd > bStart;
+}
+
+function getOverlappingUpiti(target, records = allRezervacije) {
+  if (!target) return [];
+  return (records || [])
+    .filter(r =>
+      String(r.id) !== String(target.id) &&
+      normalizeRezStatus(r.status) === 'upit' &&
+      String(r.apartman) === String(target.apartman) &&
+      rangesOverlap(target.datum_dolaska, target.datum_odlaska, r.datum_dolaska, r.datum_odlaska)
+    )
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+}
+
+function renderOverlapItems(items) {
+  return items.map(r => `
+    <div class="pending-overlap-item">
+      <div>
+        <strong>${escapeHtml(r.ime || 'Gost')}</strong><br>
+        <span>${fmtDate(r.datum_dolaska)} - ${fmtDate(r.datum_odlaska)}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick='openRezById("${escapeHtml(r.id)}")'>Otvori</button>
+    </div>
+  `).join('');
 }
 function fmtEur(n) { return (parseFloat(n)||0).toFixed(2).replace('.',',') + ' €'; }
 function aptLabel(n) { return ['','Apt 1','Apt 2','Apt 3','Apt 4'][n] || 'Apt '+n; }
@@ -1272,7 +1343,7 @@ function renderPendingList(pending) {
   if (!wrap) return;
   const items = (pending || [])
     .slice()
-    .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
   if (!items.length) {
     wrap.innerHTML = '<div class="pending-empty">Trenutno nema nepotvrđenih rezervacija.</div>';
@@ -1313,6 +1384,7 @@ async function refreshAfterRezervacijeChange() {
   } else if (currentPageName === 'financije') {
     await loadFinancije();
   }
+  if (currentGuestsCard) currentGuestsCard.style.display = 'none';
 }
 
 function setupRezervacijeSubscription() {
@@ -1499,8 +1571,10 @@ function renderKalendar() {
         const spanDays = endDay - startDay + 1;
         const status = normalizeRezStatus(rez.status);
         const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+        const startCut = rez.datum_dolaska >= monthStart && rez.datum_dolaska < monthEndExclusive ? ' start-cut' : '';
+        const endCut = rez.datum_odlaska > monthStart && rez.datum_odlaska <= monthEndExclusive ? ' end-cut' : '';
         const label = spanDays > 1 ? escapeHtml(rez.ime || '') : '';
-        html += `<div class="cal-span ${spanCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
+        html += `<div class="cal-span ${spanCls}${startCut}${endCut}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
       });
     html += `</div>`;
     html += '</div>';
@@ -1604,10 +1678,27 @@ function openRezModal(rez=null) {
   const zarada = rez ? (rez.zarada_je_rucna ? rez.zarada_rucna : rez.zarada_auto) : '';
   document.getElementById('rZarada').value = zarada || '';
   document.getElementById('rezZaradaInfo').style.display = 'none';
+  const overlapBox = document.getElementById('rezOverlapBox');
+  if (overlapBox) {
+    const overlaps = rez && normalizeRezStatus(rez.status) === 'upit' ? getOverlappingUpiti(rez) : [];
+    if (overlaps.length) {
+      overlapBox.style.display = 'block';
+      overlapBox.innerHTML = `<h4>Preklapajući upiti</h4><div class="pending-overlap-list">${renderOverlapItems(overlaps)}</div>`;
+    } else {
+      overlapBox.style.display = 'none';
+      overlapBox.innerHTML = '';
+    }
+  }
   openModal('rezModal');
 }
 
 function editRezervacija(rez) { openRezModal(rez); }
+
+function togglePendingOverlap(btn) {
+  const list = btn?.nextElementSibling;
+  if (!list) return;
+  list.style.display = list.style.display === 'none' || !list.style.display ? 'grid' : 'none';
+}
 
 function calcRezZarada(force=false) {
   const d1 = document.getElementById('rDolazak').value;
@@ -2371,6 +2462,9 @@ function syncArrivalAndPendingCards() {
   const cards = statsGrid.querySelectorAll('.stat-card');
   const arrivalsCard = cards[0];
   const pendingCard = cards[1];
+  const currentGuestsCard = cards[2];
+  const occupancyCard = cards[3];
+  statsGrid.style.gridTemplateColumns = '1fr 1.35fr';
 
   if (arrivalsCard) {
     const label = arrivalsCard.querySelector('.label');
@@ -2397,11 +2491,14 @@ function syncArrivalAndPendingCards() {
     const sub = pendingCard.querySelector('.sub');
     if (label) label.textContent = 'Upiti';
     if (value) value.remove();
+    pendingCard.style.gridColumn = 'auto';
     if (sub) sub.textContent = 'nepotvrđene rezervacije';
     if (!document.getElementById('pendingList')) {
       pendingCard.insertAdjacentHTML('beforeend', '<div class="pending-list" id="pendingList"><div class="loading">Učitavanje...</div></div>');
     }
   }
+  if (currentGuestsCard) currentGuestsCard.style.display = 'none';
+  if (occupancyCard) occupancyCard.style.display = 'none';
 }
 
 renderPendingList = function(pending) {
@@ -2411,7 +2508,7 @@ renderPendingList = function(pending) {
 
   const items = (pending || [])
     .slice()
-    .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
   if (!items.length) {
     wrap.innerHTML = '<div class="pending-empty">Trenutno nema nepotvrđenih upita.</div>';
@@ -2422,10 +2519,14 @@ renderPendingList = function(pending) {
     const adults = parseInt(r.broj_osoba || 0, 10) || 0;
     const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
     const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+    const overlaps = getOverlappingUpiti(r, items);
     return `<div class="pending-card">
       <div class="pending-main">
         <strong>${escapeHtml(r.ime || 'Gost')}</strong>
         <div>${fmtDate(r.datum_dolaska)} - ${fmtDate(r.datum_odlaska)}</div>
+        <div>Upit stigao: ${escapeHtml(fmtDateTime(r.created_at))}</div>
+        ${overlaps.length ? `<button type="button" class="pending-overlap" onclick='event.stopPropagation();togglePendingOverlap(this)'>Preklapa se s ${formatUpitCountLabel(overlaps.length)}</button>
+        <div class="pending-overlap-list" style="display:none">${renderOverlapItems(overlaps)}</div>` : ''}
       </div>
       <div class="pending-meta">
         <div>${aptLabel(r.apartman)}</div>
@@ -2522,7 +2623,7 @@ loadPoruke = async function() {
   if (rezWrap) {
     const rezervacije = (allRezervacije || [])
       .filter(r => normalizeRezStatus(r.status) === 'upit')
-      .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
     rezWrap.innerHTML = rezervacije.length ? rezervacije.map(r => {
       const adults = parseInt(r.broj_osoba || 0, 10) || 0;
@@ -2533,6 +2634,7 @@ loadPoruke = async function() {
           <div class="pending-main">
             <strong>${escapeHtml(r.ime || 'Gost')}</strong>
             <div>${fmtDate(r.datum_dolaska)} - ${fmtDate(r.datum_odlaska)}</div>
+            <div>Upit stigao: ${escapeHtml(fmtDateTime(r.created_at))}</div>
             <div>${escapeHtml(r.komentar || 'Bez dodatne poruke.')}</div>
           </div>
           <div class="pending-meta">
@@ -2794,14 +2896,14 @@ updateUpitIndicators = function(records, unreadMessageCount = unreadMessagesCach
   const pending = (records || []).filter(r => normalizeRezStatus(r.status) === 'upit');
   const upitCount = pending.length;
   const porukaCount = unreadMessageCount || 0;
-  const summaryText = buildAlertSummaryText(upitCount, porukaCount);
   const navUpiti = document.getElementById('navUpitCount');
   const navPoruke = ensurePorukeNavBadgeFinal();
   const chip = document.getElementById('topbarUpitChip');
-  const chipText = document.getElementById('topbarUpitText');
+  const upitiChip = document.getElementById('topbarUpitiChip');
+  const porukeChip = document.getElementById('topbarPorukeChip');
+  const upitiCountEl = document.getElementById('topbarUpitiCount');
+  const porukeCountEl = document.getElementById('topbarPorukeCount');
   const notice = document.getElementById('upitNotice');
-  const noticeText = document.getElementById('upitNoticeText');
-  const hasAnyAlerts = upitCount > 0 || porukaCount > 0;
 
   if (navUpiti) {
     navUpiti.textContent = upitCount;
@@ -2811,17 +2913,19 @@ updateUpitIndicators = function(records, unreadMessageCount = unreadMessagesCach
     navPoruke.textContent = porukaCount;
     navPoruke.style.display = porukaCount > 0 ? 'inline-flex' : 'none';
   }
-  if (chip && chipText) {
-    chip.style.display = hasAnyAlerts ? 'inline-flex' : 'none';
-    chip.classList.toggle('attention', hasAnyAlerts);
-    chipText.textContent = summaryText;
+  if (chip) {
+    chip.style.display = 'none';
   }
-  if (notice && noticeText) {
-    notice.style.display = hasAnyAlerts ? 'flex' : 'none';
-    notice.classList.toggle('notice-warn', hasAnyAlerts);
-    notice.classList.toggle('notice-info', false);
-    notice.classList.toggle('attention', hasAnyAlerts);
-    noticeText.textContent = hasAnyAlerts ? `${summaryText}.` : '';
+  if (upitiChip && upitiCountEl) {
+    upitiCountEl.textContent = upitCount;
+    upitiCountEl.classList.toggle('attention', upitCount > 0);
+  }
+  if (porukeChip && porukeCountEl) {
+    porukeCountEl.textContent = porukaCount;
+    porukeCountEl.classList.toggle('attention', porukaCount > 0);
+  }
+  if (notice) {
+    notice.style.display = 'none';
   }
   if (typeof renderPendingList === 'function') renderPendingList(pending);
 };
@@ -3051,7 +3155,7 @@ loadPoruke = async function() {
   if (rezWrap) {
     const rezervacije = (allRezervacije || [])
       .filter(r => normalizeRezStatus(r.status) === 'upit')
-      .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
     const rezCards = await Promise.all(rezervacije.map(async r => {
       const meta = parseRezKomentar(r.komentar);
@@ -3062,14 +3166,18 @@ loadPoruke = async function() {
       const adults = parseInt(r.broj_osoba || 0, 10) || 0;
       const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
       const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+      const overlaps = getOverlappingUpiti(r, rezervacije);
       const replyBtn = meta.email ? `<button class="btn btn-secondary btn-sm" onclick='replyToPoruka(${JSON.stringify({ ime: r.ime || '', email: meta.email, jezik: detectedLang || 'hr', poruka: meta.original || r.komentar || '' })})'>Odgovori</button>` : '';
       return `
         <div class="pending-card">
           <div class="pending-main">
             <strong>${escapeHtml(r.ime || 'Gost')}</strong>
             <div>${fmtDate(r.datum_dolaska)} - ${fmtDate(r.datum_odlaska)}</div>
+            <div>Upit stigao: ${escapeHtml(fmtDateTime(r.created_at))}</div>
             <div>${escapeHtml(meta.original || r.komentar || 'Bez dodatne poruke.')}</div>
             ${showTranslation ? `<div style="margin-top:.35rem;color:var(--navy)"><strong style="font-size:.82rem;font-weight:600">${escapeHtml(translatedFromSourceLabel(detectedLang || 'hr'))}</strong> <span style="font-size:.94rem">${escapeHtml(translated)}</span></div>` : ''}
+            ${overlaps.length ? `<button type="button" class="pending-overlap" onclick='event.stopPropagation();togglePendingOverlap(this)'>Preklapa se s ${formatUpitCountLabel(overlaps.length)}</button>
+            <div class="pending-overlap-list" style="display:none">${renderOverlapItems(overlaps)}</div>` : ''}
           </div>
           <div class="pending-meta">
             <div>${aptLabel(r.apartman)}</div>

@@ -143,10 +143,19 @@
 .flatpickr-day:hover:not(.disabled){background:#d7f0df!important}
 .flatpickr-day.fp-departure,.flatpickr-day.fp-arrival,.flatpickr-day.fp-turnover{opacity:1!important}
 .flatpickr-months .flatpickr-month{background:var(--navy);color:#fff;border-radius:3px 3px 0 0}
-.flatpickr-current-month,.flatpickr-monthDropdown-months,.numInputWrapper span{color:#fff!important}
+.flatpickr-current-month{color:#fff!important;font-weight:600!important}
+.flatpickr-current-month .flatpickr-monthDropdown-months{background:transparent!important;color:#fff!important;font-weight:600!important;opacity:1!important}
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover{background:rgba(255,255,255,.12)!important;color:#fff!important}
+.flatpickr-current-month .numInputWrapper span{color:#fff!important;opacity:1!important}
+.flatpickr-current-month input.cur-year{color:#fff!important;font-weight:600!important}
+.flatpickr-current-month .numInputWrapper:hover{background:rgba(255,255,255,.12)!important}
+.flatpickr-monthDropdown-months option{background:#223246!important;color:#fff!important}
+.flatpickr-monthDropdown-months option:checked{background:#2f6ea6!important;color:#fff!important}
+.flatpickr-monthDropdown-months option:hover{background:#2f6ea6!important;color:#fff!important}
 .flatpickr-weekday{color:var(--accent-light)!important;font-weight:500}
 .flatpickr-day.today{border-color:var(--accent)!important}
-.flatpickr-prev-month,.flatpickr-next-month{fill:#fff!important}
+.flatpickr-prev-month,.flatpickr-next-month{fill:#fff!important;opacity:1!important}
+.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--accent-light)!important}
 </style>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -371,8 +380,8 @@ footer{background:var(--navy);color:rgba(255,255,255,.65);padding:3.5rem 3rem 2r
 }
 
 /* FLOATING CONTACT BUTTON */
-.fab{position:fixed;bottom:2rem;right:2rem;z-index:4000;background:var(--accent);color:#fff;border:none;border-radius:2px;padding:.85rem 1.5rem;font-family:var(--sans);font-size:.8rem;font-weight:500;letter-spacing:.08em;cursor:pointer;display:flex;align-items:center;gap:.6rem;box-shadow:0 4px 20px rgba(181,144,90,.45);transition:background .2s,transform .2s,box-shadow .2s}
-.fab:hover{background:#9e7940;transform:translateY(-2px);box-shadow:0 6px 28px rgba(181,144,90,.5)}
+.fab{position:fixed;bottom:2rem;right:2rem;z-index:4000;background:var(--navy);color:#fff;border:none;border-radius:2px;padding:.85rem 1.5rem;font-family:var(--sans);font-size:.8rem;font-weight:500;letter-spacing:.08em;cursor:pointer;display:flex;align-items:center;gap:.6rem;box-shadow:0 4px 20px rgba(26,38,54,.32);transition:background .2s,transform .2s,box-shadow .2s}
+.fab:hover{background:#243347;transform:translateY(-2px);box-shadow:0 6px 28px rgba(26,38,54,.38)}
 .fab-icon{font-size:1.1rem}
 @media(max-width:540px){.fab span.fab-text{display:none}.fab{padding:.9rem;border-radius:2px;width:52px;height:52px;justify-content:center}}
 
@@ -574,7 +583,60 @@ img { max-width: 100%; height: auto; }
   .nav-cta { padding:.5rem .95rem; letter-spacing:.1em; }
 }
 @media (max-width: 900px) {
-  .nav-links { display: none; }
+  nav {
+    padding: 1rem 1rem;
+  }
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    right: 0;
+    width: auto;
+    bottom: auto;
+    flex-direction: column;
+    gap: 0;
+    padding: .6rem 0;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(181,144,90,.12);
+    box-shadow: 0 14px 24px rgba(0,0,0,.10);
+    z-index: 200;
+    max-height: calc(100vh - 84px);
+    overflow-y: auto;
+  }
+  .nav-links.open {
+    display: flex !important;
+  }
+  .nav-links li { width: 100%; }
+  .nav-links.open a {
+    color: var(--navy) !important;
+  }
+  .nav-links.open .nav-cta,
+  .nav-links.open .nav-cta span,
+  .nav-links .nav-cta,
+  .nav-links .nav-cta span {
+    color: var(--white) !important;
+  }
+  .nav-links a {
+    display: block;
+    width: 100%;
+    padding: .9rem 1rem;
+    font-size: .78rem;
+    letter-spacing: .12em;
+    text-align: left;
+    border-bottom: 1px solid rgba(229,221,208,.7);
+  }
+  .nav-links li:last-child a {
+    border-bottom: none;
+  }
+  .nav-links .nav-cta {
+    margin: .65rem 1rem 0;
+    width: calc(100% - 2rem);
+    justify-content: center;
+    text-align: center;
+    padding: .85rem 1rem;
+  }
   .lang-switcher { margin-left: auto; margin-right: .8rem; border-left: none; padding-left: 0; }
 }
 
@@ -668,12 +730,23 @@ img { max-width: 100%; height: auto; }
 .container { width: 100%; max-width: 1180px; margin: 0 auto; }
 .modal-box { width: min(780px, 96vw); }
 /* Availability calendar */
+.avail-nav{background:var(--navy);padding:.8rem 1rem;display:flex;align-items:center;justify-content:center}
+.avail-nav-inner{display:grid;grid-template-columns:auto 1fr 1fr auto;align-items:center;gap:.5rem;min-width:min(420px,100%)}
+.avail-nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:2px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.avail-nav-select,.avail-nav-year{font-family:var(--serif);font-size:1.05rem;font-weight:400;background:transparent;color:#fff;border:none;outline:none}
+.avail-nav-select{appearance:auto;cursor:pointer;padding:0 .2rem}
+.avail-nav-year-select{text-align:right}
+.avail-nav-select option{color:var(--text);background:#fff}
+.avail-nav-year{min-width:60px;text-align:center}
 .avail-day{border-right:1px solid var(--sand-dark);border-bottom:1px solid var(--sand-dark);min-height:52px;padding:.3rem;position:relative;font-size:.78rem}
 .avail-day.empty{background:var(--white)}
 .avail-day.free{background:#cfeeda;cursor:pointer}
 .avail-day.free:hover{background:#b8e4c8}
 .avail-day.taken{background:#f4b6b6}
 .avail-day.arrival,.avail-day.departure,.avail-day.turnover{background:#fff}
+.avail-day.other-month{background:#f7f3ea;color:#b5ab98}
+.avail-day.other-month .avail-num{color:#b5ab98}
+.avail-day.empty,.avail-day.empty .avail-num{background:#f1ede5;color:#b5ab98}
 .avail-day.today .avail-num{background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-num{font-size:.82rem;font-weight:500;color:var(--navy);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-day.taken .avail-num,.avail-day.arrival .avail-num,.avail-day.departure .avail-num,.avail-day.turnover .avail-num{color:#7b2b2b}
@@ -2369,6 +2442,7 @@ const SUPA_IMGS4 = supabasePublicUrls('apartman 4', [
   'Apartmani Balent - 4-36.jpg','Apartmani Balent - 4-37.jpg','Apartmani Balent - 4-38.jpg','Apartmani Balent - 4-39.jpg','Apartmani Balent - 4-40.jpg'
 ]);
 const SUPA_IMGS1 = supabasePublicUrls('apartman 1', [
+  '64cfa512-cc0f-4ea5-9e4e-41b90374126b.avif',
   'b3e5f9ec-80da-4496-92ff-b919a268f3c9.avif',
   '0c77ceba-99f8-48de-bc43-07732a4cb166.avif',
   '0d5e2267-e7c1-4c3f-9b6c-403086bbddcf.jpg',
@@ -2376,7 +2450,6 @@ const SUPA_IMGS1 = supabasePublicUrls('apartman 1', [
   '12c84094-ff58-4115-87f8-844a1b5fa780.avif',
   '5e8f1069-e269-408a-bf08-b614fe397063.avif',
   '642922bc-6213-49ca-885e-d7a9080a99d5.avif',
-  '64cfa512-cc0f-4ea5-9e4e-41b90374126b.avif',
   '6ad1c430-f5d1-47f1-bc8a-8351588b608a.avif',
   '8b35cbef-c480-448c-a540-fa03030d41f9.avif',
   '9290a7a3-fcff-41a1-92fe-1aa25d2182a1.avif',
@@ -2490,7 +2563,7 @@ if (card2Img && SUPA_IMGS2[0]) { card2Img.src = SUPA_IMGS2[0]; card2Img.loading 
 const card3Img = document.getElementById('card3-img');
 if (card3Img && SUPA_IMGS3[0]) { card3Img.src = SUPA_IMGS3[0]; card3Img.loading = 'lazy'; card3Img.decoding = 'async'; }
 const card4Img = document.getElementById('card4-img');
-if (card4Img && SUPA_IMGS4[4]) { card4Img.src = SUPA_IMGS4[4]; card4Img.loading = 'lazy'; card4Img.decoding = 'async'; }
+if (card4Img && SUPA_IMGS4[12]) { card4Img.src = SUPA_IMGS4[12]; card4Img.loading = 'lazy'; card4Img.decoding = 'async'; }
 const card1Counter = document.getElementById('card1-counter');
 if (card1Counter) card1Counter.textContent = `1 / ${SUPA_IMGS1.length}`;
 const card2Counter = document.getElementById('card2-counter');
@@ -2595,8 +2668,8 @@ function sendMsg() {
               <option value="4">Apartman 4 – 1. kat</option>
             </select>
           </div>
-          <div class="modal-fg"><label><span data-lang="hr" class="lang-active">Datum dolaska</span><span data-lang="en">Check-in date</span><span data-lang="de">Anreisedatum</span><span data-lang="it">Data di arrivo</span><span data-lang="ru">Дата заезда</span></label><input type="text" id="m-checkin" placeholder="Odaberite datum" readonly style="cursor:pointer;background:var(--white)"></div>
-          <div class="modal-fg"><label><span data-lang="hr" class="lang-active">Datum odlaska</span><span data-lang="en">Check-out date</span><span data-lang="de">Abreisedatum</span><span data-lang="it">Data di partenza</span><span data-lang="ru">Дата выезда</span></label><input type="text" id="m-checkout" placeholder="Odaberite datum" readonly style="cursor:pointer;background:var(--white)"></div>
+          <div class="modal-fg"><label><span data-lang="hr" class="lang-active">Datum dolaska</span><span data-lang="en">Check-in date</span><span data-lang="de">Anreisedatum</span><span data-lang="it">Data di arrivo</span><span data-lang="ru">Дата заезда</span></label><input type="text" id="m-checkin" placeholder="Odaberite datum" readonly style="cursor:pointer"></div>
+          <div class="modal-fg"><label><span data-lang="hr" class="lang-active">Datum odlaska</span><span data-lang="en">Check-out date</span><span data-lang="de">Abreisedatum</span><span data-lang="it">Data di partenza</span><span data-lang="ru">Дата выезда</span></label><input type="text" id="m-checkout" placeholder="Odaberite datum" readonly style="cursor:pointer"></div>
         
           <div class="modal-fg full" style="grid-column:1/-1;margin-top:.2rem">
             <div style="background:var(--sand);border-radius:2px;padding:.65rem 1rem;font-size:.78rem;color:var(--navy);display:flex;align-items:center;gap:.5rem">
@@ -2688,8 +2761,12 @@ function submitModal() {
   const apt = document.getElementById('m-apt').value;
   const checkinEl = document.getElementById('m-checkin');
   const checkoutEl = document.getElementById('m-checkout');
-  const checkin = checkinEl._fpVal || (checkinPicker && checkinPicker.selectedDates[0] ? checkinPicker.selectedDates[0].toISOString().split('T')[0] : checkinEl.value);
-  const checkout = checkoutEl._fpVal || (checkoutPicker && checkoutPicker.selectedDates[0] ? checkoutPicker.selectedDates[0].toISOString().split('T')[0] : checkoutEl.value);
+  const checkin = (checkinPicker && checkinPicker.selectedDates[0]
+    ? toIsoDateLocal(checkinPicker.selectedDates[0])
+    : (checkinEl._fpVal || checkinEl.value));
+  const checkout = (checkoutPicker && checkoutPicker.selectedDates[0]
+    ? toIsoDateLocal(checkoutPicker.selectedDates[0])
+    : (checkoutEl._fpVal || checkoutEl.value));
   const msg = document.getElementById('m-msg').value;
   const lang = localStorage.getItem('balent_lang') || 'hr';
   
@@ -2939,7 +3016,7 @@ async function calcPrice() {
   const d1 = new Date(inDate), d2 = new Date(outDate);
   if (d2 <= d1) return;
   const occupancy = await loadOccupancyData(parseInt(apt, 10));
-  if (rangeOverlapsDisabled(inDate, outDate, occupancy.takenSet)) {
+  if (rangeOverlapsDisabled(inDate, outDate, occupancy)) {
     document.getElementById('calcResult').classList.remove('show');
     return;
   }
@@ -3180,7 +3257,7 @@ function updateCalcOutMin() {
     // Set min to day after checkin
     const d = new Date(inVal);
     d.setDate(d.getDate() + 1);
-    outEl.min = d.toISOString().split('T')[0];
+    outEl.min = toIsoDateLocal(d);
     // If current checkout is before new min, reset it
     if (outEl.value && outEl.value <= inVal) {
       outEl.value = '';
@@ -3194,7 +3271,7 @@ function updateModalOutMin() {
   if (inVal) {
     const d = new Date(inVal);
     d.setDate(d.getDate() + 1);
-    outEl.min = d.toISOString().split('T')[0];
+    outEl.min = toIsoDateLocal(d);
     if (outEl.value && outEl.value <= inVal) {
       outEl.value = '';
       const hint = document.getElementById('modalPriceHint');
@@ -3204,7 +3281,7 @@ function updateModalOutMin() {
 }
 // Set today as min for checkin fields
 document.addEventListener('DOMContentLoaded', function() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = toIsoDateLocal(new Date());
   const calcIn = document.getElementById('calc-in');
   const mCheckin = document.getElementById('m-checkin');
   if (calcIn) calcIn.min = today;
@@ -3276,7 +3353,7 @@ async function loadOccupancyData(apartman) {
     let cur = new Date(r.datum_dolaska);
     const end = new Date(r.datum_odlaska);
     while (cur < end) {
-      const iso = cur.toISOString().split('T')[0];
+      const iso = toIsoDateLocal(cur);
       disabled.push(iso);
       takenSet.add(iso);
       cur.setDate(cur.getDate() + 1);
@@ -3306,15 +3383,33 @@ function toIsoDateLocal(date) {
   return year + '-' + month + '-' + day;
 }
 
-function rangeOverlapsDisabled(checkinIso, checkoutIso, disabledSet) {
-  if (!checkinIso || !checkoutIso || !disabledSet || !disabledSet.size) return false;
+function normalizeDateInputToIso(value) {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const match = String(value).trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/);
+  if (!match) return value;
+  const [, d, m, y] = match;
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+function rangeOverlapsDisabled(checkinIso, checkoutIso, occupancyOrSet) {
+  if (!checkinIso || !checkoutIso || !occupancyOrSet) return false;
+
+  if (Array.isArray(occupancyOrSet.records)) {
+    return occupancyOrSet.records.some(r => {
+      if (!r?.datum_dolaska || !r?.datum_odlaska) return false;
+      return checkinIso < r.datum_odlaska && checkoutIso > r.datum_dolaska;
+    });
+  }
+
+  if (!occupancyOrSet.size) return false;
   const cursor = new Date(checkinIso);
   const end = new Date(checkoutIso);
   cursor.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
 
   while (cursor < end) {
-    if (disabledSet.has(toIsoDateLocal(cursor))) return true;
+    if (occupancyOrSet.has(toIsoDateLocal(cursor))) return true;
     cursor.setDate(cursor.getDate() + 1);
   }
   return false;
@@ -3330,7 +3425,7 @@ function getWebCalendarColors() {
 }
 
 function buildDiagonalFill(leftColor, rightColor) {
-  return `linear-gradient(135deg, ${leftColor} 0 48%, ${rightColor} 52% 100%)`;
+  return `linear-gradient(135deg, ${leftColor} 0 50%, ${rightColor} 50% 100%)`;
 }
 
 function styleFlatpickrOccupancyDay(dayElem, dateObj, occupancy) {
@@ -3340,6 +3435,10 @@ function styleFlatpickrOccupancyDay(dayElem, dateObj, occupancy) {
   const isDeparture = occupancy.departures && occupancy.departures.has(iso);
   const isTaken = occupancy.takenSet && occupancy.takenSet.has(iso);
   const colors = getWebCalendarColors();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayDate = new Date(dateObj);
+  dayDate.setHours(0, 0, 0, 0);
 
   dayElem.classList.remove('fp-arrival', 'fp-departure', 'fp-turnover');
   dayElem.style.removeProperty('background');
@@ -3347,6 +3446,11 @@ function styleFlatpickrOccupancyDay(dayElem, dateObj, occupancy) {
   dayElem.style.removeProperty('border-color');
 
   if (dayElem.classList.contains('selected') || dayElem.classList.contains('startRange') || dayElem.classList.contains('endRange')) return;
+  if (dayDate < today) {
+    dayElem.style.setProperty('background', '#f1ede5', 'important');
+    dayElem.style.setProperty('color', '#b5ab98', 'important');
+    return;
+  }
 
   if (isArrival && isDeparture) {
     dayElem.classList.add('fp-turnover');
@@ -3384,9 +3488,14 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
 
   loadOccupancyData(apartman).then(occupancy => {
     const disabled = occupancy.disabled || [];
-    const disabledSet = occupancy.takenSet || new Set(disabled);
+    const arrivalDates = new Set(occupancy.arrivals ? Array.from(occupancy.arrivals.keys()) : []);
+    const checkoutDisabled = disabled.filter(d => !arrivalDates.has(d));
     // Convert to date objects for flatpickr
     const disabledDates = disabled.map(d => {
+      const [y,m,day] = d.split('-');
+      return new Date(parseInt(y), parseInt(m)-1, parseInt(day));
+    });
+    const checkoutDisabledDates = checkoutDisabled.map(d => {
       const [y,m,day] = d.split('-');
       return new Date(parseInt(y), parseInt(m)-1, parseInt(day));
     });
@@ -3424,6 +3533,8 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
       },
       onChange: function(selectedDates, dateStr) {
         if (!selectedDates[0]) return;
+        const inEl = document.getElementById('m-checkin');
+        if (inEl) inEl._fpVal = toIsoDateLocal(selectedDates[0]);
         syncCheckoutBounds(selectedDates[0]);
         calcModalPrice();
       }
@@ -3434,7 +3545,7 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
       dateFormat: 'd.m.Y.',
       altFormat: 'Y-m-d',
       minDate: today,
-      disable: disabledDates,
+      disable: checkoutDisabledDates,
       disableMobile: true,
       defaultDate: checkoutVal || null,
       onDayCreate: function(_, __, ___, dayElem) {
@@ -3443,10 +3554,12 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
       onChange: function(selectedDates) {
         const selectedCheckout = selectedDates[0];
         const selectedCheckin = checkinPicker && checkinPicker.selectedDates[0];
+        const outEl = document.getElementById('m-checkout');
+        if (outEl) outEl._fpVal = selectedCheckout ? toIsoDateLocal(selectedCheckout) : '';
         if (selectedCheckin && selectedCheckout) {
           const inIso = toIsoDateLocal(selectedCheckin);
           const outIso = toIsoDateLocal(selectedCheckout);
-          if (rangeOverlapsDisabled(inIso, outIso, disabledSet)) {
+          if (rangeOverlapsDisabled(inIso, outIso, occupancy)) {
             alert('Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.');
             checkoutPicker.clear();
             calcModalPrice();
@@ -3470,11 +3583,11 @@ function getModalDates() {
   const outEl = document.getElementById('m-checkout');
   // Try flatpickr first, fall back to value
   const inVal = checkinPicker && checkinPicker.selectedDates[0]
-    ? checkinPicker.selectedDates[0].toISOString().split('T')[0]
-    : (inEl._flatpickr ? null : inEl.value);
+    ? toIsoDateLocal(checkinPicker.selectedDates[0])
+    : normalizeDateInputToIso(inEl._flatpickr ? null : inEl.value);
   const outVal = checkoutPicker && checkoutPicker.selectedDates[0]
-    ? checkoutPicker.selectedDates[0].toISOString().split('T')[0]
-    : (outEl._flatpickr ? null : outEl.value);
+    ? toIsoDateLocal(checkoutPicker.selectedDates[0])
+    : normalizeDateInputToIso(outEl._flatpickr ? null : outEl.value);
   return { inVal, outVal };
 }
 
@@ -3498,8 +3611,8 @@ openModal = function(aptName) {
 const origAptChange = document.getElementById('m-apt')?.getAttribute('onchange') || '';
 document.getElementById('m-apt')?.addEventListener('change', function() {
     const aptNum = parseInt(this.value || '1', 10);
-  const inVal = checkinPicker?.selectedDates[0]?.toISOString().split('T')[0] || null;
-  const outVal = checkoutPicker?.selectedDates[0]?.toISOString().split('T')[0] || null;
+  const inVal = checkinPicker?.selectedDates[0] ? toIsoDateLocal(checkinPicker.selectedDates[0]) : null;
+  const outVal = checkoutPicker?.selectedDates[0] ? toIsoDateLocal(checkoutPicker.selectedDates[0]) : null;
   zauzetiDatumi = {}; // clear cache for new apartment
   initFlatpickr(aptNum, inVal, outVal);
 });
@@ -3574,7 +3687,7 @@ submitModal = async function() {
   const { inVal, outVal } = getModalDates();
   const aptValue = document.getElementById('m-apt')?.value || '';
   const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+  const blockedDates = await loadOccupancyData(aptNum);
   const lang = localStorage.getItem('balent_lang') || 'hr';
 
   if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
@@ -3693,7 +3806,7 @@ submitModal = async function() {
   const { inVal, outVal } = getModalDates();
   const aptValue = document.getElementById('m-apt')?.value || '';
   const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+  const blockedDates = await loadOccupancyData(aptNum);
   const lang = localStorage.getItem('balent_lang') || 'hr';
 
   if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
@@ -3824,7 +3937,7 @@ async function loadAvailData(apt) {
     let cur = new Date(r.datum_dolaska);
     const end = new Date(r.datum_odlaska);
     while (cur < end) {
-      taken.add(cur.toISOString().split('T')[0]);
+      taken.add(toIsoDateLocal(cur));
       cur.setDate(cur.getDate() + 1);
     }
   });
@@ -3836,6 +3949,21 @@ async function loadAvailData(apt) {
   };
   availCache[apt] = payload;
   return payload;
+}
+
+function ensureAvailCalendarNav() {
+  const calendar = document.getElementById('avail-calendar');
+  if (!calendar) return;
+  const nav = calendar.firstElementChild;
+  if (!nav || nav.dataset.enhancedNav === '1') return;
+  nav.className = 'avail-nav';
+  nav.dataset.enhancedNav = '1';
+  nav.innerHTML = '<div class="avail-nav-inner"><button onclick="availPrev()" class="avail-nav-btn" aria-label="Prethodni mjesec">‹</button><select id="availMonthSelect" class="avail-nav-select" onchange="availSelectMonth(this.value)"></select><span id="availYearLabel" class="avail-nav-year"></span><button onclick="availNext()" class="avail-nav-btn" aria-label="Sljedeći mjesec">›</button></div>';
+}
+
+function availSelectMonth(value) {
+  availMonth = parseInt(value, 10) || 0;
+  renderAvailCalendar();
 }
 
 async function renderAvailCalendar() {
@@ -3908,7 +4036,7 @@ submitModal = async function() {
   const { inVal, outVal } = getModalDates();
   const aptValue = document.getElementById('m-apt')?.value || '';
   const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+  const blockedDates = await loadOccupancyData(aptNum);
   const lang = localStorage.getItem('balent_lang') || 'hr';
 
   const overlapMsg = {
@@ -4105,8 +4233,9 @@ window.submitModalFinal = submitModal;
   }
 
   function addQuestionCtas() {
+    return;
     const targets = Array.from(document.querySelectorAll('button[onclick="openModal()"], a[onclick="openModal()"], .fab[onclick="openModal()"]'))
-      .filter(el => !el.closest('.apt-card') && !el.closest('#contactModal') && !el.closest('.hero-btns'));
+      .filter(el => !el.closest('.apt-card') && !el.closest('#contactModal') && !el.closest('.hero-btns') && !el.closest('nav'));
 
     targets.forEach(target => {
       if (target.dataset.questionEnhanced === '1') return;
@@ -4144,8 +4273,9 @@ window.submitModalFinal = submitModal;
 
   function enhanceBookingModalActions() {
     const submitBtn = document.querySelector('#contactModal button[onclick="submitModalFinal()"]');
-    if (!submitBtn || submitBtn.dataset.questionLink === '1') return;
-    submitBtn.dataset.questionLink = '1';
+    const existingHelper = submitBtn?.parentNode?.querySelector('.question-secondary-btn');
+    if (existingHelper) existingHelper.remove();
+    if (!submitBtn) return;
     const helperBtn = document.createElement('button');
     helperBtn.type = 'button';
     helperBtn.className = 'question-secondary-btn';
@@ -4546,7 +4676,7 @@ ${line}`;
         return;
       }
 
-      const blockedDates = new Set(await loadZauzeteDatume(aptNum));
+      const blockedDates = await loadOccupancyData(aptNum);
       if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
         alert(overlapMsg);
         return;
@@ -4838,7 +4968,7 @@ ${line}`;
 
   function initLegacyDatePickers() {
     if (typeof flatpickr === 'undefined') return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = toIsoDateLocal(new Date());
     const calcIn = document.getElementById('calc-in');
     const calcOut = document.getElementById('calc-out');
     const detailIn = document.getElementById('detail-checkin');
@@ -4874,7 +5004,7 @@ ${line}`;
           const apt = document.getElementById('calc-apt')?.value;
           if (apt && calcIn.value && calcOut.value) {
             const occupancy = await loadOccupancyData(parseInt(apt, 10));
-            if (rangeOverlapsDisabled(calcIn.value, calcOut.value, occupancy.takenSet)) {
+            if (rangeOverlapsDisabled(calcIn.value, calcOut.value, occupancy)) {
               calcOut._flatpickr.clear();
               document.getElementById('calcResult')?.classList.remove('show');
               alert('Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.');
@@ -4899,7 +5029,7 @@ ${line}`;
           if (detailOut && detailOut._flatpickr) {
             const d = new Date(dateStr);
             d.setDate(d.getDate() + 1);
-            detailOut._flatpickr.set('minDate', d.toISOString().split('T')[0]);
+            detailOut._flatpickr.set('minDate', toIsoDateLocal(d));
             if (detailOut.value && detailOut.value <= dateStr) detailOut._flatpickr.clear();
           }
         }
@@ -4919,7 +5049,7 @@ ${line}`;
           const detailApt = document.getElementById('detail-apt');
           if (detailApt && detailIn.value && detailOut.value) {
             const occupancy = await loadOccupancyData(parseInt(detailApt.value || '0', 10));
-            if (rangeOverlapsDisabled(detailIn.value, detailOut.value, occupancy.takenSet)) {
+            if (rangeOverlapsDisabled(detailIn.value, detailOut.value, occupancy)) {
               detailOut._flatpickr.clear();
               alert('Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.');
             }
@@ -4938,18 +5068,20 @@ ${line}`;
 
     const occupancy = await loadOccupancyData(parseInt(aptEl.value || '0', 10));
     const disabled = occupancy.disabled || [];
+    const arrivalDates = new Set(occupancy.arrivals ? Array.from(occupancy.arrivals.keys()) : []);
+    const checkoutDisabled = disabled.filter(d => !arrivalDates.has(d));
 
     if (inEl._flatpickr) inEl._flatpickr.set('disable', disabled);
-    if (outEl._flatpickr) outEl._flatpickr.set('disable', disabled);
+    if (outEl._flatpickr) outEl._flatpickr.set('disable', checkoutDisabled);
 
     const inVal = inEl._flatpickr?.selectedDates?.[0]
-      ? inEl._flatpickr.selectedDates[0].toISOString().split('T')[0]
+      ? toIsoDateLocal(inEl._flatpickr.selectedDates[0])
       : inEl.value;
     const outVal = outEl._flatpickr?.selectedDates?.[0]
-      ? outEl._flatpickr.selectedDates[0].toISOString().split('T')[0]
+      ? toIsoDateLocal(outEl._flatpickr.selectedDates[0])
       : outEl.value;
 
-    if (inVal && outVal && rangeOverlapsDisabled(inVal, outVal, occupancy.takenSet)) {
+    if (inVal && outVal && rangeOverlapsDisabled(inVal, outVal, occupancy)) {
       if (outEl._flatpickr) outEl._flatpickr.clear();
       else outEl.value = '';
       if (isCalc) document.getElementById('calcResult')?.classList.remove('show');
@@ -4964,7 +5096,7 @@ ${line}`;
     if (!inEl || !outEl || !inEl.value) return;
     const d = new Date(inEl.value);
     d.setDate(d.getDate() + 1);
-    const minDate = d.toISOString().split('T')[0];
+    const minDate = toIsoDateLocal(d);
     if (outEl._flatpickr) outEl._flatpickr.set('minDate', minDate);
     if (outEl.value && outEl.value <= inEl.value) {
       if (outEl._flatpickr) outEl._flatpickr.clear();
@@ -5003,6 +5135,770 @@ ${line}`;
     document.addEventListener('DOMContentLoaded', initLegacyFormFixes, { once: true });
   } else {
     initLegacyFormFixes();
+  }
+})();
+</script>
+<script>
+(() => {
+  function ensureAvailCalendarNavFinal() {
+    const calendar = document.getElementById('avail-calendar');
+    if (!calendar) return;
+    const nav = calendar.firstElementChild;
+    if (!nav) return;
+    if (nav.dataset.enhancedNav === '1' && document.getElementById('availMonthSelect')) return;
+    nav.className = 'avail-nav';
+    nav.dataset.enhancedNav = '1';
+    nav.innerHTML = `
+      <div class="avail-nav-inner">
+        <button onclick="availPrev()" class="avail-nav-btn" aria-label="Prethodni mjesec">‹</button>
+        <select id="availMonthSelect" class="avail-nav-select" onchange="availSelectMonth(this.value)"></select>
+        <select id="availYearSelect" class="avail-nav-select avail-nav-year-select" onchange="availSelectYear(this.value)"></select>
+        <button onclick="availNext()" class="avail-nav-btn" aria-label="Sljedeći mjesec">›</button>
+      </div>
+    `;
+  }
+
+  window.availSelectMonth = function(value) {
+    availMonth = parseInt(value, 10) || 0;
+    renderAvailCalendar();
+  };
+
+  window.availSelectYear = function(value) {
+    availYear = parseInt(value, 10) || availYear;
+    renderAvailCalendar();
+  };
+
+  window.renderAvailCalendar = async function() {
+    ensureAvailCalendarNavFinal();
+    const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+    const monthSelect = document.getElementById('availMonthSelect');
+    const yearSelect = document.getElementById('availYearSelect');
+    const oldMonthLabel = document.getElementById('availMonthLabel');
+    if (monthSelect) {
+      monthSelect.innerHTML = mNames.map((name, idx) => `<option value="${idx}" ${idx === availMonth ? 'selected' : ''}>${name}</option>`).join('');
+    }
+    if (yearSelect) {
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      for (let y = currentYear - 1; y <= currentYear + 3; y++) years.push(y);
+      if (!years.includes(availYear)) years.push(availYear);
+      years.sort((a, b) => a - b);
+      yearSelect.innerHTML = years.map(y => `<option value="${y}" ${y === availYear ? 'selected' : ''}>${y}</option>`).join('');
+    }
+    if (oldMonthLabel) oldMonthLabel.textContent = `${mNames[availMonth]} ${availYear}`;
+
+    const occupancy = await loadAvailData(availApt);
+    const taken = occupancy.taken || new Set();
+    const arrivals = occupancy.arrivals || new Map();
+    const departures = occupancy.departures || new Map();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const firstDay = new Date(availYear, availMonth, 1);
+    const startDow = (firstDay.getDay() + 6) % 7;
+    const totalCells = 42;
+    const colors = getWebCalendarColors();
+    let html = '';
+
+    for (let i = 0; i < totalCells; i++) {
+      const offsetDay = i - startDow + 1;
+      const cellDate = new Date(availYear, availMonth, offsetDay);
+      const d = cellDate.getDate();
+      const dateStr = toIsoDateLocal(cellDate);
+      const isOtherMonth = cellDate.getMonth() !== availMonth;
+      const isTaken = taken.has(dateStr);
+      const arrivalStatus = arrivals.get(dateStr) || '';
+      const departureStatus = departures.get(dateStr) || '';
+      const isToday = cellDate.getTime() === today.getTime();
+      const isPast = cellDate < today;
+
+      let cls = 'avail-day ';
+      if (isOtherMonth) cls += 'other-month ';
+      if (isPast) cls += 'empty';
+      else if (isTaken) cls += 'taken';
+      else cls += 'free';
+      if (arrivalStatus) cls += ' arrival';
+      if (departureStatus) cls += ' departure';
+      if (arrivalStatus && departureStatus) cls += ' turnover';
+      if (isToday) cls += ' today';
+
+      let style = '';
+      if (isPast) {
+        style = 'style="background:#f1ede5"';
+      } else if (arrivalStatus || departureStatus) {
+        if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
+        else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
+        else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
+      }
+
+      const onclick = (!isTaken && !isPast && !isOtherMonth)
+        ? `onclick="openModal();setTimeout(()=>{if(checkinPicker)checkinPicker.setDate('${dateStr}');},100)"`
+        : '';
+
+      html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
+    }
+
+    document.getElementById('availGrid').innerHTML = html;
+  };
+
+  const originalAvailPrev = window.availPrev;
+  const originalAvailNext = window.availNext;
+  window.availPrev = function() {
+    if (typeof originalAvailPrev === 'function') {
+      availMonth--;
+      if (availMonth < 0) { availMonth = 11; availYear--; }
+      renderAvailCalendar();
+    }
+  };
+  window.availNext = function() {
+    if (typeof originalAvailNext === 'function') {
+      availMonth++;
+      if (availMonth > 11) { availMonth = 0; availYear++; }
+      renderAvailCalendar();
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ensureAvailCalendarNavFinal, { once: true });
+  } else {
+    ensureAvailCalendarNavFinal();
+  }
+})();
+</script>
+<script>
+(() => {
+  const bookingHtml = '<span data-lang="hr" class="lang-active">Upit / rezervacija</span><span data-lang="en">Enquiry / booking</span><span data-lang="de">Anfrage / Buchung</span><span data-lang="it">Richiesta / prenotazione</span><span data-lang="ru">Запрос / бронирование</span>';
+
+  function applyUnifiedBookingCtas() {
+    document.querySelectorAll('[onclick="openModal()"]').forEach(el => {
+      if (el.closest('#contactModal')) return;
+      if (el.classList.contains('fab')) {
+        const fabText = el.querySelector('.fab-text');
+        if (fabText) fabText.innerHTML = bookingHtml;
+        return;
+      }
+      el.innerHTML = bookingHtml;
+    });
+    const promoBtn = document.querySelector('[onclick="openModal()"][style*="background:var(--accent"]');
+    if (promoBtn) {
+      promoBtn.innerHTML = bookingHtml;
+      promoBtn.style.background = 'var(--navy)';
+      promoBtn.onmouseover = function(){ this.style.background = '#243347'; };
+      promoBtn.onmouseout = function(){ this.style.background = 'var(--navy)'; };
+    }
+    const fabText = document.querySelector('.fab[onclick="openModal()"] .fab-text');
+    if (fabText) fabText.innerHTML = bookingHtml;
+  }
+
+  function removeNavQuestionCta() {
+    const navStack = document.querySelector('nav .cta-stack');
+    if (!navStack) return;
+    const secondary = navStack.querySelector('.question-secondary-btn');
+    if (secondary) secondary.remove();
+  }
+
+  function cleanupPromoCtas() {
+    const promoSection = Array.from(document.querySelectorAll('div'))
+      .find(el => (el.textContent || '').includes('najbolje cijene'));
+    if (!promoSection) return;
+    promoSection.querySelectorAll('.question-secondary-btn').forEach(btn => btn.remove());
+    promoSection.querySelectorAll('.cta-stack').forEach(stack => {
+      stack.style.display = 'inline-flex';
+      stack.style.alignItems = 'center';
+      stack.style.justifyContent = 'center';
+      stack.style.gap = '0';
+      stack.style.width = 'auto';
+      stack.style.margin = '0';
+    });
+  }
+
+  function cleanupLegacyQuestionCtas() {
+    document.querySelectorAll('.question-secondary-btn').forEach(btn => {
+      if (btn.closest('#contactModal')) return;
+      btn.remove();
+    });
+    document.querySelectorAll('.cta-stack').forEach(stack => {
+      if (stack.closest('#contactModal')) return;
+      const first = stack.querySelector('[onclick="openModal()"], [onclick="openQuestionModal()"]');
+      if (first && stack.parentNode) {
+        stack.parentNode.insertBefore(first, stack);
+        stack.remove();
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      applyUnifiedBookingCtas();
+      removeNavQuestionCta();
+      cleanupPromoCtas();
+      cleanupLegacyQuestionCtas();
+    }, { once: true });
+  } else {
+    applyUnifiedBookingCtas();
+    removeNavQuestionCta();
+    cleanupPromoCtas();
+    cleanupLegacyQuestionCtas();
+  }
+})();
+</script>
+<script>
+(() => {
+  const copy = {
+    hr: {
+      bookingTab: 'Upit / rezervacija',
+      questionTab: 'Pitanje',
+      bookingTitle: 'Pošaljite upit ili rezervaciju',
+      questionTitle: 'Pošaljite pitanje',
+      bookingNote: 'Odaberite ovu opciju ako želite poslati upit za termin ili rezervaciju.',
+      questionNote: 'Odaberite ovu opciju ako nam želite poslati samo pitanje, bez datuma i rezervacije.',
+      bookingBtn: 'Pošalji upit / rezervaciju →',
+      questionBtn: 'Pošalji pitanje →'
+    },
+    en: {
+      bookingTab: 'Enquiry / booking',
+      questionTab: 'Question',
+      bookingTitle: 'Send an enquiry or booking request',
+      questionTitle: 'Send a question',
+      bookingNote: 'Choose this option if you want to enquire about dates or send a booking request.',
+      questionNote: 'Choose this option if you only want to send a question, without dates or a booking.',
+      bookingBtn: 'Send enquiry / booking →',
+      questionBtn: 'Send question →'
+    },
+    de: {
+      bookingTab: 'Anfrage / Buchung',
+      questionTab: 'Frage',
+      bookingTitle: 'Anfrage oder Buchung senden',
+      questionTitle: 'Frage senden',
+      bookingNote: 'Wählen Sie diese Option, wenn Sie eine Terminanfrage oder Buchung senden möchten.',
+      questionNote: 'Wählen Sie diese Option, wenn Sie nur eine Frage senden möchten, ohne Daten und Buchung.',
+      bookingBtn: 'Anfrage / Buchung senden →',
+      questionBtn: 'Frage senden →'
+    },
+    it: {
+      bookingTab: 'Richiesta / prenotazione',
+      questionTab: 'Domanda',
+      bookingTitle: 'Invia richiesta o prenotazione',
+      questionTitle: 'Invia una domanda',
+      bookingNote: 'Scegli questa opzione se vuoi inviare una richiesta per il soggiorno o una prenotazione.',
+      questionNote: 'Scegli questa opzione se vuoi inviare solo una domanda, senza date e senza prenotazione.',
+      bookingBtn: 'Invia richiesta / prenotazione →',
+      questionBtn: 'Invia domanda →'
+    },
+    ru: {
+      bookingTab: 'Запрос / бронирование',
+      questionTab: 'Вопрос',
+      bookingTitle: 'Отправить запрос или бронирование',
+      questionTitle: 'Отправить вопрос',
+      bookingNote: 'Выберите этот вариант, если хотите отправить запрос на даты или бронирование.',
+      questionNote: 'Выберите этот вариант, если хотите отправить только вопрос, без дат и бронирования.',
+      bookingBtn: 'Отправить запрос / бронирование →',
+      questionBtn: 'Отправить вопрос →'
+    }
+  };
+
+  function ensureLegacyUnifiedModeUi() {
+    const form = document.querySelector('#lokacija .form-grid');
+    if (!form) return;
+
+    const heading = form.previousElementSibling && form.previousElementSibling.matches('.sec-label') ? form.previousElementSibling : null;
+    const note = form.querySelector('.fg.full[style*="border-left:2px solid"] p');
+    const submitBtn = form.querySelector('.fg.full .btn-primary[onclick="openModal()"]');
+    const textInputs = form.querySelectorAll('input[type="text"], input[type="email"]');
+    const textarea = form.querySelector('textarea');
+    const selects = form.querySelectorAll('select');
+    const dateInputs = form.querySelectorAll('#detail-checkin, #detail-checkout, input[type="date"]');
+
+    if (textInputs[0] && !textInputs[0].id) textInputs[0].id = 'detail-name';
+    if (textInputs[1] && !textInputs[1].id) textInputs[1].id = 'detail-email';
+    if (textarea && !textarea.id) textarea.id = 'detail-msg';
+    if (note && !note.id) note.id = 'detail-mode-note';
+    if (submitBtn && !submitBtn.id) submitBtn.id = 'detail-submit-btn';
+    if (heading && !heading.id) heading.id = 'detail-form-title';
+    if (selects[0] && !selects[0].id) selects[0].id = 'detail-apt';
+    if (selects[1] && !selects[1].id) selects[1].id = 'detail-guests';
+
+    if (!document.getElementById('detailModeSwitch')) {
+      form.insertAdjacentHTML('beforebegin', `
+        <div id="detailModeSwitch" style="display:flex;gap:.6rem;margin:0 0 1rem 0;flex-wrap:wrap">
+          <button type="button" id="detailModeBooking" style="padding:.72rem 1rem;border:1px solid rgba(181,144,90,.35);background:var(--accent);color:#fff;font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer">Upit / rezervacija</button>
+          <button type="button" id="detailModeQuestion" style="padding:.72rem 1rem;border:1px solid rgba(26,38,54,.16);background:#fff;color:var(--navy);font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer">Pitanje</button>
+        </div>
+      `);
+      document.getElementById('detailModeBooking')?.addEventListener('click', () => {
+        window.detailUnifiedMode = 'booking';
+        updateLegacyUnifiedModeUi();
+      });
+      document.getElementById('detailModeQuestion')?.addEventListener('click', () => {
+        window.detailUnifiedMode = 'question';
+        updateLegacyUnifiedModeUi();
+      });
+    }
+
+    if (submitBtn && submitBtn.onclick !== window.submitLegacyUnifiedForm) {
+      submitBtn.onclick = window.submitLegacyUnifiedForm;
+    }
+  }
+
+  function updateLegacyUnifiedModeUi() {
+    ensureLegacyUnifiedModeUi();
+    const mode = window.detailUnifiedMode || 'booking';
+    const lang = (window.currentLang && copy[window.currentLang]) ? window.currentLang : 'hr';
+    const cfg = copy[lang];
+
+    const heading = document.getElementById('detail-form-title');
+    const note = document.getElementById('detail-mode-note');
+    const submitBtn = document.getElementById('detail-submit-btn');
+    const bookingBtn = document.getElementById('detailModeBooking');
+    const questionBtn = document.getElementById('detailModeQuestion');
+
+    const dateInRow = document.getElementById('detail-checkin')?.closest('.fg');
+    const dateOutRow = document.getElementById('detail-checkout')?.closest('.fg');
+    const aptRow = document.getElementById('detail-apt')?.closest('.fg');
+    const guestsRow = document.getElementById('detail-guests')?.closest('.fg');
+
+    const bookingMode = mode === 'booking';
+    [dateInRow, dateOutRow, aptRow, guestsRow].forEach(row => {
+      if (row) row.style.display = bookingMode ? '' : 'none';
+    });
+
+    if (heading) heading.textContent = bookingMode ? cfg.bookingTitle : cfg.questionTitle;
+    if (note) note.textContent = bookingMode ? cfg.bookingNote : cfg.questionNote;
+    if (submitBtn) submitBtn.textContent = bookingMode ? cfg.bookingBtn : cfg.questionBtn;
+
+    if (bookingBtn) {
+      bookingBtn.textContent = cfg.bookingTab;
+      bookingBtn.style.background = bookingMode ? 'var(--accent)' : '#fff';
+      bookingBtn.style.color = bookingMode ? '#fff' : 'var(--navy)';
+      bookingBtn.style.borderColor = bookingMode ? 'var(--accent)' : 'rgba(26,38,54,.16)';
+    }
+    if (questionBtn) {
+      questionBtn.textContent = cfg.questionTab;
+      questionBtn.style.background = bookingMode ? '#fff' : 'var(--accent)';
+      questionBtn.style.color = bookingMode ? 'var(--navy)' : '#fff';
+      questionBtn.style.borderColor = bookingMode ? 'rgba(26,38,54,.16)' : 'var(--accent)';
+    }
+  }
+
+  window.submitLegacyUnifiedForm = function() {
+    const mode = window.detailUnifiedMode || 'booking';
+    const name = document.getElementById('detail-name')?.value || '';
+    const email = document.getElementById('detail-email')?.value || '';
+    const msg = document.getElementById('detail-msg')?.value || '';
+
+    if (mode === 'question') {
+      if (typeof window.openQuestionModal === 'function') window.openQuestionModal();
+      setTimeout(() => {
+        const qName = document.getElementById('q-name');
+        const qEmail = document.getElementById('q-email');
+        const qMsg = document.getElementById('q-msg');
+        if (qName && name) qName.value = name;
+        if (qEmail && email) qEmail.value = email;
+        if (qMsg && msg) qMsg.value = msg;
+      }, 140);
+      return;
+    }
+
+    if (typeof window.openModal === 'function') window.openModal();
+    setTimeout(() => {
+      const apt = document.getElementById('detail-apt');
+      const guests = document.getElementById('detail-guests');
+      const inVal = document.getElementById('detail-checkin')?.value || '';
+      const outVal = document.getElementById('detail-checkout')?.value || '';
+      const mName = document.getElementById('m-name');
+      const mEmail = document.getElementById('m-email');
+      const mMsg = document.getElementById('m-msg');
+      const mApt = document.getElementById('m-apt');
+      const mGuests = document.getElementById('m-guests');
+      const mCheckin = document.getElementById('m-checkin');
+      const mCheckout = document.getElementById('m-checkout');
+
+      if (mName && name) mName.value = name;
+      if (mEmail && email) mEmail.value = email;
+      if (mMsg && msg) mMsg.value = msg;
+      if (mApt && apt) {
+        const aptMap = { 1: '1', 2: '2', 3: '3', 4: '4' };
+        const idx = apt.selectedIndex;
+        mApt.value = aptMap[idx] || '';
+        mApt.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (mGuests && guests) {
+        mGuests.selectedIndex = guests.selectedIndex;
+      }
+      if (mCheckin && inVal) {
+        mCheckin.value = inVal;
+        mCheckin._fpVal = inVal;
+        if (window.checkinPicker) window.checkinPicker.setDate(inVal, true);
+      }
+      if (mCheckout && outVal) {
+        mCheckout.value = outVal;
+        mCheckout._fpVal = outVal;
+        if (window.checkoutPicker) window.checkoutPicker.setDate(outVal, true);
+      }
+    }, 160);
+  };
+
+  const originalSetLangForUnifiedForm = window.setLang;
+  if (typeof originalSetLangForUnifiedForm === 'function' && !window.__detailUnifiedLangWrapped) {
+    window.setLang = function(...args) {
+      const result = originalSetLangForUnifiedForm.apply(this, args);
+      setTimeout(updateLegacyUnifiedModeUi, 0);
+      return result;
+    };
+    window.__detailUnifiedLangWrapped = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.detailUnifiedMode = window.detailUnifiedMode || 'booking';
+      updateLegacyUnifiedModeUi();
+    }, { once: true });
+  } else {
+    window.detailUnifiedMode = window.detailUnifiedMode || 'booking';
+    updateLegacyUnifiedModeUi();
+  }
+})();
+</script>
+<script>
+(() => {
+  const modalModeCopy = {
+    hr: {
+      booking: 'Upit / rezervacija',
+      question: 'Pitanje',
+      bookingNote: 'Nakon slanja upita javit ćemo vam se u roku od 24 sata s potvrdom dostupnosti i svim detaljima rezervacije.',
+      questionNote: 'Pošaljite nam pitanje i javit ćemo vam se što prije.',
+      bookingBtn: 'Pošalji upit / rezervaciju →',
+      questionBtn: 'Pošalji pitanje →',
+      questionSuccessTitle: 'Poruka je poslana!',
+      questionSuccessText: 'Hvala vam! Odgovorit ćemo vam što je prije moguće.',
+      questionValidation: 'Molimo unesite ime, email i poruku.',
+      questionError: 'Greška pri slanju poruke. Pokušajte ponovo ili nas kontaktirajte direktno.',
+      sending: 'Slanje...'
+    },
+    en: {
+      booking: 'Enquiry / booking',
+      question: 'Question',
+      bookingNote: 'After submitting your enquiry, we will get back to you within 24 hours with availability confirmation and all booking details.',
+      questionNote: 'Send us your question and we will get back to you as soon as possible.',
+      bookingBtn: 'Send enquiry / booking →',
+      questionBtn: 'Send question →',
+      questionSuccessTitle: 'Message sent!',
+      questionSuccessText: 'Thank you! We will reply as soon as possible.',
+      questionValidation: 'Please enter your name, email and message.',
+      questionError: 'There was an error sending your message. Please try again or contact us directly.',
+      sending: 'Sending...'
+    },
+    de: {
+      booking: 'Anfrage / Buchung',
+      question: 'Frage',
+      bookingNote: 'Nach dem Absenden Ihrer Anfrage melden wir uns innerhalb von 24 Stunden mit einer Verfügbarkeitsbestätigung und allen Buchungsdetails.',
+      questionNote: 'Senden Sie uns Ihre Frage und wir melden uns schnellstmöglich bei Ihnen.',
+      bookingBtn: 'Anfrage / Buchung senden →',
+      questionBtn: 'Frage senden →',
+      questionSuccessTitle: 'Nachricht gesendet!',
+      questionSuccessText: 'Danke! Wir antworten Ihnen so schnell wie möglich.',
+      questionValidation: 'Bitte Name, E-Mail und Nachricht eingeben.',
+      questionError: 'Fehler beim Senden der Nachricht. Bitte erneut versuchen oder uns direkt kontaktieren.',
+      sending: 'Wird gesendet...'
+    },
+    it: {
+      booking: 'Richiesta / prenotazione',
+      question: 'Domanda',
+      bookingNote: 'Dopo aver inviato la richiesta, vi risponderemo entro 24 ore con la conferma della disponibilità e i dettagli della prenotazione.',
+      questionNote: 'Inviaci la tua domanda e ti risponderemo al più presto.',
+      bookingBtn: 'Invia richiesta / prenotazione →',
+      questionBtn: 'Invia domanda →',
+      questionSuccessTitle: 'Messaggio inviato!',
+      questionSuccessText: 'Grazie! Ti risponderemo al più presto.',
+      questionValidation: 'Inserisci nome, email e messaggio.',
+      questionError: 'Errore durante l\'invio del messaggio. Riprova o contattaci direttamente.',
+      sending: 'Invio...'
+    },
+    ru: {
+      booking: 'Запрос / бронирование',
+      question: 'Вопрос',
+      bookingNote: 'После отправки запроса мы свяжемся с вами в течение 24 часов с подтверждением наличия мест и деталями бронирования.',
+      questionNote: 'Отправьте нам вопрос, и мы ответим вам как можно скорее.',
+      bookingBtn: 'Отправить запрос / бронирование →',
+      questionBtn: 'Отправить вопрос →',
+      questionSuccessTitle: 'Сообщение отправлено!',
+      questionSuccessText: 'Спасибо! Мы ответим вам как можно скорее.',
+      questionValidation: 'Пожалуйста, введите имя, email и сообщение.',
+      questionError: 'Ошибка при отправке сообщения. Попробуйте снова или свяжитесь с нами напрямую.',
+      sending: 'Отправка...'
+    }
+  };
+
+  function modalLang() {
+    const lang = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+    return modalModeCopy[lang] ? lang : 'hr';
+  }
+
+  function ensureModalSwitch() {
+    const modalForm = document.getElementById('modalForm');
+    if (!modalForm || document.getElementById('modalModeSwitch')) return;
+    const note = modalForm.querySelector('.modal-note');
+    if (!note) return;
+    note.insertAdjacentHTML('beforebegin', `
+      <div id="modalModeSwitch" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button type="button" id="modalModeBooking" style="padding:.72rem 1rem;border:1px solid rgba(181,144,90,.35);background:var(--accent);color:#fff;font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer">Upit / rezervacija</button>
+        <button type="button" id="modalModeQuestion" style="padding:.72rem 1rem;border:1px solid rgba(26,38,54,.16);background:#fff;color:var(--navy);font-family:var(--sans);font-size:.78rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer">Pitanje</button>
+      </div>
+    `);
+    document.getElementById('modalModeBooking')?.addEventListener('click', () => {
+      window.contactModalMode = 'booking';
+      updateContactModalMode();
+    });
+    document.getElementById('modalModeQuestion')?.addEventListener('click', () => {
+      window.contactModalMode = 'question';
+      updateContactModalMode();
+    });
+  }
+
+  function updateContactModalMode() {
+    ensureModalSwitch();
+    const lang = modalLang();
+    const cfg = modalModeCopy[lang];
+    const mode = window.contactModalMode || 'booking';
+    const bookingMode = mode === 'booking';
+
+    const bookingBtn = document.getElementById('modalModeBooking');
+    const questionBtn = document.getElementById('modalModeQuestion');
+    const noteWrap = document.querySelector('#modalForm .modal-note');
+    const noteSpan = noteWrap ? noteWrap.querySelector('span') : null;
+    const submitBtn = document.querySelector('#modalForm .btn-primary');
+
+    const aptRow = document.getElementById('m-apt')?.closest('.modal-fg');
+    const checkinRow = document.getElementById('m-checkin')?.closest('.modal-fg');
+    const checkoutRow = document.getElementById('m-checkout')?.closest('.modal-fg');
+    const guestsRow = document.getElementById('m-guests')?.closest('.modal-fg');
+    const childrenRow = document.getElementById('m-children')?.closest('.modal-fg');
+    const availNoteRow = document.querySelector('#modalForm .modal-fg.full[style*="margin-top:.2rem"]');
+    const priceHint = document.getElementById('modalPriceHint');
+
+    if (bookingBtn) {
+      bookingBtn.textContent = cfg.booking;
+      bookingBtn.style.background = bookingMode ? 'var(--accent)' : '#fff';
+      bookingBtn.style.color = bookingMode ? '#fff' : 'var(--navy)';
+      bookingBtn.style.borderColor = bookingMode ? 'var(--accent)' : 'rgba(26,38,54,.16)';
+    }
+    if (questionBtn) {
+      questionBtn.textContent = cfg.question;
+      questionBtn.style.background = bookingMode ? '#fff' : 'var(--accent)';
+      questionBtn.style.color = bookingMode ? 'var(--navy)' : '#fff';
+      questionBtn.style.borderColor = bookingMode ? 'rgba(26,38,54,.16)' : 'var(--accent)';
+    }
+
+    [aptRow, checkinRow, checkoutRow, guestsRow, childrenRow, availNoteRow].forEach(row => {
+      if (row) row.style.display = bookingMode ? '' : 'none';
+    });
+    if (priceHint && !bookingMode) priceHint.style.display = 'none';
+
+    if (noteSpan) noteSpan.textContent = bookingMode ? cfg.bookingNote : cfg.questionNote;
+    if (submitBtn) submitBtn.textContent = bookingMode ? cfg.bookingBtn : cfg.questionBtn;
+  }
+
+  async function submitQuestionFromContactModal() {
+    const lang = modalLang();
+    const cfg = modalModeCopy[lang];
+    const name = (document.getElementById('m-name')?.value || '').trim();
+    const email = (document.getElementById('m-email')?.value || '').trim();
+    const phone = (document.getElementById('m-phone')?.value || '').trim();
+    const message = (document.getElementById('m-msg')?.value || '').trim();
+    const btn = document.querySelector('#modalForm .btn-primary');
+
+    if (!name || !email || !message) {
+      alert(cfg.questionValidation);
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = cfg.sending;
+    }
+
+    try {
+      const sourceLang = lang === 'hr' ? 'auto' : lang;
+      const translatedInfo = typeof translateWithDetection === 'function'
+        ? await translateWithDetection(message, sourceLang, 'hr')
+        : { translated: lang === 'hr' ? message : '', detectedLang: lang };
+      const translated = translatedInfo.translated || message;
+      const detectedLang = translatedInfo.detectedLang || lang;
+
+      let porukaInsertError = null;
+      try {
+        const { error } = await sbWeb.from('poruke').insert([{
+          tip: 'obicna',
+          ime: name,
+          email: email,
+          telefon: phone || null,
+          original_text: message,
+          translated_text_hr: translated || null,
+          original_language: detectedLang,
+          status: 'nova',
+          procitano: false
+        }]);
+        porukaInsertError = error;
+      } catch (dbErr) {
+        porukaInsertError = dbErr;
+      }
+      if (porukaInsertError) throw porukaInsertError;
+
+      const line = '------------------------------------------';
+      const plainText =
+`APARTMANI BALENT - Nova poruka s web stranice
+${line}
+Ime i prezime: ${name}
+Email: ${email}
+Telefon: ${phone || '-'}
+Jezik: ${detectedLang}
+
+ORIGINALNA PORUKA
+${message}
+${translated && translated !== message ? `\nHRVATSKI PRIJEVOD\n${translated}\n` : '\n'}
+${line}`;
+
+      const formData = new FormData();
+      formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
+      formData.append('subject', 'Nova poruka s web stranice - ' + name);
+      formData.append('from_name', 'Apartmani Balent - Web poruka');
+      formData.append('replyto', email);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('message', plainText);
+      formData.append('botcheck', '');
+      const mailRes = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData });
+      const mailJson = await mailRes.json().catch(() => null);
+      if (!mailRes.ok || !mailJson || !mailJson.success) {
+        console.warn('Unified contact question Web3Forms send failed:', mailJson || mailRes.status);
+      }
+
+      const success = document.getElementById('modalSuccess');
+      const form = document.getElementById('modalForm');
+      if (form) form.style.display = 'none';
+      if (success) {
+        success.style.display = 'block';
+        const h3 = success.querySelector('h3');
+        const p = success.querySelector('p');
+        if (h3) h3.textContent = cfg.questionSuccessTitle;
+        if (p) p.textContent = cfg.questionSuccessText;
+      }
+    } catch (err) {
+      console.warn('Unified contact question send failed:', err);
+      alert(cfg.questionError + ' ' + (err?.message || err?.details || ''));
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        updateContactModalMode();
+      }
+    }
+  }
+
+  const previousOpenModalForMode = window.openModal;
+  if (typeof previousOpenModalForMode === 'function' && !window.__contactModeWrapped) {
+    window.openModal = function(aptName, mode = 'booking') {
+      previousOpenModalForMode(aptName);
+      window.contactModalMode = mode === 'question' ? 'question' : 'booking';
+      setTimeout(updateContactModalMode, 0);
+    };
+    window.__contactModeWrapped = true;
+  }
+
+  window.openQuestionModal = function() {
+    window.openModal(undefined, 'question');
+  };
+
+  const previousSubmitModalFinal = window.submitModalFinal;
+  if (typeof previousSubmitModalFinal === 'function' && !window.__contactSubmitWrapped) {
+    window.submitModalFinal = async function(...args) {
+      if ((window.contactModalMode || 'booking') === 'question') {
+        return submitQuestionFromContactModal();
+      }
+      return previousSubmitModalFinal.apply(this, args);
+    };
+    window.__contactSubmitWrapped = true;
+  }
+
+  const previousCloseModalForMode = window.closeModal;
+  if (typeof previousCloseModalForMode === 'function' && !window.__contactCloseWrapped) {
+    window.closeModal = function(...args) {
+      const result = previousCloseModalForMode.apply(this, args);
+      window.contactModalMode = 'booking';
+      setTimeout(updateContactModalMode, 0);
+      return result;
+    };
+    window.__contactCloseWrapped = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.contactModalMode = 'booking';
+      updateContactModalMode();
+    }, { once: true });
+  } else {
+    window.contactModalMode = 'booking';
+    updateContactModalMode();
+  }
+})();
+</script>
+<script>
+(() => {
+  function removeLegacyModalQuestionHelper() {
+    document.querySelectorAll('#contactModal .question-secondary-btn').forEach(btn => btn.remove());
+  }
+
+  const prevOpenModalCleanup = window.openModal;
+  if (typeof prevOpenModalCleanup === 'function' && !window.__removeLegacyModalQuestionHelperWrapped) {
+    window.openModal = function(...args) {
+      const result = prevOpenModalCleanup.apply(this, args);
+      setTimeout(removeLegacyModalQuestionHelper, 0);
+      return result;
+    };
+    window.__removeLegacyModalQuestionHelperWrapped = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', removeLegacyModalQuestionHelper, { once: true });
+  } else {
+    removeLegacyModalQuestionHelper();
+  }
+})();
+</script>
+<script>
+(() => {
+  function normalizeApartmentAmenityTags() {
+    document.querySelectorAll('.apt-card').forEach(card => {
+      const name = (card.querySelector('.apt-name')?.textContent || '').trim();
+      const amenities = card.querySelector('.apt-amenities');
+      if (!amenities) return;
+
+      Array.from(amenities.querySelectorAll('.apt-tag')).forEach(tag => {
+        const text = (tag.textContent || '').trim().toLowerCase();
+        if (text.includes('blender')) tag.remove();
+      });
+
+      const tags = Array.from(amenities.querySelectorAll('.apt-tag'));
+      let hasFridge = false;
+      tags.forEach(tag => {
+        const text = (tag.textContent || '').trim().toLowerCase();
+        if (text.includes('ledenic')) {
+          tag.textContent = 'Frižider s ledenicom';
+          hasFridge = true;
+        }
+      });
+
+      if (!hasFridge && /^Apartman Balent nr\. [1-4]$/.test(name)) {
+        const fridge = document.createElement('span');
+        fridge.className = 'apt-tag';
+        fridge.textContent = 'Frižider s ledenicom';
+        amenities.appendChild(fridge);
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', normalizeApartmentAmenityTags, { once: true });
+  } else {
+    normalizeApartmentAmenityTags();
   }
 })();
 </script>
