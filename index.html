@@ -135,11 +135,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
 /* Flatpickr Balent theme */
-.flatpickr-calendar{font-family:var(--sans)!important;border-radius:3px;box-shadow:0 8px 32px rgba(0,0,0,.12);border:1px solid var(--sand-dark)}
-.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange{background:var(--navy)!important;border-color:var(--navy)!important}
-.flatpickr-day.inRange{background:rgba(26,38,54,.12)!important;border-color:transparent!important}
-.flatpickr-day.disabled,.flatpickr-day.disabled:hover{background:#eef1f4!important;color:#8a94a1!important;opacity:.85}
-.flatpickr-day:hover:not(.disabled){background:var(--sand)!important}
+.flatpickr-calendar{font-family:var(--sans)!important;border-radius:6px;box-shadow:0 14px 36px rgba(0,0,0,.16);border:1px solid #d8c9b4}
+.flatpickr-day{border-radius:2px}
+.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important}
+.flatpickr-day.inRange{background:rgba(38,108,72,.18)!important;border-color:transparent!important}
+.flatpickr-day.disabled,.flatpickr-day.disabled:hover{background:#f3b7b7!important;color:#7b2b2b!important;opacity:1}
+.flatpickr-day:hover:not(.disabled){background:#d7f0df!important}
+.flatpickr-day.fp-departure,.flatpickr-day.fp-arrival,.flatpickr-day.fp-turnover{opacity:1!important}
 .flatpickr-months .flatpickr-month{background:var(--navy);color:#fff;border-radius:3px 3px 0 0}
 .flatpickr-current-month,.flatpickr-monthDropdown-months,.numInputWrapper span{color:#fff!important}
 .flatpickr-weekday{color:var(--accent-light)!important;font-weight:500}
@@ -668,12 +670,13 @@ img { max-width: 100%; height: auto; }
 /* Availability calendar */
 .avail-day{border-right:1px solid var(--sand-dark);border-bottom:1px solid var(--sand-dark);min-height:52px;padding:.3rem;position:relative;font-size:.78rem}
 .avail-day.empty{background:var(--white)}
-.avail-day.free{background:#eafaf1;cursor:pointer}
-.avail-day.free:hover{background:#d5f5e3}
-.avail-day.taken{background:#fde8e8}
+.avail-day.free{background:#cfeeda;cursor:pointer}
+.avail-day.free:hover{background:#b8e4c8}
+.avail-day.taken{background:#f4b6b6}
+.avail-day.arrival,.avail-day.departure,.avail-day.turnover{background:#fff}
 .avail-day.today .avail-num{background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-num{font-size:.82rem;font-weight:500;color:var(--navy);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
-.avail-day.taken .avail-num{color:#922b21}
+.avail-day.taken .avail-num,.avail-day.arrival .avail-num,.avail-day.departure .avail-num,.avail-day.turnover .avail-num{color:#7b2b2b}
 </style>
 </head>
 <body>
@@ -1035,12 +1038,13 @@ img { max-width: 100%; height: auto; }
 /* Availability calendar */
 .avail-day{border-right:1px solid var(--sand-dark);border-bottom:1px solid var(--sand-dark);min-height:52px;padding:.3rem;position:relative;font-size:.78rem}
 .avail-day.empty{background:var(--white)}
-.avail-day.free{background:#eafaf1;cursor:pointer}
-.avail-day.free:hover{background:#d5f5e3}
-.avail-day.taken{background:#fde8e8}
+.avail-day.free{background:#cfeeda;cursor:pointer}
+.avail-day.free:hover{background:#b8e4c8}
+.avail-day.taken{background:#f4b6b6}
+.avail-day.arrival,.avail-day.departure,.avail-day.turnover{background:#fff}
 .avail-day.today .avail-num{background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-num{font-size:.82rem;font-weight:500;color:var(--navy);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
-.avail-day.taken .avail-num{color:#922b21}
+.avail-day.taken .avail-num,.avail-day.arrival .avail-num,.avail-day.departure .avail-num,.avail-day.turnover .avail-num{color:#7b2b2b}
 </style>
 <div style="display:none"><span>Scrolla dolje</span></div>
 </section>
@@ -1196,6 +1200,7 @@ img { max-width: 100%; height: auto; }
         </div>
         <div class="apt-body">
           <h3 class="apt-name">Apartman Balent nr. 2</h3>
+          <p class="apt-desc">Lijep i moderan dvosobni apartman od 60 m² s dvije spavaće sobe, kuhinjom, dnevnim boravkom i walk-in tušem. Terasa 12 m². Zajednički roštilj u dvorištu.</p>
           <ul style="font-size:.82rem;color:var(--muted);line-height:2;margin:.5rem 0 .8rem;padding-left:0;list-style:none">
             <li>&#128715;&#65039; Dnevna soba s kuhinjom i blagovaonicom</li>
             <li>&#128719;&#65039; Spava&#263;a soba 1 &ndash; bra&#269;ni krevet, ormar</li>
@@ -1203,7 +1208,6 @@ img { max-width: 100%; height: auto; }
             <li>&#128703; Kupaonica s walk-in tu&#353; kabinom</li>
             <li>&#129681; Balkon s vanjskim namje&#353;tajem</li>
           </ul>
-          <p class="apt-desc">Lijep i moderan dvosobni apartman od 60 m² s dvije spavaće sobe, kuhinjom, dnevnim boravkom i walk-in tušem. Terasa 12 m². Zajednički roštilj u dvorištu.</p>
           <div class="apt-specs">
             <div class="apt-spec"><span class="v">4</span><span class="k"><span data-lang="hr" class="lang-active">Gosta</span><span data-lang="en">Guests</span><span data-lang="de">Gäste</span><span data-lang="it">Ospiti</span><span data-lang="ru">Гостей</span></span></div>
             <div class="apt-spec"><span class="v">2</span><span class="k"><span data-lang="hr" class="lang-active">Spavaće sobe</span><span data-lang="en">Bedrooms</span><span data-lang="de">Schlafzimmer</span><span data-lang="it">Camere da letto</span><span data-lang="ru">Спальни</span></span></div>
@@ -1238,6 +1242,7 @@ img { max-width: 100%; height: auto; }
         </div>
         <div class="apt-body">
           <h3 class="apt-name">Apartman Balent nr. 3</h3>
+          <p class="apt-desc">Udoban dvosobni apartman od 60 m&sup2; na prvom katu s djelomi&#269;nim pogledom na more. Dvije spava&#263;e sobe, opremljena kuhinja, walk-in tu&#353;, balkon s foteljama. Zajedni&#269;ki ro&#353;tilj u dvori&#353;tu.</p>
           <ul style="font-size:.82rem;color:var(--muted);line-height:2;margin:.5rem 0 .8rem;padding-left:0;list-style:none">
             <li>&#128715;&#65039; Dnevna soba s kuhinjom i blagovaonicom</li>
             <li>&#128719;&#65039; Spava&#263;a soba 1 &ndash; bra&#269;ni krevet, ormar</li>
@@ -1246,7 +1251,6 @@ img { max-width: 100%; height: auto; }
             <li>&#129681; Balkon s vanjskim namje&#353;tajem</li>
             <li>&#127754; Djelomi&#269;an pogled na more</li>
           </ul>
-          <p class="apt-desc">Udoban dvosobni apartman od 60 m&sup2; na prvom katu s djelomi&#269;nim pogledom na more. Dvije spava&#263;e sobe, opremljena kuhinja, walk-in tu&#353;, balkon s foteljama. Zajedni&#269;ki ro&#353;tilj u dvori&#353;tu.</p>
           <div class="apt-specs">
             <div class="apt-spec"><span class="v">4</span><span class="k"><span data-lang="hr" class="lang-active">Gosta</span><span data-lang="en">Guests</span><span data-lang="de">Gäste</span><span data-lang="it">Ospiti</span><span data-lang="ru">Гостей</span></span></div>
             <div class="apt-spec"><span class="v">2</span><span class="k"><span data-lang="hr" class="lang-active">Spava&#263;e sobe</span><span data-lang="en">Bedrooms</span><span data-lang="de">Schlafzimmer</span><span data-lang="it">Camere da letto</span><span data-lang="ru">Спальни</span></span></div>
@@ -1281,6 +1285,7 @@ img { max-width: 100%; height: auto; }
         </div>
         <div class="apt-body">
           <h3 class="apt-name">Apartman Balent nr. 4</h3>
+          <p class="apt-desc">Komforan dvosobni apartman od 60 m&sup2; na prvom katu. Dvije spava&#263;e sobe, opremljena kuhinja s perilicom su&#273;a, walk-in tu&#353;, su&#353;ilo za kosu. Zajedni&#269;ki ro&#353;tilj u dvori&#353;tu.</p>
           <ul style="font-size:.82rem;color:var(--muted);line-height:2;margin:.5rem 0 .8rem;padding-left:0;list-style:none">
             <li>&#128715;&#65039; Dnevna soba s kuhinjom i blagovaonicom</li>
             <li>&#128719;&#65039; Spava&#263;a soba 1 &ndash; bra&#269;ni krevet, ormar</li>
@@ -1289,7 +1294,6 @@ img { max-width: 100%; height: auto; }
             <li>&#129681; Terasa i balkon s vanjskim namje&#353;tajem</li>
             <li>&#127754; Djelomi&#269;an pogled na more</li>
           </ul>
-          <p class="apt-desc">Komforan dvosobni apartman od 60 m&sup2; na prvom katu. Dvije spava&#263;e sobe, opremljena kuhinja s perilicom su&#273;a, walk-in tu&#353;, su&#353;ilo za kosu. Zajedni&#269;ki ro&#353;tilj u dvori&#353;tu.</p>
           <div class="apt-specs">
             <div class="apt-spec"><span class="v">4</span><span class="k"><span data-lang="hr" class="lang-active">Gosta</span><span data-lang="en">Guests</span><span data-lang="de">Gäste</span><span data-lang="it">Ospiti</span><span data-lang="ru">Гостей</span></span></div>
             <div class="apt-spec"><span class="v">2</span><span class="k"><span data-lang="hr" class="lang-active">Spava&#263;e sobe</span><span data-lang="en">Bedrooms</span><span data-lang="de">Schlafzimmer</span><span data-lang="it">Camere da letto</span><span data-lang="ru">Спальни</span></span></div>
@@ -2926,7 +2930,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 // Price calculator
-function calcPrice() {
+async function calcPrice() {
   const apt = document.getElementById('calc-apt').value;
   const inDate = document.getElementById('calc-in').value;
   const outDate = document.getElementById('calc-out').value;
@@ -2934,6 +2938,11 @@ function calcPrice() {
   if (!apt || !inDate || !outDate) return;
   const d1 = new Date(inDate), d2 = new Date(outDate);
   if (d2 <= d1) return;
+  const occupancy = await loadOccupancyData(parseInt(apt, 10));
+  if (rangeOverlapsDisabled(inDate, outDate, occupancy.takenSet)) {
+    document.getElementById('calcResult').classList.remove('show');
+    return;
+  }
   const nights = Math.round((d2 - d1) / 86400000);
 
   // Real prices per date range 2026
@@ -3241,33 +3250,53 @@ const SB_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
 const SB_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
 const sbWeb = window.supabase.createClient(SB_URL, SB_KEY);
 
-let zauzetiDatumi = {}; // {1: ['2026-07-01','2026-07-02',...], 2:...}
+let zauzetiDatumi = {}; // legacy disabled-date cache
+let occupancyCache = {};
 let checkinPicker = null;
 let checkoutPicker = null;
 
-async function loadZauzeteDatume(apartman) {
-  if (!apartman) return [];
-  if (zauzetiDatumi[apartman]) return zauzetiDatumi[apartman]; // cache
+async function loadOccupancyData(apartman) {
+  if (!apartman) return { records: [], disabled: [], takenSet: new Set(), arrivals: new Map(), departures: new Map() };
+  if (occupancyCache[apartman]) return occupancyCache[apartman];
 
   const { data } = await sbWeb
     .from('rezervacije')
-    .select('datum_dolaska, datum_odlaska')
+    .select('datum_dolaska, datum_odlaska, status')
     .eq('apartman', apartman)
     .in('status', ['potvrdjeno', 'blokirano']);
 
   const disabled = [];
+  const takenSet = new Set();
+  const arrivals = new Map();
+  const departures = new Map();
   (data || []).forEach(r => {
-    // Generate all dates from checkin to checkout (exclusive of checkout)
+    const status = (r.status || '').toLowerCase();
+    if (r.datum_dolaska) arrivals.set(r.datum_dolaska, status);
+    if (r.datum_odlaska) departures.set(r.datum_odlaska, status);
     let cur = new Date(r.datum_dolaska);
     const end = new Date(r.datum_odlaska);
     while (cur < end) {
-      disabled.push(cur.toISOString().split('T')[0]);
+      const iso = cur.toISOString().split('T')[0];
+      disabled.push(iso);
+      takenSet.add(iso);
       cur.setDate(cur.getDate() + 1);
     }
   });
 
+  occupancyCache[apartman] = {
+    records: data || [],
+    disabled,
+    takenSet,
+    arrivals,
+    departures
+  };
   zauzetiDatumi[apartman] = disabled;
-  return disabled;
+  return occupancyCache[apartman];
+}
+
+async function loadZauzeteDatume(apartman) {
+  const occupancy = await loadOccupancyData(apartman);
+  return occupancy.disabled || [];
 }
 
 function toIsoDateLocal(date) {
@@ -3291,6 +3320,60 @@ function rangeOverlapsDisabled(checkinIso, checkoutIso, disabledSet) {
   return false;
 }
 
+function getWebCalendarColors() {
+  return {
+    free: '#cfeeda',
+    freeHover: '#b8e4c8',
+    taken: '#f4b6b6',
+    takenText: '#7b2b2b'
+  };
+}
+
+function buildDiagonalFill(leftColor, rightColor) {
+  return `linear-gradient(135deg, ${leftColor} 0 48%, ${rightColor} 52% 100%)`;
+}
+
+function styleFlatpickrOccupancyDay(dayElem, dateObj, occupancy) {
+  if (!dayElem || !dateObj || !occupancy) return;
+  const iso = toIsoDateLocal(dateObj);
+  const isArrival = occupancy.arrivals && occupancy.arrivals.has(iso);
+  const isDeparture = occupancy.departures && occupancy.departures.has(iso);
+  const isTaken = occupancy.takenSet && occupancy.takenSet.has(iso);
+  const colors = getWebCalendarColors();
+
+  dayElem.classList.remove('fp-arrival', 'fp-departure', 'fp-turnover');
+  dayElem.style.removeProperty('background');
+  dayElem.style.removeProperty('color');
+  dayElem.style.removeProperty('border-color');
+
+  if (dayElem.classList.contains('selected') || dayElem.classList.contains('startRange') || dayElem.classList.contains('endRange')) return;
+
+  if (isArrival && isDeparture) {
+    dayElem.classList.add('fp-turnover');
+    dayElem.style.setProperty('background', buildDiagonalFill(colors.taken, colors.taken), 'important');
+    dayElem.style.setProperty('color', colors.takenText, 'important');
+    return;
+  }
+  if (isDeparture) {
+    dayElem.classList.add('fp-departure');
+    dayElem.style.setProperty('background', buildDiagonalFill(colors.taken, colors.free), 'important');
+    dayElem.style.setProperty('color', colors.takenText, 'important');
+    return;
+  }
+  if (isArrival) {
+    dayElem.classList.add('fp-arrival');
+    dayElem.style.setProperty('background', buildDiagonalFill(colors.free, colors.taken), 'important');
+    dayElem.style.setProperty('color', colors.takenText, 'important');
+    return;
+  }
+  if (isTaken) {
+    dayElem.style.setProperty('background', colors.taken, 'important');
+    dayElem.style.setProperty('color', colors.takenText, 'important');
+    return;
+  }
+  dayElem.style.setProperty('background', colors.free, 'important');
+}
+
 function initFlatpickr(apartman, checkinVal, checkoutVal) {
   // Destroy existing
   if (checkinPicker) { checkinPicker.destroy(); checkinPicker = null; }
@@ -3299,8 +3382,9 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  loadZauzeteDatume(apartman).then(disabled => {
-    const disabledSet = new Set(disabled);
+  loadOccupancyData(apartman).then(occupancy => {
+    const disabled = occupancy.disabled || [];
+    const disabledSet = occupancy.takenSet || new Set(disabled);
     // Convert to date objects for flatpickr
     const disabledDates = disabled.map(d => {
       const [y,m,day] = d.split('-');
@@ -3335,6 +3419,9 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
       disable: disabledDates,
       disableMobile: true,
       defaultDate: checkinVal || null,
+      onDayCreate: function(_, __, ___, dayElem) {
+        styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+      },
       onChange: function(selectedDates, dateStr) {
         if (!selectedDates[0]) return;
         syncCheckoutBounds(selectedDates[0]);
@@ -3350,6 +3437,9 @@ function initFlatpickr(apartman, checkinVal, checkoutVal) {
       disable: disabledDates,
       disableMobile: true,
       defaultDate: checkoutVal || null,
+      onDayCreate: function(_, __, ___, dayElem) {
+        styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+      },
       onChange: function(selectedDates) {
         const selectedCheckout = selectedDates[0];
         const selectedCheckin = checkinPicker && checkinPicker.selectedDates[0];
@@ -3738,14 +3828,23 @@ async function loadAvailData(apt) {
       cur.setDate(cur.getDate() + 1);
     }
   });
-  availCache[apt] = taken;
-  return taken;
+  const occupancy = await loadOccupancyData(apt);
+  const payload = {
+    taken: occupancy.takenSet || new Set(),
+    arrivals: occupancy.arrivals || new Map(),
+    departures: occupancy.departures || new Map()
+  };
+  availCache[apt] = payload;
+  return payload;
 }
 
 async function renderAvailCalendar() {
   const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
   document.getElementById('availMonthLabel').textContent = mNames[availMonth] + ' ' + availYear;
-  const taken = await loadAvailData(availApt);
+  const occupancy = await loadAvailData(availApt);
+  const taken = occupancy.taken || new Set();
+  const arrivals = occupancy.arrivals || new Map();
+  const departures = occupancy.departures || new Map();
   const today = new Date(); today.setHours(0,0,0,0);
   const firstDay = new Date(availYear, availMonth, 1);
   // Monday-first: 0=Mon...6=Sun
@@ -3757,16 +3856,30 @@ async function renderAvailCalendar() {
   // Days
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = availYear + '-' + String(availMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const colors = getWebCalendarColors();
     const isTaken = taken.has(dateStr);
+    const arrivalStatus = arrivals.get(dateStr) || '';
+    const departureStatus = departures.get(dateStr) || '';
     const isToday = new Date(availYear, availMonth, d).getTime() === today.getTime();
     const isPast = new Date(availYear, availMonth, d) < today;
     let cls = 'avail-day ';
     if (isPast) cls += 'empty';
     else if (isTaken) cls += 'taken';
     else cls += 'free';
+    if (arrivalStatus) cls += ' arrival';
+    if (departureStatus) cls += ' departure';
+    if (arrivalStatus && departureStatus) cls += ' turnover';
     if (isToday) cls += ' today';
+    let style = '';
+    const departureColor = departureStatus ? colors.taken : '#fff';
+    const arrivalColor = arrivalStatus ? colors.free : '#fff';
+    if (!isPast && (arrivalStatus || departureStatus)) {
+      if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
+      else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
+      else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
+    }
     const onclick = (!isTaken && !isPast) ? `onclick="openModal();setTimeout(()=>{if(checkinPicker)checkinPicker.setDate('${dateStr}');},100)"` : '';
-    html += `<div class="${cls}" ${onclick}><div class="avail-num">${d}</div></div>`;
+    html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
   }
   document.getElementById('availGrid').innerHTML = html;
 }
@@ -4736,6 +4849,11 @@ ${line}`;
         dateFormat: 'Y-m-d',
         minDate: today,
         locale: window.flatpickr?.l10ns?.hr || 'default',
+        onDayCreate: async (_, __, ___, dayElem) => {
+          const apt = parseInt(document.getElementById('calc-apt')?.value || '0', 10);
+          const occupancy = await loadOccupancyData(apt);
+          styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+        },
         onChange: () => {
           updateCalcOutMin();
           calcPrice();
@@ -4747,7 +4865,24 @@ ${line}`;
         dateFormat: 'Y-m-d',
         minDate: today,
         locale: window.flatpickr?.l10ns?.hr || 'default',
-        onChange: () => calcPrice()
+        onDayCreate: async (_, __, ___, dayElem) => {
+          const apt = parseInt(document.getElementById('calc-apt')?.value || '0', 10);
+          const occupancy = await loadOccupancyData(apt);
+          styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+        },
+        onChange: async () => {
+          const apt = document.getElementById('calc-apt')?.value;
+          if (apt && calcIn.value && calcOut.value) {
+            const occupancy = await loadOccupancyData(parseInt(apt, 10));
+            if (rangeOverlapsDisabled(calcIn.value, calcOut.value, occupancy.takenSet)) {
+              calcOut._flatpickr.clear();
+              document.getElementById('calcResult')?.classList.remove('show');
+              alert('Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.');
+              return;
+            }
+          }
+          calcPrice();
+        }
       });
     }
     if (detailIn && !detailIn._flatpickr) {
@@ -4755,6 +4890,11 @@ ${line}`;
         dateFormat: 'Y-m-d',
         minDate: today,
         locale: window.flatpickr?.l10ns?.hr || 'default',
+        onDayCreate: async (_, __, ___, dayElem) => {
+          const apt = parseInt(document.getElementById('detail-apt')?.value || '0', 10);
+          const occupancy = await loadOccupancyData(apt);
+          styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+        },
         onChange: (_, dateStr) => {
           if (detailOut && detailOut._flatpickr) {
             const d = new Date(dateStr);
@@ -4769,8 +4909,50 @@ ${line}`;
       flatpickr(detailOut, {
         dateFormat: 'Y-m-d',
         minDate: today,
-        locale: window.flatpickr?.l10ns?.hr || 'default'
+        locale: window.flatpickr?.l10ns?.hr || 'default',
+        onDayCreate: async (_, __, ___, dayElem) => {
+          const apt = parseInt(document.getElementById('detail-apt')?.value || '0', 10);
+          const occupancy = await loadOccupancyData(apt);
+          styleFlatpickrOccupancyDay(dayElem, dayElem.dateObj, occupancy);
+        },
+        onChange: async () => {
+          const detailApt = document.getElementById('detail-apt');
+          if (detailApt && detailIn.value && detailOut.value) {
+            const occupancy = await loadOccupancyData(parseInt(detailApt.value || '0', 10));
+            if (rangeOverlapsDisabled(detailIn.value, detailOut.value, occupancy.takenSet)) {
+              detailOut._flatpickr.clear();
+              alert('Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.');
+            }
+          }
+        }
       });
+    }
+  }
+
+  async function refreshLegacyAvailabilityPickers(kind) {
+    const isCalc = kind === 'calc';
+    const aptEl = document.getElementById(isCalc ? 'calc-apt' : 'detail-apt');
+    const inEl = document.getElementById(isCalc ? 'calc-in' : 'detail-checkin');
+    const outEl = document.getElementById(isCalc ? 'calc-out' : 'detail-checkout');
+    if (!aptEl || !inEl || !outEl) return;
+
+    const occupancy = await loadOccupancyData(parseInt(aptEl.value || '0', 10));
+    const disabled = occupancy.disabled || [];
+
+    if (inEl._flatpickr) inEl._flatpickr.set('disable', disabled);
+    if (outEl._flatpickr) outEl._flatpickr.set('disable', disabled);
+
+    const inVal = inEl._flatpickr?.selectedDates?.[0]
+      ? inEl._flatpickr.selectedDates[0].toISOString().split('T')[0]
+      : inEl.value;
+    const outVal = outEl._flatpickr?.selectedDates?.[0]
+      ? outEl._flatpickr.selectedDates[0].toISOString().split('T')[0]
+      : outEl.value;
+
+    if (inVal && outVal && rangeOverlapsDisabled(inVal, outVal, occupancy.takenSet)) {
+      if (outEl._flatpickr) outEl._flatpickr.clear();
+      else outEl.value = '';
+      if (isCalc) document.getElementById('calcResult')?.classList.remove('show');
     }
   }
 
@@ -4795,12 +4977,26 @@ ${line}`;
     if (typeof originalSetLang === 'function') originalSetLang(lang);
     ensureLegacyDetailFormIds();
     applyLanguageToLegacyForms(lang);
+    refreshLegacyAvailabilityPickers('calc');
+    refreshLegacyAvailabilityPickers('detail');
   };
 
   function initLegacyFormFixes() {
     ensureLegacyDetailFormIds();
     initLegacyDatePickers();
     applyLanguageToLegacyForms(localStorage.getItem('balent_lang') || 'hr');
+    const calcApt = document.getElementById('calc-apt');
+    const detailApt = document.getElementById('detail-apt');
+    if (calcApt && !calcApt.dataset.availBound) {
+      calcApt.addEventListener('change', () => refreshLegacyAvailabilityPickers('calc'));
+      calcApt.dataset.availBound = '1';
+    }
+    if (detailApt && !detailApt.dataset.availBound) {
+      detailApt.addEventListener('change', () => refreshLegacyAvailabilityPickers('detail'));
+      detailApt.dataset.availBound = '1';
+    }
+    refreshLegacyAvailabilityPickers('calc');
+    refreshLegacyAvailabilityPickers('detail');
   }
 
   if (document.readyState === 'loading') {
