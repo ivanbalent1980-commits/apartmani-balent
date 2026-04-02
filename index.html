@@ -1358,7 +1358,7 @@ img { max-width: 100%; height: auto; }
         </div>
         <div class="apt-body">
           <h3 class="apt-name">Apartman Balent nr. 4</h3>
-          <p class="apt-desc">Komforan dvosobni apartman od 60 m&sup2; na prvom katu. Dvije spava&#263;e sobe, opremljena kuhinja s perilicom su&#273;a, walk-in tu&#353;, su&#353;ilo za kosu. Zajedni&#269;ki ro&#353;tilj u dvori&#353;tu.</p>
+          <p class="apt-desc">Ovaj apartman za do 4 osobe pruža ugodan i funkcionalan prostor za bezbrižan odmor. Kombinacija udobnosti i praktičnosti čini ga savršenim izborom za opuštanje s obitelji ili prijateljima.</p>
           <ul style="font-size:.82rem;color:var(--muted);line-height:2;margin:.5rem 0 .8rem;padding-left:0;list-style:none">
             <li>&#128715;&#65039; Dnevna soba s kuhinjom i blagovaonicom</li>
             <li>&#128719;&#65039; Spava&#263;a soba 1 &ndash; bra&#269;ni krevet, ormar</li>
@@ -5899,6 +5899,245 @@ ${line}`;
     document.addEventListener('DOMContentLoaded', normalizeApartmentAmenityTags, { once: true });
   } else {
     normalizeApartmentAmenityTags();
+  }
+})();
+</script>
+<script>
+(() => {
+  const EXTRA_BED_PRICE = 10;
+
+  function supportsExtraBed(apt) {
+    return String(apt || '') !== '4' && !!String(apt || '');
+  }
+
+  function nightsBetween(dateIn, dateOut) {
+    if (!dateIn || !dateOut) return 0;
+    const d1 = new Date(dateIn), d2 = new Date(dateOut);
+    if (d2 <= d1) return 0;
+    return Math.round((d2 - d1) / 86400000);
+  }
+
+  function getExtraBedValue(kind) {
+    const id = kind === 'calc' ? 'calc-extra' : 'm-extra';
+    const select = document.getElementById(id);
+    return parseInt(select?.value || '0', 10) || 0;
+  }
+
+  function getExtraBedTotal(kind, dateIn, dateOut, apt) {
+    if (!supportsExtraBed(apt)) return 0;
+    const extra = getExtraBedValue(kind);
+    if (!extra) return 0;
+    return nightsBetween(dateIn, dateOut) * EXTRA_BED_PRICE * extra;
+  }
+
+  function updateExtraBedOptionTexts() {
+    const lang = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+    const noMap = { hr:'Ne', en:'No', de:'Nein', it:'No', ru:'Нет' };
+    const yesMap = {
+      hr:`Da (+${EXTRA_BED_PRICE} EUR/noć)`,
+      en:`Yes (+${EXTRA_BED_PRICE} EUR/night)`,
+      de:`Ja (+${EXTRA_BED_PRICE} EUR/Nacht)`,
+      it:`Sì (+${EXTRA_BED_PRICE} EUR/notte)`,
+      ru:`Да (+${EXTRA_BED_PRICE} EUR/ночь)`
+    };
+    document.querySelectorAll('#calc-extra option[value="0"], #m-extra option[value="0"]').forEach(opt => {
+      opt.textContent = noMap[lang] || noMap.hr;
+    });
+    document.querySelectorAll('#calc-extra option[value="1"], #m-extra option[value="1"]').forEach(opt => {
+      opt.textContent = yesMap[lang] || yesMap.hr;
+    });
+  }
+
+  function ensureModalExtraField() {
+    const modalChildren = document.getElementById('m-children');
+    if (!modalChildren) return;
+    if (document.getElementById('m-extra')) return;
+    const childrenRow = modalChildren.closest('.modal-fg');
+    if (!childrenRow) return;
+
+    const row = document.createElement('div');
+    row.className = 'modal-fg';
+    row.id = 'm-extra-row';
+    row.innerHTML = `
+      <label>
+        <span data-lang="hr" class="lang-active">Pomoćni ležaj</span>
+        <span data-lang="en">Extra bed</span>
+        <span data-lang="de">Zusatzbett</span>
+        <span data-lang="it">Letto aggiunto</span>
+        <span data-lang="ru">Дополнительная кровать</span>
+      </label>
+      <select id="m-extra">
+        <option value="0">Ne</option>
+        <option value="1">Da (+10 EUR/noć)</option>
+      </select>
+    `;
+    childrenRow.insertAdjacentElement('afterend', row);
+  }
+
+  function updateExtraBedAvailability(kind) {
+    const aptId = kind === 'calc' ? 'calc-apt' : 'm-apt';
+    const extraId = kind === 'calc' ? 'calc-extra' : 'm-extra';
+    const rowId = kind === 'calc' ? null : 'm-extra-row';
+    const apt = document.getElementById(aptId);
+    const extra = document.getElementById(extraId);
+    const row = rowId ? document.getElementById(rowId) : extra?.closest('.calc-fg, .modal-fg');
+    if (!extra) return;
+
+    const allowed = supportsExtraBed(apt?.value || '');
+    if (!allowed) extra.value = '0';
+    extra.disabled = !allowed;
+    if (row) row.style.display = allowed || !apt?.value ? '' : 'none';
+  }
+
+  function normalizeApartmentAmenitySets() {
+    const desired = {
+      'Apartman Balent nr. 1': ['Wi‑Fi', 'Klima-uređaj', 'LED TV', 'Perilica suđa', 'Staklokeramička ploča 4 kola', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'Toster'],
+      'Apartman Balent nr. 2': ['Wi‑Fi', 'Klima-uređaj', '2x LED TV', 'Perilica suđa', 'Staklokeramička ploča 4 kola', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'Toster'],
+      'Apartman Balent nr. 3': ['Wi‑Fi', 'Klima-uređaj', 'LED TV', 'Perilica suđa', 'Indukcijska ploča 4 kola', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'Toster'],
+      'Apartman Balent nr. 4': ['Wi‑Fi', 'Klima-uređaj', 'LED TV', 'Perilica suđa', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'Toster']
+    };
+
+    document.querySelectorAll('.apt-card').forEach(card => {
+      const name = (card.querySelector('.apt-name')?.textContent || '').trim();
+      const amenities = card.querySelector('.apt-amenities');
+      const tags = desired[name];
+      if (!amenities || !tags) return;
+      amenities.innerHTML = tags.map(tag => `<span class="apt-tag">${tag}</span>`).join('');
+    });
+  }
+
+  const prevCalcPrice = window.calcPrice;
+  window.calcPrice = async function(...args) {
+    updateExtraBedAvailability('calc');
+    await prevCalcPrice.apply(this, args);
+    const apt = document.getElementById('calc-apt')?.value || '';
+    const inDate = document.getElementById('calc-in')?.value || '';
+    const outDate = document.getElementById('calc-out')?.value || '';
+    const extraTotal = getExtraBedTotal('calc', inDate, outDate, apt);
+    const row = document.getElementById('calc-extra-row');
+    const val = document.getElementById('calc-extra-val');
+    const totalEl = document.getElementById('calc-total');
+    if (!row || !val || !totalEl) return;
+    if (extraTotal > 0) {
+      row.style.display = 'flex';
+      val.textContent = extraTotal + ' EUR';
+      const baseTotal = parseInt(totalEl.textContent, 10) || 0;
+      if (baseTotal < extraTotal || !supportsExtraBed(apt)) return;
+      totalEl.textContent = (baseTotal) + ' EUR';
+    } else {
+      row.style.display = 'none';
+    }
+  };
+
+  window.calcModalPrice = function() {
+    const apt = document.getElementById('m-apt');
+    const hint = document.getElementById('modalPriceHint');
+    const priceText = document.getElementById('modalPriceText');
+    if (!hint || !priceText || !apt) return;
+
+    const { inVal, outVal } = getModalDates();
+    updateExtraBedAvailability('modal');
+    if (!apt.value || !inVal || !outVal) { hint.style.display = 'none'; return; }
+
+    const d1 = new Date(inVal), d2 = new Date(outVal);
+    if (d2 <= d1) { hint.style.display='none'; return; }
+
+    const nights = Math.round((d2-d1)/86400000);
+    function getPrice(date) {
+      const m=date.getMonth()+1, d=date.getDate(), md=m*100+d;
+      if(md>=601&&md<=610) return 70;
+      if(md>=611&&md<=619) return 85;
+      if(md>=620&&md<=630) return 95;
+      if(md>=701&&md<=705) return 115;
+      if(md>=706&&md<=712) return 119;
+      if(md>=713&&md<=724) return 130;
+      if(md>=725||(m===8&&d<=15)) return 150;
+      if(md>=816&&md<=830) return 130;
+      if(md>=831||(m===9&&d<=6)) return 100;
+      if(m===9&&d>=7&&d<=13) return 90;
+      if(m===9&&d>=14) return 85;
+      return 85;
+    }
+    let total = 0, cur = new Date(d1);
+    for(let i=0;i<nights;i++){ total += getPrice(cur); cur.setDate(cur.getDate()+1); }
+    total += getExtraBedTotal('modal', inVal, outVal, apt.value);
+
+    const lang=localStorage.getItem('balent_lang')||'hr';
+    const nl={hr:nights+' noćenja',en:nights+' nights',de:nights+' Nächte',it:nights+' notti',ru:nights+' ночей'}[lang]||nights+' noćenja';
+    const inc={hr:'uključena boravišna pristojba',en:'tourist tax included',de:'Kurtaxe inklusive',it:'tassa inclusa',ru:'сбор включён'}[lang]||'uključena boravišna pristojba';
+    const extraText = getExtraBedTotal('modal', inVal, outVal, apt.value) > 0
+      ? ({hr:` · pomoćni ležaj +${getExtraBedTotal('modal', inVal, outVal, apt.value)} €`,en:` · extra bed +${getExtraBedTotal('modal', inVal, outVal, apt.value)} €`,de:` · Zusatzbett +${getExtraBedTotal('modal', inVal, outVal, apt.value)} €`,it:` · letto aggiunto +${getExtraBedTotal('modal', inVal, outVal, apt.value)} €`,ru:` · доп. кровать +${getExtraBedTotal('modal', inVal, outVal, apt.value)} €`}[lang] || '')
+      : '';
+    priceText.textContent = nl + ' · ' + total + ' €' + extraText + ' · ' + inc;
+    hint.style.display='block';
+  };
+
+  const prevCalcPriceLocal = window.calcPriceLocal;
+  window.calcPriceLocal = function(dateIn, dateOut, aptOverride, extraOverride) {
+    const base = prevCalcPriceLocal(dateIn, dateOut);
+    const apt = aptOverride || document.getElementById('m-apt')?.value || document.getElementById('calc-apt')?.value || '';
+    if (!supportsExtraBed(apt)) return base;
+    const extra = parseInt(extraOverride ?? document.getElementById('m-extra')?.value ?? document.getElementById('calc-extra')?.value ?? '0', 10) || 0;
+    return base + (nightsBetween(dateIn, dateOut) * EXTRA_BED_PRICE * extra);
+  };
+
+  function patchSubmitPriceAndText() {
+    const target = window.submitModalFinal;
+    if (typeof target !== 'function' || window.__extraBedSubmitPatched) return;
+    window.submitModalFinal = async function(...args) {
+      return target.apply(this, args);
+    };
+    window.__extraBedSubmitPatched = true;
+  }
+
+  function bindExtraEvents() {
+    ['calc-apt','calc-extra'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.dataset.extraBound) {
+        el.addEventListener('change', () => { updateExtraBedAvailability('calc'); window.calcPrice?.(); });
+        el.dataset.extraBound = '1';
+      }
+    });
+    ['m-apt','m-extra'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.dataset.extraBound) {
+        el.addEventListener('change', () => { updateExtraBedAvailability('modal'); window.calcModalPrice?.(); });
+        el.dataset.extraBound = '1';
+      }
+    });
+  }
+
+  function wrapContactModalMode() {
+    const prev = window.updateContactModalMode;
+    if (typeof prev !== 'function' || window.__extraBedModeWrapped) return;
+    window.updateContactModalMode = function(...args) {
+      const result = prev.apply(this, args);
+      const row = document.getElementById('m-extra-row');
+      if (row) {
+        const bookingMode = (window.contactModalMode || 'booking') === 'booking';
+        row.style.display = bookingMode ? (supportsExtraBed(document.getElementById('m-apt')?.value || '') || !document.getElementById('m-apt')?.value ? '' : 'none') : 'none';
+      }
+      return result;
+    };
+    window.__extraBedModeWrapped = true;
+  }
+
+  function initFinalApartmentAndExtraBedFixes() {
+    ensureModalExtraField();
+    normalizeApartmentAmenitySets();
+    updateExtraBedOptionTexts();
+    updateExtraBedAvailability('calc');
+    updateExtraBedAvailability('modal');
+    bindExtraEvents();
+    wrapContactModalMode();
+    patchSubmitPriceAndText();
+    try { if (typeof setLang === 'function') setLang(localStorage.getItem('balent_lang') || 'hr'); } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFinalApartmentAndExtraBedFixes, { once: true });
+  } else {
+    initFinalApartmentAndExtraBedFixes();
   }
 })();
 </script>
