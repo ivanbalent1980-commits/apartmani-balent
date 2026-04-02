@@ -256,8 +256,13 @@ section{padding:5.5rem 3rem}
 .apt-foot{display:flex;justify-content:space-between;align-items:center;gap:.8rem}
 .apt-amenities{display:flex;gap:.4rem;flex-wrap:wrap;flex:1}
 .apt-tag{font-size:.67rem;background:var(--sand);color:var(--navy);padding:.2rem .55rem;border-radius:1px;white-space:nowrap}
-.btn-sm{font-size:.73rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);text-decoration:none;border:1px solid var(--navy);padding:.42rem 1rem;border-radius:2px;transition:all .2s;cursor:pointer;background:none;white-space:nowrap;flex-shrink:0}
-.btn-sm:hover{background:var(--navy);color:#fff}
+.btn-sm{display:inline-flex;align-items:center;gap:.7rem;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-decoration:none;border:1px solid var(--accent);padding:.82rem 1.2rem;border-radius:2px;transition:all .2s;cursor:pointer;background:var(--accent);white-space:nowrap;flex-shrink:0;box-shadow:none}
+.btn-sm::before{content:"✉";font-size:1rem;line-height:1;display:inline-block;transform:translateY(-1px)}
+.btn-sm:hover{background:#fff;border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+
+.booking-cta-btn{display:inline-flex;align-items:center;justify-content:center;gap:.7rem;background:var(--accent);border:1px solid var(--accent);color:#fff;padding:.9rem 1.35rem;font-family:var(--sans);font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;border-radius:2px;cursor:pointer;transition:all .2s;text-decoration:none}
+.booking-cta-btn::before{content:"✉";font-size:1rem;line-height:1;display:inline-block;transform:translateY(-1px)}
+.booking-cta-btn:hover{background:#fff;border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
 
 /* GALLERY with apt tabs */
 #galerija{background:var(--sand);padding:4.25rem 3rem}
@@ -288,7 +293,7 @@ section{padding:5.5rem 3rem}
 .map-wrap iframe{width:100%;height:100%;border:none;display:block}
 .contact-items{margin-bottom:1.8rem}
 .host-card{display:flex;gap:1rem;align-items:flex-start;background:var(--sand);padding:1rem;border-radius:2px;border-left:2px solid var(--accent);margin:1rem 0 1.6rem}
-.host-card img{width:92px;height:132px;object-fit:cover;object-position:center top;border-radius:2px;flex-shrink:0}
+.host-card img{width:92px;height:132px;object-fit:cover;object-position:center 18%;border-radius:2px;flex-shrink:0}
 .host-card h4{font-size:.95rem;color:var(--navy);margin:0 0 .35rem}
 .host-card p{font-size:.84rem;line-height:1.65;color:var(--muted);margin:0}
 @media(max-width:640px){.host-card{align-items:center}.host-card img{width:84px;height:118px}}
@@ -1598,7 +1603,7 @@ img { max-width: 100%; height: auto; }
       </div>
     </div>
     <div style="text-align:center;margin-top:1.8rem">
-      <button onclick="openModal()" class="btn-primary">
+      <button onclick="openModal()" class="btn-primary booking-cta-btn">
       <span data-lang="hr" class="lang-active">Pošalji upit za rezervaciju →</span>
       <span data-lang="en">Send booking enquiry →</span>
       <span data-lang="de">Anfrage senden →</span>
@@ -1709,7 +1714,7 @@ img { max-width: 100%; height: auto; }
       </div>
     </div>
     <div style="text-align:center;margin-top:2rem">
-      <button onclick="openModal()" class="btn-primary">
+      <button onclick="openModal()" class="btn-primary booking-cta-btn">
         <span data-lang="hr" class="lang-active">Pošalji upit →</span>
         <span data-lang="en">Send enquiry →</span>
         <span data-lang="de">Anfrage senden →</span>
@@ -2040,7 +2045,13 @@ img { max-width: 100%; height: auto; }
       <span data-lang="it">Trovateci<br><em>a Šilo</em></span>
       <span data-lang="ru">Найдите<br><em>нас в Шило</em></span>
     </h2>
-        <p class="sec-desc" style="margin-bottom:2rem">Šilo je mirno ribarsko mjestašce na sjeveroistočnom dijelu otoka Krka, smješteno nasuprot Crikvenice. Poznato je po pješčanoj plaži i kristalnom moru te kao polazišna točka prve trajektne linije u Hrvatskoj – idealna baza za istraživanje cijelog otoka.</p>
+        <p class="sec-desc" style="margin-bottom:2rem">
+          <span data-lang="hr" class="lang-active">Šilo je mirno ribarsko mjestašce na sjeveroistočnom dijelu otoka Krka, smješteno nasuprot Crikvenice. Poznato je po pješčanoj plaži i kristalnom moru te kao polazišna točka prve trajektne linije u Hrvatskoj – idealna baza za istraživanje cijelog otoka.</span>
+          <span data-lang="en">Šilo is a peaceful fishing village on the north-eastern side of the island of Krk, located opposite Crikvenica. It is known for its sandy beach and crystal-clear sea, as well as for being the starting point of Croatia’s first ferry route – an ideal base for exploring the whole island.</span>
+          <span data-lang="de">Šilo ist ein ruhiges Fischerdorf im Nordosten der Insel Krk, direkt gegenüber von Crikvenica. Bekannt ist es für seinen Sandstrand, das kristallklare Meer und als Ausgangspunkt der ersten Fährverbindung Kroatiens – ein idealer Ort, um die ganze Insel zu erkunden.</span>
+          <span data-lang="it">Šilo è un tranquillo villaggio di pescatori nella parte nord-orientale dell’isola di Krk, di fronte a Crikvenica. È noto per la sua spiaggia sabbiosa, il mare cristallino e per essere il punto di partenza della prima linea di traghetto in Croazia – una base ideale per esplorare tutta l’isola.</span>
+          <span data-lang="ru">Шило — тихая рыбацкая деревушка на северо-востоке острова Крк, расположенная напротив Цриквеницы. Она известна своим песчаным пляжем, кристально чистым морем и тем, что отсюда началась первая паромная линия в Хорватии — это отличная база для знакомства со всем островом.</span>
+        </p>
         
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem">
           <div style="display:flex;align-items:center;gap:.5rem;background:var(--sand);padding:.6rem 1rem;border-radius:2px;font-size:.82rem;color:var(--navy);font-weight:500">
@@ -2144,7 +2155,7 @@ img { max-width: 100%; height: auto; }
             <div class="fg full" style="background:var(--sand);padding:.9rem 1rem;border-radius:2px;border-left:2px solid var(--accent)">
               <p style="font-size:.82rem;color:var(--muted);line-height:1.6;">📋 <span data-lang="hr" class="lang-active">Nakon slanja upita, javit ćemo vam se u roku od 24 sata s potvrdom dostupnosti i detaljima rezervacije.</span><span data-lang="en">After submitting your enquiry, we will get back to you within 24 hours with availability and booking details.</span><span data-lang="de">Nach dem Absenden melden wir uns innerhalb von 24 Stunden mit Verfügbarkeit und Buchungsdetails.</span><span data-lang="it">Dopo l'invio vi risponderemo entro 24 ore con disponibilità e dettagli di prenotazione.</span><span data-lang="ru">После отправки запроса мы свяжемся с вами в течение 24 часов с подтверждением наличия и деталями бронирования.</span></p>
             </div>
-            <div class="fg full"><button class="btn-primary" onclick="openModal()" style="width:100%;border:none;font-family:var(--sans)"><span data-lang="hr" class="lang-active">Pošalji upit →</span><span data-lang="en">Send enquiry →</span><span data-lang="de">Anfrage senden →</span><span data-lang="it">Invia richiesta →</span><span data-lang="ru">Отправить запрос →</span></button></div>
+            <div class="fg full"><button class="btn-primary booking-cta-btn" onclick="openModal()" style="width:100%;font-family:var(--sans)"><span data-lang="hr" class="lang-active">Pošalji upit →</span><span data-lang="en">Send enquiry →</span><span data-lang="de">Anfrage senden →</span><span data-lang="it">Invia richiesta →</span><span data-lang="ru">Отправить запрос →</span></button></div>
           </div>
         </div>
       </div>
@@ -4482,52 +4493,52 @@ window.submitModalFinal = submitModal;
     return parts.join('\n');
   }
 
-  function applyBookingTestDefaults() {
-    const nameEl = document.getElementById('m-name');
-    const emailEl = document.getElementById('m-email');
-    const msgEl = document.getElementById('m-msg');
+  function clearBookingFormDefaults() {
+    const fields = ['m-name', 'm-email', 'm-phone', 'm-msg'];
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
     const aptEl = document.getElementById('m-apt');
     const guestsEl = document.getElementById('m-guests');
     const childrenEl = document.getElementById('m-children');
+    const extraEl = document.getElementById('m-extra');
     const checkinEl = document.getElementById('m-checkin');
     const checkoutEl = document.getElementById('m-checkout');
-    if (nameEl) nameEl.value = 'Ivan Ivic';
-    if (emailEl) emailEl.value = 'a@b.com';
-    if (msgEl) msgEl.value = 'hello world, nice to see you.';
-    if (aptEl) {
-      aptEl.value = '4';
-      try { showModalCal(4); } catch (err) {}
-      try { calcModalPrice(); } catch (err) {}
-    }
-    if (guestsEl && !guestsEl.value) guestsEl.value = '2';
-    if (childrenEl && !childrenEl.value) childrenEl.value = '0';
+
+    if (aptEl) aptEl.value = '';
+    if (guestsEl) guestsEl.value = '1';
+    if (childrenEl) childrenEl.value = '0';
+    if (extraEl) extraEl.value = '0';
+
     if (checkinEl) {
-      checkinEl.value = '22.04.2026.';
-      checkinEl._fpVal = '2026-04-22';
-      if (checkinEl._flatpickr) checkinEl._flatpickr.setDate('2026-04-22', false, 'Y-m-d');
+      checkinEl.value = '';
+      checkinEl._fpVal = '';
+      if (checkinEl._flatpickr) checkinEl._flatpickr.clear();
     }
     if (checkoutEl) {
-      checkoutEl.value = '24.04.2026.';
-      checkoutEl._fpVal = '2026-04-24';
-      if (checkoutEl._flatpickr) checkoutEl._flatpickr.setDate('2026-04-24', false, 'Y-m-d');
+      checkoutEl.value = '';
+      checkoutEl._fpVal = '';
+      if (checkoutEl._flatpickr) checkoutEl._flatpickr.clear();
     }
-    try { calcModalPrice(); } catch (err) {}
+
+    const hint = document.getElementById('modalPriceHint');
+    if (hint) hint.style.display = 'none';
   }
 
-  function applyQuestionTestDefaults() {
-    const nameEl = document.getElementById('q-name');
-    const emailEl = document.getElementById('q-email');
-    const msgEl = document.getElementById('q-msg');
-    if (nameEl) nameEl.value = 'Ivan Ivic';
-    if (emailEl) emailEl.value = 'a@b.com';
-    if (msgEl) msgEl.value = 'hello world, nice to see you.';
+  function clearQuestionFormDefaults() {
+    ['q-name', 'q-email', 'q-phone', 'q-msg'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
   }
 
   const originalOpenModalForDefaults = window.openModal;
   if (typeof originalOpenModalForDefaults === 'function') {
     window.openModal = function(...args) {
       const result = originalOpenModalForDefaults.apply(this, args);
-      setTimeout(applyBookingTestDefaults, 0);
+      setTimeout(clearBookingFormDefaults, 0);
       return result;
     };
   }
@@ -4536,7 +4547,7 @@ window.submitModalFinal = submitModal;
   if (typeof originalOpenQuestionModalForDefaults === 'function') {
     window.openQuestionModal = function(...args) {
       const result = originalOpenQuestionModalForDefaults.apply(this, args);
-      setTimeout(applyQuestionTestDefaults, 0);
+      setTimeout(clearQuestionFormDefaults, 0);
       return result;
     };
   }
@@ -4808,7 +4819,7 @@ ${line}`;
       hostCard.className = 'host-card';
       hostCard.id = 'hostCard';
       hostCard.innerHTML =
-        '<img src="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/ostalo/mica_Image%202026-03-26%20at%2013.25.25.jpeg" alt="Domaćica apartmana">' +
+        '<img src="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/ostalo/gaga_portret.jpg" alt="Domaćica apartmana">' +
         '<div>' +
           '<h4><span data-lang="hr" class="lang-active">Vaša domaćica</span><span data-lang="en">Your host</span><span data-lang="de">Ihre Gastgeberin</span><span data-lang="it">La vostra host</span><span data-lang="ru">Ваша хозяйка</span></h4>' +
           '<p><span data-lang="hr" class="lang-active">Za sva pitanja, informacije i rezervacije stoji vam na raspolaganju vaša domaćica.</span><span data-lang="en">Your host is available for all questions, information and reservations.</span><span data-lang="de">Ihre Gastgeberin steht Ihnen für alle Fragen, Informationen und Reservierungen zur Verfügung.</span><span data-lang="it">La vostra host è a disposizione per domande, informazioni e prenotazioni.</span><span data-lang="ru">Ваша хозяйка всегда на связи по всем вопросам, информации и бронированиям.</span></p>' +
@@ -5442,7 +5453,10 @@ ${line}`;
   function updateLegacyUnifiedModeUi() {
     ensureLegacyUnifiedModeUi();
     const mode = window.detailUnifiedMode || 'booking';
-    const lang = (window.currentLang && copy[window.currentLang]) ? window.currentLang : 'hr';
+    const lang = (() => {
+      const stored = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+      return copy[stored] ? stored : 'hr';
+    })();
     const cfg = copy[lang];
 
     const heading = document.getElementById('detail-form-title');
@@ -5455,6 +5469,8 @@ ${line}`;
     const dateOutRow = document.getElementById('detail-checkout')?.closest('.fg');
     const aptRow = document.getElementById('detail-apt')?.closest('.fg');
     const guestsRow = document.getElementById('detail-guests')?.closest('.fg');
+    const nameInput = document.getElementById('detail-name');
+    const msgInput = document.getElementById('detail-msg');
 
     const bookingMode = mode === 'booking';
     [dateInRow, dateOutRow, aptRow, guestsRow].forEach(row => {
@@ -5464,6 +5480,32 @@ ${line}`;
     if (heading) heading.textContent = bookingMode ? cfg.bookingTitle : cfg.questionTitle;
     if (note) note.textContent = bookingMode ? cfg.bookingNote : cfg.questionNote;
     if (submitBtn) submitBtn.textContent = bookingMode ? cfg.bookingBtn : cfg.questionBtn;
+    if (nameInput) {
+      nameInput.placeholder = {
+        hr: 'Marija Horvat',
+        en: 'John Smith',
+        de: 'Max Mustermann',
+        it: 'Mario Rossi',
+        ru: 'Иван Иванов'
+      }[lang] || 'Marija Horvat';
+    }
+    if (msgInput) {
+      msgInput.placeholder = bookingMode
+        ? ({
+            hr: 'Vaša poruka ili pitanje...',
+            en: 'Your message or question...',
+            de: 'Ihre Nachricht oder Frage...',
+            it: 'Il vostro messaggio o domanda...',
+            ru: 'Ваше сообщение или вопрос...'
+          }[lang] || 'Vaša poruka ili pitanje...')
+        : ({
+            hr: 'Vaše pitanje...',
+            en: 'Your question...',
+            de: 'Ihre Frage...',
+            it: 'La tua domanda...',
+            ru: 'Ваш вопрос...'
+          }[lang] || 'Vaše pitanje...');
+    }
 
     if (bookingBtn) {
       bookingBtn.textContent = cfg.bookingTab;
@@ -6138,6 +6180,338 @@ ${line}`;
     document.addEventListener('DOMContentLoaded', initFinalApartmentAndExtraBedFixes, { once: true });
   } else {
     initFinalApartmentAndExtraBedFixes();
+  }
+})();
+</script>
+<script>
+(() => {
+  const langOrder = ['hr', 'en', 'de', 'it', 'ru'];
+  const uiCopy = {
+    hr: {
+      navContact: 'Kontakt',
+      bookingCta: 'Upit / rezervacija',
+      promoCta: 'Upit / rezervacija',
+      heroOutline: 'Upit / rezervacija',
+      fab: 'Upit / rezervacija',
+      aboutBadge: 'godina tradicije i iskustva',
+      legacyTitle: 'Pošalji upit za rezervaciju',
+      legacyGuests: ['1 gost', '2 gosta', '3 gosta', '4 gosta'],
+      legacyApts: ['Odaberi apartman', 'Apartman 1 – Prizemlje', 'Apartman 2 – Prizemlje', 'Apartman 3 – 1. kat', 'Apartman 4 – 1. kat']
+    },
+    en: {
+      navContact: 'Contact',
+      bookingCta: 'Enquiry / booking',
+      promoCta: 'Enquiry / booking',
+      heroOutline: 'Enquiry / booking',
+      fab: 'Enquiry / booking',
+      aboutBadge: 'years of tradition and hospitality',
+      legacyTitle: 'Send booking enquiry',
+      legacyGuests: ['1 guest', '2 guests', '3 guests', '4 guests'],
+      legacyApts: ['Select apartment', 'Apartment 1 – Ground floor', 'Apartment 2 – Ground floor', 'Apartment 3 – 1st floor', 'Apartment 4 – 1st floor']
+    },
+    de: {
+      navContact: 'Kontakt',
+      bookingCta: 'Anfrage / Buchung',
+      promoCta: 'Anfrage / Buchung',
+      heroOutline: 'Anfrage / Buchung',
+      fab: 'Anfrage / Buchung',
+      aboutBadge: 'Jahre Tradition und Gastfreundschaft',
+      legacyTitle: 'Buchungsanfrage senden',
+      legacyGuests: ['1 Gast', '2 Gäste', '3 Gäste', '4 Gäste'],
+      legacyApts: ['Apartment auswählen', 'Apartment 1 – Erdgeschoss', 'Apartment 2 – Erdgeschoss', 'Apartment 3 – 1. OG', 'Apartment 4 – 1. OG']
+    },
+    it: {
+      navContact: 'Contatti',
+      bookingCta: 'Richiesta / prenotazione',
+      promoCta: 'Richiesta / prenotazione',
+      heroOutline: 'Richiesta / prenotazione',
+      fab: 'Richiesta / prenotazione',
+      aboutBadge: 'anni di tradizione e ospitalità',
+      legacyTitle: 'Invia richiesta di prenotazione',
+      legacyGuests: ['1 ospite', '2 ospiti', '3 ospiti', '4 ospiti'],
+      legacyApts: ['Seleziona appartamento', 'Appartamento 1 – Piano terra', 'Appartamento 2 – Piano terra', 'Appartamento 3 – 1° piano', 'Appartamento 4 – 1° piano']
+    },
+    ru: {
+      navContact: 'Контакт',
+      bookingCta: 'Запрос / бронирование',
+      promoCta: 'Запрос / бронирование',
+      heroOutline: 'Запрос / бронирование',
+      fab: 'Запрос / бронирование',
+      aboutBadge: 'лет традиций и гостеприимства',
+      legacyTitle: 'Отправить запрос на бронирование',
+      legacyGuests: ['1 гость', '2 гостя', '3 гостя', '4 гостя'],
+      legacyApts: ['Выберите апартамент', 'Апартамент 1 – 1-й этаж', 'Апартамент 2 – 1-й этаж', 'Апартамент 3 – 2-й этаж', 'Апартамент 4 – 2-й этаж']
+    }
+  };
+
+  const apartmentCopy = {
+    hr: [
+      {
+        ribbon: 'APARTMAN 1 · PRIZEMLJE',
+        floorSpec: 'Terasa',
+        desc: 'Prostran i udoban dvosobni apartman od 60 m² u prizemlju s pogledom na vrt. Terasa 12 m² s vanjskim namještajem. Zajednički roštilj u dvorištu.',
+        bullets: ['🛋️ Dnevna soba s kuhinjom i blagovaonicom', '🛏️ Spavaća soba 1 – bračni krevet, ormar', '🛏️ Spavaća soba 2 – bračni krevet, ormar', '🚿 Kupaonica s walk-in tuš kabinom', '🪑 Terasa s vanjskim namještajem'],
+        tags: ['Wi‑Fi', 'Klima-uređaj', 'Indukcijska ploča 4 kola', 'Perilica suđa', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'LED TV']
+      },
+      {
+        ribbon: 'APARTMAN 2 · PRIZEMLJE',
+        floorSpec: '2x balkon',
+        desc: 'Lijep i moderan dvosobni apartman od 60 m² s dvije spavaće sobe, kuhinjom, dnevnim boravkom i walk-in tušem. Terasa 12 m². Zajednički roštilj u dvorištu.',
+        bullets: ['🛋️ Dnevna soba s kuhinjom i blagovaonicom', '🛏️ Spavaća soba 1 – bračni krevet, ormar', '🛏️ Spavaća soba 2 – bračni krevet, ormar', '🚿 Kupaonica s walk-in tuš kabinom', '🪑 Balkon s vanjskim namještajem'],
+        tags: ['Wi‑Fi', 'Klima-uređaj', '2× LED TV', 'Perilica suđa', 'Staklokeramička ploča 4 kola', 'Nespresso + 10 kapsula', 'Toster', 'Frižider s ledenicom']
+      },
+      {
+        ribbon: 'APARTMAN 3 · 1. KAT',
+        floorSpec: 'Balkon',
+        desc: 'Udoban dvosobni apartman od 60 m² na prvom katu s djelomičnim pogledom na more. Dvije spavaće sobe, opremljena kuhinja, walk-in tuš, balkon s foteljama. Zajednički roštilj u dvorištu.',
+        bullets: ['🛋️ Dnevna soba s kuhinjom i blagovaonicom', '🛏️ Spavaća soba 1 – bračni krevet, ormar', '🛏️ Spavaća soba 2 – bračni krevet, ormar', '🚿 Kupaonica s walk-in tuš kabinom', '🪑 Balkon s vanjskim namještajem', '🌊 Djelomičan pogled na more'],
+        tags: ['Wi‑Fi', 'Klima-uređaj', 'Indukcijska ploča 4 kola', 'Perilica suđa', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'LED TV']
+      },
+      {
+        ribbon: 'APARTMAN 4 · 1. KAT',
+        floorSpec: 'Terasa i balkon',
+        desc: 'Ovaj apartman za do 4 osobe pruža ugodan i funkcionalan prostor za bezbrižan odmor. Kombinacija udobnosti i praktičnosti čini ga savršenim izborom za opuštanje s obitelji ili prijateljima.',
+        bullets: ['🛋️ Dnevna soba s kuhinjom i blagovaonicom', '🛏️ Spavaća soba 1 – bračni krevet, ormar', '🛏️ Spavaća soba 2 – bračni krevet, ormar', '🚿 Kupaonica s walk-in tuš kabinom', '🪑 Terasa i balkon s vanjskim namještajem', '🌊 Djelomičan pogled na more'],
+        tags: ['Wi‑Fi', 'Klima-uređaj', 'Indukcijska ploča 4 kola', 'Perilica suđa', 'Kuhalo za vodu', 'Nespresso + 10 kapsula', 'Walk-in tuš', 'Frižider s ledenicom', 'LED TV']
+      }
+    ],
+    en: [
+      {
+        ribbon: 'APARTMENT 1 · GROUND FLOOR',
+        floorSpec: 'Terrace',
+        desc: 'Spacious and comfortable 60 m² two-bedroom apartment on the ground floor with a garden view. 12 m² terrace with outdoor furniture. Shared BBQ in the courtyard.',
+        bullets: ['🛋️ Living room with kitchen and dining area', '🛏️ Bedroom 1 – double bed, wardrobe', '🛏️ Bedroom 2 – double bed, wardrobe', '🚿 Bathroom with walk-in shower', '🪑 Terrace with outdoor furniture'],
+        tags: ['Wi‑Fi', 'Air conditioning', 'Induction hob 4 rings', 'Dishwasher', 'Kettle', 'Nespresso + 10 capsules', 'Walk-in shower', 'Fridge with freezer', 'LED TV']
+      },
+      {
+        ribbon: 'APARTMENT 2 · GROUND FLOOR',
+        floorSpec: '2x balcony',
+        desc: 'Beautiful and modern 60 m² two-bedroom apartment with two bedrooms, kitchen, living room and walk-in shower. 12 m² terrace. Shared BBQ in the courtyard.',
+        bullets: ['🛋️ Living room with kitchen and dining area', '🛏️ Bedroom 1 – double bed, wardrobe', '🛏️ Bedroom 2 – double bed, wardrobe', '🚿 Bathroom with walk-in shower', '🪑 Balcony with outdoor furniture'],
+        tags: ['Wi‑Fi', 'Air conditioning', '2× LED TV', 'Dishwasher', 'Ceramic hob 4 rings', 'Nespresso + 10 capsules', 'Toaster', 'Fridge with freezer']
+      },
+      {
+        ribbon: 'APARTMENT 3 · 1ST FLOOR',
+        floorSpec: 'Balcony',
+        desc: 'Comfortable 60 m² two-bedroom apartment on the first floor with a partial sea view. Two bedrooms, equipped kitchen, walk-in shower and balcony with armchairs. Shared BBQ in the courtyard.',
+        bullets: ['🛋️ Living room with kitchen and dining area', '🛏️ Bedroom 1 – double bed, wardrobe', '🛏️ Bedroom 2 – double bed, wardrobe', '🚿 Bathroom with walk-in shower', '🪑 Balcony with outdoor furniture', '🌊 Partial sea view'],
+        tags: ['Wi‑Fi', 'Air conditioning', 'Induction hob 4 rings', 'Dishwasher', 'Kettle', 'Nespresso + 10 capsules', 'Walk-in shower', 'Fridge with freezer', 'LED TV']
+      },
+      {
+        ribbon: 'APARTMENT 4 · 1ST FLOOR',
+        floorSpec: 'Terrace and balcony',
+        desc: 'This apartment for up to 4 guests offers a pleasant and functional space for a carefree holiday. The combination of comfort and practicality makes it a perfect choice for relaxing with family or friends.',
+        bullets: ['🛋️ Living room with kitchen and dining area', '🛏️ Bedroom 1 – double bed, wardrobe', '🛏️ Bedroom 2 – double bed, wardrobe', '🚿 Bathroom with walk-in shower', '🪑 Terrace and balcony with outdoor furniture', '🌊 Partial sea view'],
+        tags: ['Wi‑Fi', 'Air conditioning', 'Induction hob 4 rings', 'Dishwasher', 'Kettle', 'Nespresso + 10 capsules', 'Walk-in shower', 'Fridge with freezer', 'LED TV']
+      }
+    ],
+    de: [
+      {
+        ribbon: 'APARTMENT 1 · ERDGESCHOSS',
+        floorSpec: 'Terrasse',
+        desc: 'Geräumiges und komfortables 60 m² Apartment mit zwei Schlafzimmern im Erdgeschoss mit Blick auf den Garten. 12 m² Terrasse mit Gartenmöbeln. Gemeinsamer Grill im Hof.',
+        bullets: ['🛋️ Wohnzimmer mit Küche und Essbereich', '🛏️ Schlafzimmer 1 – Doppelbett, Kleiderschrank', '🛏️ Schlafzimmer 2 – Doppelbett, Kleiderschrank', '🚿 Badezimmer mit Walk-in-Dusche', '🪑 Terrasse mit Gartenmöbeln'],
+        tags: ['WLAN', 'Klimaanlage', 'Induktionskochfeld 4 Kochzonen', 'Geschirrspüler', 'Wasserkocher', 'Nespresso + 10 Kapseln', 'Walk-in-Dusche', 'Kühlschrank mit Gefrierfach', 'LED-TV']
+      },
+      {
+        ribbon: 'APARTMENT 2 · ERDGESCHOSS',
+        floorSpec: '2x Balkon',
+        desc: 'Schönes und modernes 60 m² Apartment mit zwei Schlafzimmern, Küche, Wohnzimmer und Walk-in-Dusche. Terrasse 12 m². Gemeinsamer Grill im Hof.',
+        bullets: ['🛋️ Wohnzimmer mit Küche und Essbereich', '🛏️ Schlafzimmer 1 – Doppelbett, Kleiderschrank', '🛏️ Schlafzimmer 2 – Doppelbett, Kleiderschrank', '🚿 Badezimmer mit Walk-in-Dusche', '🪑 Balkon mit Gartenmöbeln'],
+        tags: ['WLAN', 'Klimaanlage', '2× LED-TV', 'Geschirrspüler', 'Glaskeramikkochfeld 4 Kochzonen', 'Nespresso + 10 Kapseln', 'Toaster', 'Kühlschrank mit Gefrierfach']
+      },
+      {
+        ribbon: 'APARTMENT 3 · 1. OG',
+        floorSpec: 'Balkon',
+        desc: 'Komfortables 60 m² Apartment mit zwei Schlafzimmern im ersten Stock und teilweisem Meerblick. Zwei Schlafzimmer, ausgestattete Küche, Walk-in-Dusche und Balkon mit Sesseln. Gemeinsamer Grill im Hof.',
+        bullets: ['🛋️ Wohnzimmer mit Küche und Essbereich', '🛏️ Schlafzimmer 1 – Doppelbett, Kleiderschrank', '🛏️ Schlafzimmer 2 – Doppelbett, Kleiderschrank', '🚿 Badezimmer mit Walk-in-Dusche', '🪑 Balkon mit Gartenmöbeln', '🌊 Teilweiser Meerblick'],
+        tags: ['WLAN', 'Klimaanlage', 'Induktionskochfeld 4 Kochzonen', 'Geschirrspüler', 'Wasserkocher', 'Nespresso + 10 Kapseln', 'Walk-in-Dusche', 'Kühlschrank mit Gefrierfach', 'LED-TV']
+      },
+      {
+        ribbon: 'APARTMENT 4 · 1. OG',
+        floorSpec: 'Terrasse und Balkon',
+        desc: 'Dieses Apartment für bis zu 4 Personen bietet einen angenehmen und funktionalen Raum für einen unbeschwerten Urlaub. Die Kombination aus Komfort und Praktikabilität macht es zur perfekten Wahl für entspannte Tage mit Familie oder Freunden.',
+        bullets: ['🛋️ Wohnzimmer mit Küche und Essbereich', '🛏️ Schlafzimmer 1 – Doppelbett, Kleiderschrank', '🛏️ Schlafzimmer 2 – Doppelbett, Kleiderschrank', '🚿 Badezimmer mit Walk-in-Dusche', '🪑 Terrasse und Balkon mit Gartenmöbeln', '🌊 Teilweiser Meerblick'],
+        tags: ['WLAN', 'Klimaanlage', 'Induktionskochfeld 4 Kochzonen', 'Geschirrspüler', 'Wasserkocher', 'Nespresso + 10 Kapseln', 'Walk-in-Dusche', 'Kühlschrank mit Gefrierfach', 'LED-TV']
+      }
+    ],
+    it: [
+      {
+        ribbon: 'APPARTAMENTO 1 · PIANO TERRA',
+        floorSpec: 'Terrazza',
+        desc: 'Spazioso e confortevole appartamento di 60 m² al piano terra con vista sul giardino. Terrazza di 12 m² con mobili da esterno. Barbecue condiviso nel cortile.',
+        bullets: ['🛋️ Soggiorno con cucina e zona pranzo', '🛏️ Camera da letto 1 – letto matrimoniale, armadio', '🛏️ Camera da letto 2 – letto matrimoniale, armadio', '🚿 Bagno con doccia walk-in', '🪑 Terrazza con mobili da esterno'],
+        tags: ['Wi‑Fi', 'Aria condizionata', 'Piano a induzione 4 fuochi', 'Lavastoviglie', 'Bollitore', 'Nespresso + 10 capsule', 'Doccia walk-in', 'Frigorifero con congelatore', 'TV LED']
+      },
+      {
+        ribbon: 'APPARTAMENTO 2 · PIANO TERRA',
+        floorSpec: '2x balcone',
+        desc: 'Bellissimo e moderno appartamento di 60 m² con due camere da letto, cucina, soggiorno e doccia walk-in. Terrazza di 12 m². Barbecue condiviso nel cortile.',
+        bullets: ['🛋️ Soggiorno con cucina e zona pranzo', '🛏️ Camera da letto 1 – letto matrimoniale, armadio', '🛏️ Camera da letto 2 – letto matrimoniale, armadio', '🚿 Bagno con doccia walk-in', '🪑 Balcone con mobili da esterno'],
+        tags: ['Wi‑Fi', 'Aria condizionata', '2× TV LED', 'Lavastoviglie', 'Piano in vetroceramica 4 fuochi', 'Nespresso + 10 capsule', 'Tostapane', 'Frigorifero con congelatore']
+      },
+      {
+        ribbon: 'APPARTAMENTO 3 · 1° PIANO',
+        floorSpec: 'Balcone',
+        desc: 'Confortevole appartamento di 60 m² al primo piano con vista parziale sul mare. Due camere da letto, cucina attrezzata, doccia walk-in e balcone con poltrone. Barbecue condiviso nel cortile.',
+        bullets: ['🛋️ Soggiorno con cucina e zona pranzo', '🛏️ Camera da letto 1 – letto matrimoniale, armadio', '🛏️ Camera da letto 2 – letto matrimoniale, armadio', '🚿 Bagno con doccia walk-in', '🪑 Balcone con mobili da esterno', '🌊 Vista parziale sul mare'],
+        tags: ['Wi‑Fi', 'Aria condizionata', 'Piano a induzione 4 fuochi', 'Lavastoviglie', 'Bollitore', 'Nespresso + 10 capsule', 'Doccia walk-in', 'Frigorifero con congelatore', 'TV LED']
+      },
+      {
+        ribbon: 'APPARTAMENTO 4 · 1° PIANO',
+        floorSpec: 'Terrazza e balcone',
+        desc: 'Questo appartamento per un massimo di 4 persone offre uno spazio piacevole e funzionale per una vacanza senza pensieri. La combinazione di comfort e praticità lo rende perfetto per rilassarsi con la famiglia o gli amici.',
+        bullets: ['🛋️ Soggiorno con cucina e zona pranzo', '🛏️ Camera da letto 1 – letto matrimoniale, armadio', '🛏️ Camera da letto 2 – letto matrimoniale, armadio', '🚿 Bagno con doccia walk-in', '🪑 Terrazza e balcone con mobili da esterno', '🌊 Vista parziale sul mare'],
+        tags: ['Wi‑Fi', 'Aria condizionata', 'Piano a induzione 4 fuochi', 'Lavastoviglie', 'Bollitore', 'Nespresso + 10 capsule', 'Doccia walk-in', 'Frigorifero con congelatore', 'TV LED']
+      }
+    ],
+    ru: [
+      {
+        ribbon: 'АПАРТАМЕНТ 1 · 1-Й ЭТАЖ',
+        floorSpec: 'Терраса',
+        desc: 'Просторные и удобные двухкомнатные апартаменты 60 м² на первом этаже с видом на сад. Терраса 12 м² с уличной мебелью. Общий мангал во дворе.',
+        bullets: ['🛋️ Гостиная с кухней и обеденной зоной', '🛏️ Спальня 1 – двуспальная кровать, шкаф', '🛏️ Спальня 2 – двуспальная кровать, шкаф', '🚿 Ванная комната с walk-in душем', '🪑 Терраса с уличной мебелью'],
+        tags: ['Wi‑Fi', 'Кондиционер', 'Индукционная плита на 4 конфорки', 'Посудомоечная машина', 'Чайник', 'Nespresso + 10 капсул', 'Walk-in душ', 'Холодильник с морозильной камерой', 'LED TV']
+      },
+      {
+        ribbon: 'АПАРТАМЕНТ 2 · 1-Й ЭТАЖ',
+        floorSpec: '2x балкон',
+        desc: 'Красивые и современные апартаменты 60 м² с двумя спальнями, кухней, гостиной и walk-in душем. Терраса 12 м². Общий мангал во дворе.',
+        bullets: ['🛋️ Гостиная с кухней и обеденной зоной', '🛏️ Спальня 1 – двуспальная кровать, шкаф', '🛏️ Спальня 2 – двуспальная кровать, шкаф', '🚿 Ванная комната с walk-in душем', '🪑 Балкон с уличной мебелью'],
+        tags: ['Wi‑Fi', 'Кондиционер', '2× LED TV', 'Посудомоечная машина', 'Стеклокерамическая плита на 4 конфорки', 'Nespresso + 10 капсул', 'Тостер', 'Холодильник с морозильной камерой']
+      },
+      {
+        ribbon: 'АПАРТАМЕНТ 3 · 2-Й ЭТАЖ',
+        floorSpec: 'Балкон',
+        desc: 'Уютные двухкомнатные апартаменты 60 м² на втором этаже с частичным видом на море. Две спальни, оборудованная кухня, walk-in душ и балкон с креслами. Общий мангал во дворе.',
+        bullets: ['🛋️ Гостиная с кухней и обеденной зоной', '🛏️ Спальня 1 – двуспальная кровать, шкаф', '🛏️ Спальня 2 – двуспальная кровать, шкаф', '🚿 Ванная комната с walk-in душем', '🪑 Балкон с уличной мебелью', '🌊 Частичный вид на море'],
+        tags: ['Wi‑Fi', 'Кондиционер', 'Индукционная плита на 4 конфорки', 'Посудомоечная машина', 'Чайник', 'Nespresso + 10 капсул', 'Walk-in душ', 'Холодильник с морозильной камерой', 'LED TV']
+      },
+      {
+        ribbon: 'АПАРТАМЕНТ 4 · 2-Й ЭТАЖ',
+        floorSpec: 'Терраса и балкон',
+        desc: 'Эти апартаменты для 4 гостей предлагают уютное и функциональное пространство для беззаботного отдыха. Сочетание комфорта и практичности делает их отличным выбором для отдыха с семьёй или друзьями.',
+        bullets: ['🛋️ Гостиная с кухней и обеденной зоной', '🛏️ Спальня 1 – двуспальная кровать, шкаф', '🛏️ Спальня 2 – двуспальная кровать, шкаф', '🚿 Ванная комната с walk-in душем', '🪑 Терраса и балкон с уличной мебелью', '🌊 Частичный вид на море'],
+        tags: ['Wi‑Fi', 'Кондиционер', 'Индукционная плита на 4 конфорки', 'Посудомоечная машина', 'Чайник', 'Nespresso + 10 капсул', 'Walk-in душ', 'Холодильник с морозильной камерой', 'LED TV']
+      }
+    ]
+  };
+
+  function injectHeaderFixStyle() {
+    if (document.getElementById('navLangLayoutFix')) return;
+    const style = document.createElement('style');
+    style.id = 'navLangLayoutFix';
+    style.textContent = `
+      @media (min-width: 901px){
+        nav{gap:1rem}
+        .nav-logo{flex:0 0 auto;white-space:nowrap}
+        .nav-links{flex:1 1 auto;min-width:0;justify-content:center;gap:clamp(.8rem,1.15vw,1.55rem)}
+        .nav-links a{font-size:.68rem;letter-spacing:.11em;white-space:nowrap}
+        .nav-cta{flex:0 0 auto;padding:.55rem 1.05rem;font-size:.7rem}
+        .lang-switcher{flex:0 0 auto;margin-left:0;padding-left:.9rem;gap:.25rem}
+        .lang-btn{padding:.25rem .46rem;font-size:.64rem}
+      }
+      @media (max-width: 1480px) and (min-width: 901px){
+        nav{padding:1.1rem 2rem}
+        nav.scrolled{padding:.82rem 2rem}
+        .nav-links{gap:.82rem}
+        .nav-links a{font-size:.64rem;letter-spacing:.095em}
+        .nav-cta{padding:.5rem .9rem;font-size:.66rem}
+        .lang-switcher{padding-left:.7rem}
+        .lang-btn{padding:.23rem .38rem;font-size:.6rem}
+      }
+      @media (max-width: 1240px) and (min-width: 901px){
+        .nav-links{gap:.68rem}
+        .nav-links a{font-size:.6rem;letter-spacing:.08em}
+        .nav-cta{padding:.48rem .72rem;font-size:.62rem}
+        .lang-switcher{padding-left:.55rem;gap:.18rem}
+        .lang-btn{padding:.2rem .32rem;font-size:.58rem}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function currentLangSafe() {
+    const lang = (localStorage.getItem('balent_lang') || 'hr').toLowerCase();
+    return uiCopy[lang] ? lang : 'hr';
+  }
+
+  function setText(el, text) {
+    if (el) el.textContent = text;
+  }
+
+  function applyHeaderRuntimeCopy(lang) {
+    const copy = uiCopy[lang] || uiCopy.hr;
+    const navItems = document.querySelectorAll('#navLinks > li > a');
+    if (navItems[7]) setText(navItems[7], copy.navContact);
+    if (navItems[8]) setText(navItems[8], copy.bookingCta);
+
+    const heroOutlineBtn = document.querySelector('.hero-btns .btn-outline[onclick="openModal()"]');
+    setText(heroOutlineBtn, copy.heroOutline);
+
+    const aboutBadge = document.querySelector('.about-badge .lbl');
+    setText(aboutBadge, copy.aboutBadge);
+
+    const promoBtn = document.querySelector('[onclick="openModal()"][style*="background:var(--accent"]');
+    setText(promoBtn, copy.promoCta);
+
+    const fabText = document.querySelector('.fab[onclick="openModal()"] .fab-text');
+    setText(fabText, copy.fab);
+
+    const legacyTitle = document.querySelector('#lokacija .sec-label');
+    if (legacyTitle) legacyTitle.textContent = copy.legacyTitle;
+
+    const detailApt = document.getElementById('detail-apt');
+    if (detailApt) Array.from(detailApt.options).forEach((opt, i) => { if (copy.legacyApts[i]) opt.textContent = copy.legacyApts[i]; });
+    const detailGuests = document.getElementById('detail-guests');
+    if (detailGuests) Array.from(detailGuests.options).forEach((opt, i) => { if (copy.legacyGuests[i]) opt.textContent = copy.legacyGuests[i]; });
+  }
+
+  function applyApartmentCardTranslations(lang) {
+    const cards = document.querySelectorAll('.apt-card');
+    const set = apartmentCopy[lang] || apartmentCopy.hr;
+    cards.forEach((card, index) => {
+      const cfg = set[index];
+      if (!cfg) return;
+      const ribbon = card.querySelector('.apt-ribbon');
+      const desc = card.querySelector('.apt-desc');
+      const listItems = card.querySelectorAll('.apt-body > ul:not([style*="display:none"]) li');
+      const specValue = card.querySelectorAll('.apt-spec .v')[3];
+      const tags = card.querySelectorAll('.apt-amenities .apt-tag');
+      if (ribbon) ribbon.textContent = cfg.ribbon;
+      if (desc) desc.textContent = cfg.desc;
+      listItems.forEach((li, i) => { if (cfg.bullets[i]) li.textContent = cfg.bullets[i]; });
+      if (specValue) specValue.textContent = cfg.floorSpec;
+      tags.forEach((tag, i) => { if (cfg.tags[i]) tag.textContent = cfg.tags[i]; });
+    });
+  }
+
+  function applyFinalWebLangFixes() {
+    const lang = currentLangSafe();
+    injectHeaderFixStyle();
+    applyHeaderRuntimeCopy(lang);
+    applyApartmentCardTranslations(lang);
+  }
+
+  function wrapSetLangForFinalWebFixes() {
+    if (window.__finalWebLangFixWrapped || typeof window.setLang !== 'function') return;
+    const prev = window.setLang;
+    window.setLang = function(...args) {
+      const result = prev.apply(this, args);
+      requestAnimationFrame(applyFinalWebLangFixes);
+      return result;
+    };
+    window.__finalWebLangFixWrapped = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      wrapSetLangForFinalWebFixes();
+      applyFinalWebLangFixes();
+    }, { once: true });
+  } else {
+    wrapSetLangForFinalWebFixes();
+    applyFinalWebLangFixes();
   }
 })();
 </script>
