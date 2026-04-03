@@ -155,8 +155,11 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .cal-cell.blocked{background:#f9dddd}
 .cal-cell.today{background:#2f6ea6!important;outline:none}
 .cal-cell.today:hover{background:#2f6ea6!important}
-.cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3}
+.cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3;--dayW:calc((100% - 120px) / 31);--diag:14px}
 .cal-span{grid-row:1;align-self:center;height:28px;margin:0 1px;border-radius:3px;display:flex;align-items:center;padding:0 .45rem;font-size:.66rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;pointer-events:auto}
+.cal-span.half-start{margin-left:calc(var(--dayW) / 2);clip-path:polygon(var(--diag) 0,100% 0,100% 100%,0 100%)}
+.cal-span.half-end{width:calc(100% - (var(--dayW) / 2));clip-path:polygon(0 0,100% 0,calc(100% - var(--diag)) 100%,0 100%)}
+.cal-span.half-start.half-end{width:100%;clip-path:polygon(var(--diag) 0,100% 0,calc(100% - var(--diag)) 100%,0 100%)}
 .cal-span.confirmed{background:#7bc67e;color:#103d17}
 .cal-span.pending{background:#f3d24d;color:#5f4300;border:1px solid #c19a00}
 .cal-span.blocked{background:#e26b6b;color:#fff2f2}
@@ -1293,17 +1296,30 @@ function racunCell(rez) {
 }
 function rezZarada(rez) {
   if (!rez) return 0;
-  if (rez.zarada_je_rucna && rez.zarada_rucna != null) return rez.zarada_rucna;
-  if (rez.zarada_auto != null) return rez.zarada_auto;
+  const rucna = parseFloat(rez.zarada_rucna);
+  const auto = parseFloat(rez.zarada_auto);
+  if (rez.zarada_je_rucna && Number.isFinite(rucna) && rucna > 0) return rucna;
+  if (Number.isFinite(auto) && auto > 0) return auto;
   if (rez.datum_dolaska && rez.datum_odlaska) return calcPrice(rez.datum_dolaska, rez.datum_odlaska);
+  if (Number.isFinite(rucna) && rucna !== 0) return rucna;
+  if (Number.isFinite(auto)) return auto;
   return 0;
+}
+function rezAkontacija(rez) {
+  const a = parseFloat(rez?.akontacija);
+  return Number.isFinite(a) && a > 0 ? a : 0;
+}
+function rezNaplaceno(rez, uplateZbroj) {
+  const upl = parseFloat(uplateZbroj);
+  if (Number.isFinite(upl) && upl > 0) return upl;
+  return rezAkontacija(rez);
 }
 function rezTooltip(rez) {
   return [
     rez?.ime || 'Gost',
     `${fmtDate(rez?.datum_dolaska)} - ${fmtDate(rez?.datum_odlaska)}`,
     `Izvor: ${rezSourceLabel(rez?.izvor)}`,
-    `Zarada: ${fmtEur(rezZarada(rez))}`
+    `Ukupno: ${fmtEur(rezZarada(rez))}`
   ].join('\n');
 }
 function normalizeRezStatus(status) {
@@ -1594,8 +1610,11 @@ function renderKalendar() {
         const spanDays = endDay - startDay + 1;
         const status = normalizeRezStatus(rez.status);
         const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+        const halfStart = visibleStart === rez.datum_dolaska;
+        const halfEnd = visibleEnd === rez.datum_odlaska;
+        const edgeCls = `${halfStart ? ' half-start' : ''}${halfEnd ? ' half-end' : ''}`;
         const label = spanDays > 1 ? escapeHtml(rez.ime || '') : '';
-        html += `<div class="cal-span ${spanCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
+        html += `<div class="cal-span ${spanCls}${edgeCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
       });
     html += `</div>`;
     html += '</div>';
@@ -1820,11 +1839,23 @@ function renderUplateSection() {
 
   note.textContent = 'Evidentirajte akontacije, gotovinu, AG i Airbnb uplate za ovu rezervaciju.';
   form.style.display = 'grid';
-  const naplaceno = currentRezUplate.reduce((sum, u) => sum + (parseFloat(u.iznos) || 0), 0);
+  const naplacenoIzUplata = currentRezUplate.reduce((sum, u) => sum + (parseFloat(u.iznos) || 0), 0);
+  const naplaceno = rezNaplaceno(allRezervacije.find(r => String(r.id) === String(currentRezId)), naplacenoIzUplata);
   total.textContent = `Naplaćeno: ${fmtEur(naplaceno)}`;
 
   if (!currentRezUplate.length) {
-    list.innerHTML = '<div class="uplata-empty">Još nema uplata za ovu rezervaciju.</div>';
+    const rez = allRezervacije.find(r => String(r.id) === String(currentRezId));
+    const akontacija = rezAkontacija(rez);
+    list.innerHTML = akontacija > 0
+      ? `<div class="uplata-item">
+          <div class="uplata-main">
+            <strong>Akontacija (uvezeno iz rezervacije)</strong>
+            <div>Ovaj iznos je preuzet iz polja akontacije i još nije razbijen na pojedinačne uplate.</div>
+          </div>
+          <div class="uplata-iznos">${fmtEur(akontacija)}</div>
+          <div style="width:32px"></div>
+        </div>`
+      : '<div class="uplata-empty">Još nema uplata za ovu rezervaciju.</div>';
     return;
   }
 
@@ -1973,16 +2004,19 @@ async function loadFinancije() {
   const all = data || [];
   const rezIds = all.map(r => r.id).filter(Boolean);
   let naplacenoMap = new Map();
-  let naplacenoUkupno = 0;
   if (rezIds.length) {
     const { data: uplateData } = await sb.from('uplate').select('rezervacija_id, iznos').in('rezervacija_id', rezIds);
     (uplateData || []).forEach(u => {
       const iznos = parseFloat(u.iznos) || 0;
       const key = String(u.rezervacija_id);
       naplacenoMap.set(key, (naplacenoMap.get(key) || 0) + iznos);
-      naplacenoUkupno += iznos;
     });
   }
+  let naplacenoUkupno = 0;
+  all.forEach(r => {
+    const naplaceno = rezNaplaceno(r, naplacenoMap.get(String(r.id)) || 0);
+    naplacenoUkupno += naplaceno;
+  });
 
   const today = new Date(); today.setHours(0,0,0,0);
   let realizirana = 0, buduca = 0;
@@ -2038,7 +2072,7 @@ async function loadFinancije() {
     const zarada = rezZarada(r);
     const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
     const nights = Math.round((new Date(r.datum_odlaska)-new Date(r.datum_dolaska))/86400000);
-    const naplaceno = naplacenoMap.get(String(r.id)) || 0;
+    const naplaceno = rezNaplaceno(r, naplacenoMap.get(String(r.id)) || 0);
     return `<tr>
       <td><strong>${r.ime}</strong></td>
       <td>${aptLabel(r.apartman)}</td>

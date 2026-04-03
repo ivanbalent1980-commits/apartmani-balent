@@ -293,7 +293,7 @@ section{padding:5.5rem 3rem}
 .map-wrap iframe{width:100%;height:100%;border:none;display:block}
 .contact-items{margin-bottom:1.8rem}
 .host-card{display:flex;gap:1rem;align-items:flex-start;background:var(--sand);padding:1rem;border-radius:2px;border-left:2px solid var(--accent);margin:1rem 0 1.6rem}
-.host-card img{width:92px;height:132px;object-fit:cover;object-position:center 18%;border-radius:2px;flex-shrink:0}
+.host-card img{width:92px;height:132px;object-fit:cover;object-position:center 78%;border-radius:2px;flex-shrink:0}
 .host-card h4{font-size:.95rem;color:var(--navy);margin:0 0 .35rem}
 .host-card p{font-size:.84rem;line-height:1.65;color:var(--muted);margin:0}
 @media(max-width:640px){.host-card{align-items:center}.host-card img{width:84px;height:118px}}
@@ -736,13 +736,23 @@ img { max-width: 100%; height: auto; }
 .modal-box { width: min(780px, 96vw); }
 /* Availability calendar */
 .avail-nav{background:var(--navy);padding:.8rem 1rem;display:flex;align-items:center;justify-content:center}
-.avail-nav-inner{display:grid;grid-template-columns:auto 1fr 1fr auto;align-items:center;gap:.5rem;min-width:min(420px,100%)}
-.avail-nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:2px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.avail-nav-inner{display:flex;align-items:center;justify-content:center;gap:.45rem;width:100%}
+.avail-nav-month-group,.avail-nav-year-group{display:flex;align-items:center}
+.avail-nav-month-group{gap:.55rem;justify-content:flex-start}
+.avail-nav-year-group{justify-content:flex-start}
+.avail-nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:2px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .avail-nav-select,.avail-nav-year{font-family:var(--serif);font-size:1.05rem;font-weight:400;background:transparent;color:#fff;border:none;outline:none}
-.avail-nav-select{appearance:auto;cursor:pointer;padding:0 .2rem}
+.avail-nav-select{appearance:none;cursor:pointer;padding:0 1rem 0 .15rem;line-height:1.2;min-width:auto;width:auto !important;max-width:max-content;flex:0 0 auto;display:inline-block;box-shadow:none;background-repeat:no-repeat;background-position:right .12rem center;background-size:.65rem .65rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M2.2 4.2 6 8l3.8-3.8-.9-.9L6 6.1 3.1 3.3z'/%3E%3C/svg%3E")}
 .avail-nav-year-select{text-align:right}
+.avail-nav #availMonthSelect{min-width:110px;width:auto !important}
+.avail-nav #availYearSelect{min-width:78px;width:auto !important}
 .avail-nav-select option{color:var(--text);background:#fff}
 .avail-nav-year{min-width:60px;text-align:center}
+@media (max-width: 640px){
+  .avail-nav-inner{gap:.35rem}
+  .avail-nav-month-group{gap:.4rem}
+  .avail-nav-select{font-size:.98rem}
+}
 .avail-day{border-right:1px solid var(--sand-dark);border-bottom:1px solid var(--sand-dark);min-height:52px;padding:.3rem;position:relative;font-size:.78rem}
 .avail-day.empty{background:var(--white)}
 .avail-day.free{background:#cfeeda;cursor:pointer}
@@ -755,6 +765,16 @@ img { max-width: 100%; height: auto; }
 .avail-day.today .avail-num{background:var(--navy);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-num{font-size:.82rem;font-weight:500;color:var(--navy);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
 .avail-day.taken .avail-num,.avail-day.arrival .avail-num,.avail-day.departure .avail-num,.avail-day.turnover .avail-num{color:#7b2b2b}
+.avail-all-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;padding:1rem}
+.avail-card{border:1px solid var(--sand-dark);border-radius:2px;overflow:hidden;background:#fff}
+.avail-card-title{padding:.8rem 1rem;background:var(--sand);border-bottom:1px solid var(--sand-dark);font-size:.82rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.avail-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:#f6f1e7;border-bottom:1px solid var(--sand-dark)}
+.avail-weekdays div{text-align:center;padding:.4rem .15rem;font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.avail-weekdays div.weekend{color:var(--accent)}
+.avail-grid-mini{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--sand-dark)}
+.avail-grid-mini .avail-day{min-height:42px;padding:.22rem}
+.avail-grid-mini .avail-num{width:18px;height:18px;font-size:.76rem}
+@media (max-width: 900px){.avail-all-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1565,12 +1585,7 @@ img { max-width: 100%; height: auto; }
       <span data-lang="ru">Свободные <em>даты</em></span>
     </h2>
     <p class="sec-desc" style="margin-bottom:2rem"><span data-lang="hr" class="lang-active">Odaberite apartman i provjerite slobodne termine. Potvrdu rezervacije šaljemo u roku 24 sata.</span><span data-lang="en">Select an apartment and check available dates. We send booking confirmation within 24 hours.</span><span data-lang="de">Wählen Sie ein Apartment und prüfen Sie die verfügbaren Termine. Wir senden die Buchungsbestätigung innerhalb von 24 Stunden.</span><span data-lang="it">Selezionate un appartamento e verificate le date disponibili. Inviamo la conferma di prenotazione entro 24 ore.</span><span data-lang="ru">Выберите апартамент и проверьте свободные даты. Подтверждение бронирования отправляем в течение 24 часов.</span></p>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
-      <button class="cal-tab active" onclick="showCal(1)">Apartman 1</button>
-      <button class="cal-tab" onclick="showCal(2)">Apartman 2</button>
-      <button class="cal-tab" onclick="showCal(3)">Apartman 3</button>
-      <button class="cal-tab" onclick="showCal(4)">Apartman 4</button>
-    </div>
+    
     <div id="avail-calendar" style="background:var(--white);border-radius:3px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
       <!-- Navigation -->
       <div style="background:var(--navy);padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between">
@@ -1589,7 +1604,29 @@ img { max-width: 100%; height: auto; }
         <div style="text-align:center;padding:.5rem;font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700">Ned</div>
       </div>
       <!-- Calendar grid -->
-      <div id="availGrid" style="display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--sand-dark)"></div>
+      <div id="availGrid" style="display:none;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--sand-dark)"></div>
+      <div id="availMultiWrap" class="avail-all-grid">
+        <div class="avail-card">
+          <div class="avail-card-title">Apartman 1</div>
+          <div class="avail-weekdays"><div>Pon</div><div>Uto</div><div>Sri</div><div>Čet</div><div>Pet</div><div class="weekend">Sub</div><div class="weekend">Ned</div></div>
+          <div id="availGrid1" class="avail-grid-mini"></div>
+        </div>
+        <div class="avail-card">
+          <div class="avail-card-title">Apartman 2</div>
+          <div class="avail-weekdays"><div>Pon</div><div>Uto</div><div>Sri</div><div>Čet</div><div>Pet</div><div class="weekend">Sub</div><div class="weekend">Ned</div></div>
+          <div id="availGrid2" class="avail-grid-mini"></div>
+        </div>
+        <div class="avail-card">
+          <div class="avail-card-title">Apartman 3</div>
+          <div class="avail-weekdays"><div>Pon</div><div>Uto</div><div>Sri</div><div>Čet</div><div>Pet</div><div class="weekend">Sub</div><div class="weekend">Ned</div></div>
+          <div id="availGrid3" class="avail-grid-mini"></div>
+        </div>
+        <div class="avail-card">
+          <div class="avail-card-title">Apartman 4</div>
+          <div class="avail-weekdays"><div>Pon</div><div>Uto</div><div>Sri</div><div>Čet</div><div>Pet</div><div class="weekend">Sub</div><div class="weekend">Ned</div></div>
+          <div id="availGrid4" class="avail-grid-mini"></div>
+        </div>
+      </div>
       <!-- Legend -->
       <div style="display:flex;gap:1.5rem;padding:.8rem 1.2rem;border-top:1px solid var(--sand-dark);flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
@@ -2887,8 +2924,8 @@ ${line}`;
 
 <script>
 function showCal(n) {
-  document.querySelectorAll('#kalendar .cal-tab').forEach((t,i) => t.classList.toggle('active', i===n-1));
-  document.querySelectorAll('.cal-panel').forEach((p,i) => p.style.display = i===n-1 ? 'block' : 'none');
+  const kalendar = document.getElementById('kalendar');
+  if (kalendar) kalendar.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 </script>
 
@@ -5179,6 +5216,23 @@ ${line}`;
     renderAvailCalendar();
   };
 
+  window.openAvailDate = function(apt, dateStr) {
+    if (typeof openModal === 'function') openModal();
+    setTimeout(() => {
+      const mApt = document.getElementById('m-apt');
+      const mCheckin = document.getElementById('m-checkin');
+      if (mApt) {
+        mApt.value = String(apt);
+        mApt.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (mCheckin) {
+        mCheckin.value = dateStr;
+        mCheckin._fpVal = dateStr;
+        if (window.checkinPicker) window.checkinPicker.setDate(dateStr, true);
+      }
+    }, 100);
+  };
+
   window.renderAvailCalendar = async function() {
     ensureAvailCalendarNavFinal();
     const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
@@ -5198,57 +5252,64 @@ ${line}`;
     }
     if (oldMonthLabel) oldMonthLabel.textContent = `${mNames[availMonth]} ${availYear}`;
 
-    const occupancy = await loadAvailData(availApt);
-    const taken = occupancy.taken || new Set();
-    const arrivals = occupancy.arrivals || new Map();
-    const departures = occupancy.departures || new Map();
+    const legacyGrid = document.getElementById('availGrid');
+    if (legacyGrid) legacyGrid.style.display = 'none';
+    const legacyWeekdays = legacyGrid ? legacyGrid.previousElementSibling : null;
+    if (legacyWeekdays) legacyWeekdays.style.display = 'none';
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const firstDay = new Date(availYear, availMonth, 1);
     const startDow = (firstDay.getDay() + 6) % 7;
     const totalCells = 42;
     const colors = getWebCalendarColors();
-    let html = '';
+    for (const apt of [1, 2, 3, 4]) {
+      const occupancy = await loadAvailData(apt);
+      const taken = occupancy.taken || new Set();
+      const arrivals = occupancy.arrivals || new Map();
+      const departures = occupancy.departures || new Map();
+      let html = '';
 
-    for (let i = 0; i < totalCells; i++) {
-      const offsetDay = i - startDow + 1;
-      const cellDate = new Date(availYear, availMonth, offsetDay);
-      const d = cellDate.getDate();
-      const dateStr = toIsoDateLocal(cellDate);
-      const isOtherMonth = cellDate.getMonth() !== availMonth;
-      const isTaken = taken.has(dateStr);
-      const arrivalStatus = arrivals.get(dateStr) || '';
-      const departureStatus = departures.get(dateStr) || '';
-      const isToday = cellDate.getTime() === today.getTime();
-      const isPast = cellDate < today;
+      for (let i = 0; i < totalCells; i++) {
+        const offsetDay = i - startDow + 1;
+        const cellDate = new Date(availYear, availMonth, offsetDay);
+        const d = cellDate.getDate();
+        const dateStr = toIsoDateLocal(cellDate);
+        const isOtherMonth = cellDate.getMonth() !== availMonth;
+        const isTaken = taken.has(dateStr);
+        const arrivalStatus = arrivals.get(dateStr) || '';
+        const departureStatus = departures.get(dateStr) || '';
+        const isToday = cellDate.getTime() === today.getTime();
+        const isPast = cellDate < today;
 
-      let cls = 'avail-day ';
-      if (isOtherMonth) cls += 'other-month ';
-      if (isPast) cls += 'empty';
-      else if (isTaken) cls += 'taken';
-      else cls += 'free';
-      if (arrivalStatus) cls += ' arrival';
-      if (departureStatus) cls += ' departure';
-      if (arrivalStatus && departureStatus) cls += ' turnover';
-      if (isToday) cls += ' today';
+        let cls = 'avail-day ';
+        if (isOtherMonth) cls += 'other-month ';
+        if (isPast) cls += 'empty';
+        else if (isTaken) cls += 'taken';
+        else cls += 'free';
+        if (arrivalStatus) cls += ' arrival';
+        if (departureStatus) cls += ' departure';
+        if (arrivalStatus && departureStatus) cls += ' turnover';
+        if (isToday) cls += ' today';
 
-      let style = '';
-      if (isPast) {
-        style = 'style="background:#f1ede5"';
-      } else if (arrivalStatus || departureStatus) {
-        if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
-        else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
-        else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
+        let style = '';
+        if (isPast) {
+          style = 'style="background:#f1ede5"';
+        } else if (arrivalStatus || departureStatus) {
+          if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
+          else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
+          else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
+        }
+
+        const onclick = (!isTaken && !isPast && !isOtherMonth)
+          ? `onclick="openAvailDate(${apt}, '${dateStr}')"`
+          : '';
+
+        html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
       }
 
-      const onclick = (!isTaken && !isPast && !isOtherMonth)
-        ? `onclick="openModal();setTimeout(()=>{if(checkinPicker)checkinPicker.setDate('${dateStr}');},100)"`
-        : '';
-
-      html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
+      const grid = document.getElementById(`availGrid${apt}`);
+      if (grid) grid.innerHTML = html;
     }
-
-    document.getElementById('availGrid').innerHTML = html;
   };
 
   const originalAvailPrev = window.availPrev;
@@ -5412,7 +5473,9 @@ ${line}`;
     if (!form) return;
 
     const heading = form.previousElementSibling && form.previousElementSibling.matches('.sec-label') ? form.previousElementSibling : null;
-    const note = form.querySelector('.fg.full[style*="border-left:2px solid"] p');
+    const noteWrap = form.querySelector('.fg.full[style*="border-left:2px solid"]')
+      || Array.from(form.querySelectorAll('.fg.full')).find(el => el.querySelector('p') && el.nextElementSibling?.querySelector('.btn-primary'));
+    const note = noteWrap ? noteWrap.querySelector('p') : null;
     const submitBtn = form.querySelector('.fg.full .btn-primary[onclick="openModal()"]');
     const textInputs = form.querySelectorAll('input[type="text"], input[type="email"]');
     const textarea = form.querySelector('textarea');
@@ -5422,11 +5485,23 @@ ${line}`;
     if (textInputs[0] && !textInputs[0].id) textInputs[0].id = 'detail-name';
     if (textInputs[1] && !textInputs[1].id) textInputs[1].id = 'detail-email';
     if (textarea && !textarea.id) textarea.id = 'detail-msg';
+    if (noteWrap && !noteWrap.id) noteWrap.id = 'detail-mode-note-wrap';
     if (note && !note.id) note.id = 'detail-mode-note';
     if (submitBtn && !submitBtn.id) submitBtn.id = 'detail-submit-btn';
     if (heading && !heading.id) heading.id = 'detail-form-title';
     if (selects[0] && !selects[0].id) selects[0].id = 'detail-apt';
     if (selects[1] && !selects[1].id) selects[1].id = 'detail-guests';
+    if (dateInputs[0] && !dateInputs[0].id) dateInputs[0].id = 'detail-checkin';
+    if (dateInputs[1] && !dateInputs[1].id) dateInputs[1].id = 'detail-checkout';
+
+    const labels = form.querySelectorAll('.fg > label');
+    if (labels[0] && !labels[0].id) labels[0].id = 'detail-name-label';
+    if (labels[1] && !labels[1].id) labels[1].id = 'detail-email-label';
+    if (labels[2] && !labels[2].id) labels[2].id = 'detail-checkin-label';
+    if (labels[3] && !labels[3].id) labels[3].id = 'detail-checkout-label';
+    if (labels[4] && !labels[4].id) labels[4].id = 'detail-apt-label';
+    if (labels[5] && !labels[5].id) labels[5].id = 'detail-guests-label';
+    if (labels[6] && !labels[6].id) labels[6].id = 'detail-msg-label';
 
     if (!document.getElementById('detailModeSwitch')) {
       form.insertAdjacentHTML('beforebegin', `
@@ -5464,6 +5539,13 @@ ${line}`;
     const submitBtn = document.getElementById('detail-submit-btn');
     const bookingBtn = document.getElementById('detailModeBooking');
     const questionBtn = document.getElementById('detailModeQuestion');
+    const nameLabel = document.getElementById('detail-name-label');
+    const emailLabel = document.getElementById('detail-email-label');
+    const checkinLabel = document.getElementById('detail-checkin-label');
+    const checkoutLabel = document.getElementById('detail-checkout-label');
+    const aptLabel = document.getElementById('detail-apt-label');
+    const guestsLabel = document.getElementById('detail-guests-label');
+    const msgLabel = document.getElementById('detail-msg-label');
 
     const dateInRow = document.getElementById('detail-checkin')?.closest('.fg');
     const dateOutRow = document.getElementById('detail-checkout')?.closest('.fg');
@@ -5480,6 +5562,13 @@ ${line}`;
     if (heading) heading.textContent = bookingMode ? cfg.bookingTitle : cfg.questionTitle;
     if (note) note.textContent = bookingMode ? cfg.bookingNote : cfg.questionNote;
     if (submitBtn) submitBtn.textContent = bookingMode ? cfg.bookingBtn : cfg.questionBtn;
+    if (nameLabel) nameLabel.textContent = { hr: 'Ime i prezime', en: 'Full name', de: 'Vor- und Nachname', it: 'Nome e cognome', ru: 'Имя и фамилия' }[lang] || 'Ime i prezime';
+    if (emailLabel) emailLabel.textContent = 'Email';
+    if (checkinLabel) checkinLabel.textContent = { hr: 'Dolazak', en: 'Check-in', de: 'Anreise', it: 'Arrivo', ru: 'Заезд' }[lang] || 'Dolazak';
+    if (checkoutLabel) checkoutLabel.textContent = { hr: 'Odlazak', en: 'Check-out', de: 'Abreise', it: 'Partenza', ru: 'Выезд' }[lang] || 'Odlazak';
+    if (aptLabel) aptLabel.textContent = { hr: 'Apartman', en: 'Apartment', de: 'Apartment', it: 'Appartamento', ru: 'Апартамент' }[lang] || 'Apartman';
+    if (guestsLabel) guestsLabel.textContent = { hr: 'Broj gostiju', en: 'Number of guests', de: 'Anzahl der Gäste', it: 'Numero di ospiti', ru: 'Количество гостей' }[lang] || 'Broj gostiju';
+    if (msgLabel) msgLabel.textContent = { hr: 'Poruka / pitanje', en: 'Message / question', de: 'Nachricht / Frage', it: 'Messaggio / domanda', ru: 'Сообщение / вопрос' }[lang] || 'Poruka / pitanje';
     if (nameInput) {
       nameInput.placeholder = {
         hr: 'Marija Horvat',
@@ -5519,6 +5608,14 @@ ${line}`;
       questionBtn.style.color = bookingMode ? 'var(--navy)' : '#fff';
       questionBtn.style.borderColor = bookingMode ? 'rgba(26,38,54,.16)' : 'var(--accent)';
     }
+
+    const legacyFix = {
+      namePlaceholder: { hr: 'Marija Horvat', en: 'John Smith', de: 'Max Mustermann', it: 'Mario Rossi', ru: 'Иван Иванов' },
+      bookingMsg: { hr: 'Vaša poruka ili pitanje...', en: 'Your message or question...', de: 'Ihre Nachricht oder Frage...', it: 'Il vostro messaggio o domanda...', ru: 'Ваше сообщение или вопрос...' },
+      questionMsg: { hr: 'Vaše pitanje...', en: 'Your question...', de: 'Ihre Frage...', it: 'La tua domanda...', ru: 'Ваш вопрос...' }
+    };
+    if (nameInput) nameInput.placeholder = legacyFix.namePlaceholder[lang] || legacyFix.namePlaceholder.hr;
+    if (msgInput) msgInput.placeholder = bookingMode ? (legacyFix.bookingMsg[lang] || legacyFix.bookingMsg.hr) : (legacyFix.questionMsg[lang] || legacyFix.questionMsg.hr);
   }
 
   window.submitLegacyUnifiedForm = function() {
@@ -6512,6 +6609,58 @@ ${line}`;
   } else {
     wrapSetLangForFinalWebFixes();
     applyFinalWebLangFixes();
+  }
+})();
+</script>
+<script>
+(() => {
+  function rewriteAvailNavLayout() {
+    const calendar = document.getElementById('avail-calendar');
+    if (!calendar) return;
+    const nav = calendar.firstElementChild;
+    if (!nav) return;
+    if (nav.querySelector('.avail-nav-month-group')) return;
+
+    const monthNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let y = currentYear - 1; y <= currentYear + 3; y++) years.push(y);
+    if (!years.includes(window.availYear)) years.push(window.availYear);
+    years.sort((a, b) => a - b);
+
+    nav.className = 'avail-nav';
+    nav.innerHTML = `
+      <div class="avail-nav-inner">
+        <div class="avail-nav-month-group">
+          <button onclick="availPrev()" class="avail-nav-btn" aria-label="Prethodni mjesec">&#8249;</button>
+          <select id="availMonthSelect" class="avail-nav-select" onchange="availSelectMonth(this.value)">
+            ${monthNames.map((name, idx) => `<option value="${idx}" ${idx === window.availMonth ? 'selected' : ''}>${name}</option>`).join('')}
+          </select>
+          <button onclick="availNext()" class="avail-nav-btn" aria-label="Sljedeći mjesec">&#8250;</button>
+        </div>
+        <div class="avail-nav-year-group">
+          <select id="availYearSelect" class="avail-nav-select avail-nav-year-select" onchange="availSelectYear(this.value)">
+            ${years.map((y) => `<option value="${y}" ${y === window.availYear ? 'selected' : ''}>${y}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  const oldRenderAvailCalendar = window.renderAvailCalendar;
+  if (typeof oldRenderAvailCalendar === 'function' && !window.__availNavFinalWrapped) {
+    window.renderAvailCalendar = async function(...args) {
+      const result = await oldRenderAvailCalendar.apply(this, args);
+      rewriteAvailNavLayout();
+      return result;
+    };
+    window.__availNavFinalWrapped = true;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(rewriteAvailNavLayout, 50), { once: true });
+  } else {
+    setTimeout(rewriteAvailNavLayout, 50);
   }
 })();
 </script>
