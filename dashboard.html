@@ -17,6 +17,7 @@
 </script>
 <title>Apartmani Balent – Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -111,6 +112,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .fg input,.fg select,.fg textarea{padding:.65rem .9rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.85rem;color:var(--text);background:var(--sand);outline:none;transition:border-color .2s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);background:var(--white)}
 .fg textarea{resize:vertical;min-height:80px}
+.fg input.flatpickr-input[readonly]{background:var(--sand);cursor:pointer}
 .fg input[type="color"]{padding:.3rem;height:38px;cursor:pointer}
 .form-actions{display:flex;gap:.8rem;margin-top:1.2rem;justify-content:flex-end}
 
@@ -935,11 +937,11 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
         <div class="fg">
           <label>Datum dolaska</label>
-          <input type="date" id="rDolazak" onchange="calcRezZarada()">
+          <input type="text" id="rDolazak" placeholder="Odaberite datum" onchange="calcRezZarada()">
         </div>
         <div class="fg">
           <label>Datum odlaska</label>
-          <input type="date" id="rOdlazak" onchange="calcRezZarada()">
+          <input type="text" id="rOdlazak" placeholder="Odaberite datum" onchange="calcRezZarada()">
         </div>
         <div class="fg">
           <label>Broj osoba</label>
@@ -1031,6 +1033,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger" id="rezDeleteBtn" onclick="deleteCurrentRezFromModal()" style="margin-right:auto;display:none">Obriši rezervaciju</button>
       <button class="btn btn-secondary" onclick="closeModal('rezModal')">Odustani</button>
       <button class="btn btn-primary" onclick="saveRezervacija()">💾 Spremi</button>
     </div>
@@ -1163,6 +1166,8 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/hr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════
@@ -1177,6 +1182,74 @@ let allRezervacije = [];
 let currentRezId = null;
 let currentRezStatus = null;
 let racunClearedInModal = false;
+let rezDolazakPicker = null;
+let rezOdlazakPicker = null;
+
+function initRezDatePickers() {
+  if (!window.flatpickr) return;
+  const dolazakEl = document.getElementById('rDolazak');
+  const odlazakEl = document.getElementById('rOdlazak');
+  if (!dolazakEl || !odlazakEl) return;
+  if (window.flatpickr.l10ns && window.flatpickr.l10ns.hr) {
+    window.flatpickr.localize(window.flatpickr.l10ns.hr);
+  }
+
+  const baseOpts = {
+    locale: 'hr',
+    allowInput: false,
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'd.m.Y.',
+    disableMobile: true
+  };
+
+  if (rezDolazakPicker) rezDolazakPicker.destroy();
+  if (rezOdlazakPicker) rezOdlazakPicker.destroy();
+
+  rezDolazakPicker = window.flatpickr(dolazakEl, {
+    ...baseOpts,
+    onChange: function(selectedDates, dateStr) {
+      calcRezZarada();
+      if (!rezOdlazakPicker) return;
+      const selected = selectedDates[0] || null;
+      rezOdlazakPicker.set('minDate', selected);
+      if (selected) {
+        rezOdlazakPicker.jumpToDate(selected);
+        const currentCheckout = rezOdlazakPicker.selectedDates[0];
+        if (!currentCheckout || currentCheckout < selected) {
+          rezOdlazakPicker.setDate(selected, true);
+        }
+      }
+    }
+  });
+
+  rezOdlazakPicker = window.flatpickr(odlazakEl, {
+    ...baseOpts,
+    onOpen: function(selectedDates, dateStr, instance) {
+      const arrival = rezDolazakPicker?.selectedDates?.[0] || null;
+      if (arrival) {
+        instance.set('minDate', arrival);
+        instance.jumpToDate(selectedDates[0] || arrival);
+      }
+    },
+    onChange: function() {
+      calcRezZarada();
+    }
+  });
+}
+initRezDatePickers();
+
+function rezPickerValue(elId, pickerRef) {
+  const el = document.getElementById(elId);
+  if (el && el.value) return el.value;
+  const date = pickerRef?.selectedDates?.[0];
+  if (!date) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 let currentRezUplate = [];
 let currentRashodKat = 'rezije';
 let currentFinTab = 'sve';
@@ -1632,7 +1705,19 @@ function openRezById(id) {
 function calCellClick(apt, date) {
   const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=date && r.datum_odlaska>date);
   if (rez) editRezervacija(rez);
-  else { openRezModal(); document.getElementById('rApt').value=apt; document.getElementById('rDolazak').value=date; }
+  else {
+    openRezModal();
+    document.getElementById('rApt').value = apt;
+    if (rezDolazakPicker) {
+      rezDolazakPicker.setDate(date, true);
+      if (rezOdlazakPicker) {
+        rezOdlazakPicker.set('minDate', date);
+        rezOdlazakPicker.jumpToDate(date);
+      }
+    } else {
+      document.getElementById('rDolazak').value = date;
+    }
+  }
 }
 
 // ══════════════════════════════════════
@@ -1700,6 +1785,8 @@ function openRezModal(rez=null) {
   currentRezStatus = rez ? rez.status : null;
   racunClearedInModal = false;
   document.getElementById('rezModalTitle').textContent = rez ? 'Uredi rezervaciju' : 'Nova rezervacija';
+  const deleteBtn = document.getElementById('rezDeleteBtn');
+  if (deleteBtn) deleteBtn.style.display = rez ? 'inline-flex' : 'none';
   document.getElementById('rIme').value = rez?.ime || '';
   document.getElementById('rApt').value = rez?.apartman || 1;
   document.getElementById('rIzvor').value = rez?.izvor || 'vlastiti';
@@ -1727,9 +1814,23 @@ function openRezModal(rez=null) {
 
 function editRezervacija(rez) { openRezModal(rez); }
 
+function deleteCurrentRezFromModal() {
+  if (!currentRezId) return;
+  showConfirm(
+    '🗑️',
+    'Obrisati rezervaciju?',
+    'Rezervacija će biti trajno obrisana. Jeste li sigurni da želite nastaviti?',
+    async () => {
+      const id = currentRezId;
+      closeModal('rezModal');
+      await deleteRez(id);
+    }
+  );
+}
+
 function calcRezZarada(force=false) {
-  const d1 = document.getElementById('rDolazak').value;
-  const d2 = document.getElementById('rOdlazak').value;
+  const d1 = rezPickerValue('rDolazak', rezDolazakPicker);
+  const d2 = rezPickerValue('rOdlazak', rezOdlazakPicker);
   const zEl = document.getElementById('rZarada');
   const info = document.getElementById('rezZaradaInfo');
   if (!d1 || !d2) return;
@@ -1746,8 +1847,8 @@ function calcRezZarada(force=false) {
 
 async function saveRezervacija() {
   const ime = document.getElementById('rIme').value.trim();
-  const dolazak = document.getElementById('rDolazak').value;
-  const odlazak = document.getElementById('rOdlazak').value;
+  const dolazak = rezPickerValue('rDolazak', rezDolazakPicker);
+  const odlazak = rezPickerValue('rOdlazak', rezOdlazakPicker);
   if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
 
   const zaradaAuto = calcPrice(dolazak, odlazak);
@@ -3759,6 +3860,13 @@ initApp();
     ensureRacunUiText();
     racunClearedInModal = false;
     _origOpenRezModal(rez);
+    initRezDatePickers();
+    if (rezDolazakPicker) rezDolazakPicker.setDate(rez?.datum_dolaska || '', false);
+    if (rezOdlazakPicker) {
+      rezOdlazakPicker.set('minDate', rez?.datum_dolaska || null);
+      rezOdlazakPicker.setDate(rez?.datum_odlaska || '', false);
+      if (rez?.datum_dolaska) rezOdlazakPicker.jumpToDate(rez.datum_dolaska);
+    }
     const broj = document.getElementById('rBrojRacuna');
     const link = document.getElementById('rRacunLink');
     const wrap = document.getElementById('rRacunExisting');
@@ -3818,8 +3926,8 @@ initApp();
     ensureRacunUiText();
 
     const ime = document.getElementById('rIme').value.trim();
-    const dolazak = document.getElementById('rDolazak').value;
-    const odlazak = document.getElementById('rOdlazak').value;
+    const dolazak = rezPickerValue('rDolazak', rezDolazakPicker);
+    const odlazak = rezPickerValue('rOdlazak', rezOdlazakPicker);
     if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
 
     const runSave = async () => {
