@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -17,6 +18,7 @@
 </script>
 <title>Apartmani Balent – Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -111,6 +113,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .fg input,.fg select,.fg textarea{padding:.65rem .9rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.85rem;color:var(--text);background:var(--sand);outline:none;transition:border-color .2s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);background:var(--white)}
 .fg textarea{resize:vertical;min-height:80px}
+.fg input.flatpickr-input[readonly]{background:var(--sand);cursor:pointer}
 .fg input[type="color"]{padding:.3rem;height:38px;cursor:pointer}
 .form-actions{display:flex;gap:.8rem;margin-top:1.2rem;justify-content:flex-end}
 
@@ -155,8 +158,11 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .cal-cell.blocked{background:#f9dddd}
 .cal-cell.today{background:#2f6ea6!important;outline:none}
 .cal-cell.today:hover{background:#2f6ea6!important}
-.cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3}
+.cal-overlays{position:absolute;inset:0;display:grid;grid-template-columns:120px repeat(31,1fr);pointer-events:none;z-index:3;--dayW:calc((100% - 120px) / 31);--diag:14px}
 .cal-span{grid-row:1;align-self:center;height:28px;margin:0 1px;border-radius:3px;display:flex;align-items:center;padding:0 .45rem;font-size:.66rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;min-width:0;pointer-events:auto}
+.cal-span.half-start{margin-left:calc(var(--dayW) / 2);clip-path:polygon(var(--diag) 0,100% 0,100% 100%,0 100%)}
+.cal-span.half-end{width:calc(100% - (var(--dayW) / 2));clip-path:polygon(0 0,100% 0,calc(100% - var(--diag)) 100%,0 100%)}
+.cal-span.half-start.half-end{width:100%;clip-path:polygon(var(--diag) 0,100% 0,calc(100% - var(--diag)) 100%,0 100%)}
 .cal-span.confirmed{background:#7bc67e;color:#103d17}
 .cal-span.pending{background:#f3d24d;color:#5f4300;border:1px solid #c19a00}
 .cal-span.blocked{background:#e26b6b;color:#fff2f2}
@@ -166,7 +172,8 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .cal-month-label{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--navy)}
 
 /* ── FINANCIJE ───────────────────────────── */
-.fin-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.fin-toolbar{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.fin-tabs{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:0}
 .fin-tab{padding:.5rem 1.2rem;border:1px solid var(--sand-dark);border-radius:20px;font-size:.78rem;cursor:pointer;transition:all .2s;background:var(--white);color:var(--muted)}
 .fin-tab:hover{border-color:var(--navy);color:var(--navy)}
 .fin-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -178,7 +185,21 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 .fin-sum-card .fs-label{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
 .fin-sum-card .fs-value{font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--navy)}
 .zarada-rucna{color:var(--accent)!important;font-style:italic}
-.year-sel{padding:.4rem .8rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.8rem;color:var(--navy);background:var(--white);outline:none;cursor:pointer}
+.year-sel{height:42px;padding:0 .85rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.8rem;color:var(--navy);background:var(--white);outline:none;cursor:pointer;line-height:40px}
+.uplate-box{margin-top:1.2rem;border-top:1px solid var(--sand-dark);padding-top:1rem}
+.uplate-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.8rem}
+.uplate-head h4{font-size:.82rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.uplate-note{font-size:.76rem;color:var(--muted)}
+.uplate-total{font-size:.8rem;color:var(--navy);font-weight:600}
+.uplate-list{display:grid;gap:.55rem;margin-bottom:1rem}
+.uplata-item{display:grid;grid-template-columns:minmax(0,1.3fr) auto auto;gap:.7rem;align-items:center;padding:.75rem .85rem;background:#fbf7f0;border:1px solid var(--sand-dark);border-radius:2px}
+.uplata-main strong{display:block;font-size:.85rem;color:var(--navy)}
+.uplata-main div{font-size:.76rem;color:var(--muted);margin-top:.15rem}
+.uplata-iznos{font-weight:700;color:var(--navy);white-space:nowrap}
+.uplata-empty{padding:.9rem 1rem;background:#f7f9fb;border:1px solid var(--sand-dark);border-radius:2px;font-size:.78rem;color:var(--muted)}
+@media (max-width: 720px){
+  .uplata-item{grid-template-columns:1fr;gap:.4rem}
+}
 
 /* ── RASHODI ─────────────────────────────── */
 .rashodi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
@@ -476,17 +497,17 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
                 <option value="">Svi</option>
                 <option value="vlastiti">Vlastiti</option>
                 <option value="airbnb">Airbnb</option>
-                <option value="estee">Estee agencija</option>
+                <option value="estee">AG</option>
                 <option value="ostalo">Ostalo</option>
               </select>
             </div>
             <div class="fg">
               <label>Dolazak od</label>
-              <input type="date" id="filterDatumOd" onchange="filterGosti()">
+              <input type="text" id="filterDatumOd" placeholder="Odaberite datum" onchange="filterGosti()">
             </div>
             <div class="fg">
               <label>Dolazak do</label>
-              <input type="date" id="filterDatumDo" onchange="filterGosti()">
+              <input type="text" id="filterDatumDo" placeholder="Odaberite datum" onchange="filterGosti()">
             </div>
             <div class="fg">
               <label>Godina</label>
@@ -525,11 +546,12 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
                 <th>Status</th>
                 <th>Zarada</th>
                 <th>Račun</th>
+                <th>Dokument</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="gostiBody">
-              <tr><td colspan="10" class="loading">Učitavanje...</td></tr>
+              <tr><td colspan="11" class="loading">Učitavanje...</td></tr>
             </tbody>
           </table>
         </div>
@@ -548,7 +570,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 
       <!-- PRIHODI -->
       <div id="fin-prihodi">
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div class="fin-toolbar">
           <select class="year-sel" id="finGodina" onchange="loadFinancije()"></select>
           <div class="fin-tabs" id="finTabs">
             <button class="fin-tab active" onclick="setFinTab('sve',this)">Sve zajedno</button>
@@ -562,9 +584,9 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
         <div class="fin-summary" style="grid-template-columns:repeat(4,1fr)">
           <div class="fin-sum-card realizirana">
-            <div class="fs-label">Realizirana zarada</div>
+            <div class="fs-label">Naplaćeno</div>
             <div class="fs-value" id="finRealizirana">0 €</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Otišli gosti + trenutno u objektu</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Akontacije, gotovina, AG i Airbnb uplate</div>
           </div>
           <div class="fin-sum-card buduca">
             <div class="fs-label">Buduća zarada</div>
@@ -589,11 +611,11 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
               <thead>
                 <tr>
                   <th>Gost</th><th>Apartman</th><th>Dolazak</th><th>Odlazak</th>
-                  <th>Noćenja</th><th>Status</th><th>Zarada</th><th></th>
+                  <th>Noćenja</th><th>Status</th><th>Naplaćeno</th><th>Ukupno</th><th>Račun</th><th>Dokument</th><th></th>
                 </tr>
               </thead>
               <tbody id="finBody">
-                <tr><td colspan="8" class="loading">Učitavanje...</td></tr>
+                <tr><td colspan="11" class="loading">Učitavanje...</td></tr>
               </tbody>
             </table>
           </div>
@@ -898,6 +920,10 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
           <input type="text" id="rIme" placeholder="Marija Horvat">
         </div>
         <div class="fg">
+          <label>Email</label>
+          <input type="email" id="rEmail" placeholder="gost@email.com">
+        </div>
+        <div class="fg">
           <label>Apartman</label>
           <select id="rApt">
             <option value="1">Apartman 1 – Prizemlje</option>
@@ -911,17 +937,17 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
           <select id="rIzvor">
             <option value="vlastiti">Vlastiti</option>
             <option value="airbnb">Airbnb</option>
-            <option value="estee">Estee agencija</option>
+            <option value="estee">AG</option>
             <option value="ostalo">Ostalo</option>
           </select>
         </div>
         <div class="fg">
           <label>Datum dolaska</label>
-          <input type="date" id="rDolazak" onchange="calcRezZarada()">
+          <input type="text" id="rDolazak" placeholder="Odaberite datum" onchange="calcRezZarada()">
         </div>
         <div class="fg">
           <label>Datum odlaska</label>
-          <input type="date" id="rOdlazak" onchange="calcRezZarada()">
+          <input type="text" id="rOdlazak" placeholder="Odaberite datum" onchange="calcRezZarada()">
         </div>
         <div class="fg">
           <label>Broj osoba</label>
@@ -939,7 +965,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         <div class="fg">
           <label>Zarada (€)</label>
           <div style="display:flex;gap:.5rem;align-items:center">
-            <input type="number" id="rZarada" placeholder="Auto izračun" step="0.01">
+            <input type="text" id="rZarada" placeholder="Auto izračun" inputmode="decimal" autocomplete="off">
             <button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="calcRezZarada(true)">🔄</button>
           </div>
         </div>
@@ -957,8 +983,63 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
       </div>
       <div id="rezZaradaInfo" style="margin-top:.8rem;padding:.6rem .9rem;background:var(--sand);border-radius:2px;font-size:.78rem;color:var(--muted);display:none"></div>
+      <div class="uplate-box">
+        <div class="uplate-head">
+          <div>
+            <h4>Uplate</h4>
+            <div class="uplate-note" id="uplateNote">Spremite rezervaciju kako biste mogli dodavati uplate.</div>
+          </div>
+          <div class="uplate-total" id="uplateTotal">Naplaćeno: 0,00 €</div>
+        </div>
+        <div id="uplateList" class="uplate-list">
+          <div class="uplata-empty">Još nema uplata za ovu rezervaciju.</div>
+        </div>
+        <div class="form-grid" id="uplateForm">
+          <div class="fg">
+            <label>Datum uplate</label>
+            <input type="date" id="uDatum">
+          </div>
+          <div class="fg">
+            <label>Iznos (€)</label>
+            <input type="text" id="uIznos" inputmode="decimal" autocomplete="off" placeholder="0,00">
+          </div>
+          <div class="fg">
+            <label>Vrsta</label>
+            <select id="uVrsta">
+              <option value="akontacija">Akontacija</option>
+              <option value="doplata">Doplata</option>
+              <option value="airbnb">Airbnb</option>
+              <option value="agencija">AG</option>
+              <option value="gotovina">Gotovina</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Način</label>
+            <select id="uNacin">
+              <option value="racun">Račun</option>
+              <option value="gotovina">Gotovina</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Broj računa</label>
+            <input type="text" id="uBrojRacuna" placeholder="npr. 25-2026">
+          </div>
+          <div class="fg">
+            <label>Dokument</label>
+            <input type="file" id="uDokument" style="padding:.5rem;background:var(--sand)">
+          </div>
+          <div class="fg full">
+            <label>Opis</label>
+            <input type="text" id="uOpis" placeholder="Napomena uz uplatu">
+          </div>
+          <div class="fg full">
+            <button type="button" class="btn btn-secondary" onclick="saveUplata()">+ Dodaj uplatu</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger" id="rezDeleteBtn" onclick="deleteCurrentRezFromModal()" style="margin-right:auto;display:none">Obriši rezervaciju</button>
       <button class="btn btn-secondary" onclick="closeModal('rezModal')">Odustani</button>
       <button class="btn btn-primary" onclick="saveRezervacija()">💾 Spremi</button>
     </div>
@@ -984,7 +1065,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
         <div class="fg">
           <label>Iznos (€)</label>
-          <input type="number" id="rashodIznos" step="0.01" placeholder="0.00">
+          <input type="text" id="rashodIznos" inputmode="decimal" autocomplete="off" placeholder="0,00">
         </div>
         <div class="fg">
           <label>Učestalost</label>
@@ -1091,6 +1172,8 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/hr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════
@@ -1100,10 +1183,130 @@ const SUPABASE_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'balent_admin_session' } });
 
+sb.auth.onAuthStateChange((_event, session) => {
+  if (!session) {
+    window.location.href = 'admin-login.html';
+  }
+});
+
 let currentUser = null;
 let allRezervacije = [];
 let currentRezId = null;
 let currentRezStatus = null;
+let racunClearedInModal = false;
+let rezDolazakPicker = null;
+let rezOdlazakPicker = null;
+let filterDatumOdPicker = null;
+let filterDatumDoPicker = null;
+
+function initRezDatePickers() {
+  if (!window.flatpickr) return;
+  const dolazakEl = document.getElementById('rDolazak');
+  const odlazakEl = document.getElementById('rOdlazak');
+  if (!dolazakEl || !odlazakEl) return;
+  if (window.flatpickr.l10ns && window.flatpickr.l10ns.hr) {
+    window.flatpickr.localize(window.flatpickr.l10ns.hr);
+  }
+
+  const baseOpts = {
+    locale: 'hr',
+    allowInput: false,
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'd.m.Y.',
+    disableMobile: true
+  };
+
+  if (rezDolazakPicker) rezDolazakPicker.destroy();
+  if (rezOdlazakPicker) rezOdlazakPicker.destroy();
+
+  rezDolazakPicker = window.flatpickr(dolazakEl, {
+    ...baseOpts,
+    onChange: function(selectedDates, dateStr) {
+      calcRezZarada();
+      if (!rezOdlazakPicker) return;
+      const selected = selectedDates[0] || null;
+      rezOdlazakPicker.set('minDate', selected);
+      if (selected) {
+        rezOdlazakPicker.jumpToDate(selected);
+        const currentCheckout = rezOdlazakPicker.selectedDates[0];
+        if (!currentCheckout || currentCheckout < selected) {
+          rezOdlazakPicker.setDate(selected, true);
+        }
+      }
+    }
+  });
+
+  rezOdlazakPicker = window.flatpickr(odlazakEl, {
+    ...baseOpts,
+    onOpen: function(selectedDates, dateStr, instance) {
+      const arrival = rezDolazakPicker?.selectedDates?.[0] || null;
+      if (arrival) {
+        instance.set('minDate', arrival);
+        instance.jumpToDate(selectedDates[0] || arrival);
+      }
+    },
+    onChange: function() {
+      calcRezZarada();
+    }
+  });
+}
+initRezDatePickers();
+
+function initGostiFilterDatePickers() {
+  if (!window.flatpickr) return;
+  const odEl = document.getElementById('filterDatumOd');
+  const doEl = document.getElementById('filterDatumDo');
+  if (!odEl || !doEl) return;
+
+  const baseOpts = {
+    locale: 'hr',
+    allowInput: false,
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'd.m.Y.',
+    disableMobile: true
+  };
+
+  if (filterDatumOdPicker) filterDatumOdPicker.destroy();
+  if (filterDatumDoPicker) filterDatumDoPicker.destroy();
+
+  filterDatumOdPicker = window.flatpickr(odEl, {
+    ...baseOpts,
+    onChange: function(selectedDates) {
+      const selected = selectedDates[0] || null;
+      if (filterDatumDoPicker) {
+        filterDatumDoPicker.set('minDate', selected);
+        if (selected) filterDatumDoPicker.jumpToDate(selected);
+      }
+      filterGosti();
+    }
+  });
+
+  filterDatumDoPicker = window.flatpickr(doEl, {
+    ...baseOpts,
+    onOpen: function(selectedDates, dateStr, instance) {
+      const fromDate = filterDatumOdPicker?.selectedDates?.[0] || null;
+      if (fromDate) {
+        instance.set('minDate', fromDate);
+        instance.jumpToDate(selectedDates[0] || fromDate);
+      }
+    },
+    onChange: function() {
+      filterGosti();
+    }
+  });
+}
+initGostiFilterDatePickers();
+
+function rezPickerValue(elId, pickerRef) {
+  const el = document.getElementById(elId);
+  if (el && el.value) return normalizeDateInputToIso(el.value);
+  const date = pickerRef?.selectedDates?.[0];
+  return toIsoDateLocal(date);
+}
+
+let currentRezUplate = [];
 let currentRashodKat = 'rezije';
 let currentFinTab = 'sve';
 let confirmCallback = null;
@@ -1118,9 +1321,11 @@ let currentPorukeTab = 'rezervacije';
 // Auth check
 async function initApp() {
   const { data: { session } } = await sb.auth.getSession();
-  // AUTH TEMPORARILY DISABLED FOR TESTING
-  // if (!session) { window.location.href = 'admin-login.html'; return; }
-  currentUser = session ? session.user : { email: 'test@test.com' };
+  if (!session) {
+    window.location.href = 'admin-login.html';
+    return;
+  }
+  currentUser = session.user;
   document.getElementById('userEmail').textContent = currentUser.email;
 
   // Set today
@@ -1182,10 +1387,105 @@ function loadPage(name) {
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
+function toIsoDateLocal(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function normalizeDateInputToIso(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const isoLike = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoLike) {
+    const [, y, m, d] = isoLike;
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  const displayLike = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/);
+  if (!displayLike) return '';
+  const [, d, m, y] = displayLike;
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+function parseDateInput(value) {
+  const iso = normalizeDateInputToIso(value);
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDisplayDate(value, fallback = '–') {
+  const iso = normalizeDateInputToIso(value);
+  if (!iso) return fallback;
+  const [y, m, d] = iso.split('-');
+  if (!y || !m || !d) return fallback;
+  return `${d}.${m}.${y}.`;
+}
+
+function compareDateRangesOverlap(startA, endA, startB, endB) {
+  const aStart = normalizeDateInputToIso(startA);
+  const aEnd = normalizeDateInputToIso(endA);
+  const bStart = normalizeDateInputToIso(startB);
+  const bEnd = normalizeDateInputToIso(endB);
+  if (!aStart || !aEnd || !bStart || !bEnd) return false;
+  return aStart < bEnd && aEnd > bStart;
+}
+
+function dateRangeNights(dateIn, dateOut) {
+  const start = parseDateInput(dateIn);
+  const end = parseDateInput(dateOut);
+  if (!start || !end) return 0;
+  return Math.max(0, Math.round((end - start) / 86400000));
+}
+
+function addDaysToIso(value, days) {
+  const date = parseDateInput(value);
+  if (!date) return '';
+  date.setDate(date.getDate() + (Number(days) || 0));
+  return toIsoDateLocal(date);
+}
+
+function dayOfMonthFromIso(value) {
+  return parseDateInput(value)?.getDate() || 0;
+}
+
+function todayIsoDate() {
+  return toIsoDateLocal(new Date());
+}
+
+function parseMoneyInputValue(value) {
+  const raw = String(value ?? '').trim().replace(/\s+/g, '');
+  if (!raw) return null;
+  const normalized = raw.replace(',', '.');
+  if (!/^-?\d+(?:\.\d+)?$/.test(normalized)) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatMoneyInputValue(value) {
+  const parsed = typeof value === 'number' ? value : parseMoneyInputValue(value);
+  if (parsed === null || !Number.isFinite(parsed)) return '';
+  return String(parsed).replace('.', ',');
+}
+
+function bindMoneyInput(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el || el.dataset.moneyBound === '1') return;
+  el.dataset.moneyBound = '1';
+  el.addEventListener('blur', () => {
+    const formatted = formatMoneyInputValue(el.value);
+    if (formatted) el.value = formatted;
+  });
+}
+
+['rZarada', 'uIznos', 'rashodIznos'].forEach(bindMoneyInput);
+
 function fmtDate(d) {
-  if (!d) return '–';
-  const [y,m,day] = d.split('-');
-  return `${day}.${m}.${y}.`;
+  return formatDisplayDate(d);
 }
 function fmtEur(n) { return (parseFloat(n)||0).toFixed(2).replace('.',',') + ' €'; }
 function aptLabel(n) { return ['','Apt 1','Apt 2','Apt 3','Apt 4'][n] || 'Apt '+n; }
@@ -1198,17 +1498,74 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 function rezSourceLabel(s) {
-  return {vlastiti:'Vlastiti', airbnb:'Airbnb', estee:'Estee', ostalo:'Ostalo'}[s] || (s || 'â€“');
+  return {vlastiti:'Vlastiti', airbnb:'Airbnb', estee:'AG', ostalo:'Ostalo'}[s] || (s || 'â€“');
+}
+function getRacunUrl(rez) {
+  return rez?.racun_dokument_url || rez?.racun_url || null;
+}
+function getRacunName(rez) {
+  return rez?.racun_dokument_naziv || (getRacunUrl(rez) ? decodeURIComponent(String(getRacunUrl(rez)).split('/').pop() || 'Dokument') : '');
+}
+function getModalRacunUrl() {
+  const link = document.getElementById('rRacunLink');
+  if (!link) return null;
+  const raw = link.dataset.ref || link.getAttribute('href');
+  if (!raw || raw === '#') return null;
+  return raw;
+}
+function isAbsoluteUrl(value) {
+  return /^https?:\/\//i.test(String(value || '').trim());
+}
+async function openStoredDocument(ref, fileName = 'Dokument') {
+  if (!ref) return;
+  const cleanRef = String(ref).trim();
+  if (isAbsoluteUrl(cleanRef)) {
+    window.open(cleanRef, '_blank', 'noopener');
+    return;
+  }
+  const { data, error } = await sb.storage.from('dokumenti').createSignedUrl(cleanRef, 60);
+  if (error || !data?.signedUrl) {
+    alert('Dokument trenutno nije dostupan. Pokušajte ponovno.');
+    return;
+  }
+  window.open(data.signedUrl, '_blank', 'noopener');
+}
+function racunCell(rez) {
+  const broj = escapeHtml(rez?.broj_racuna || '');
+  return broj || '–';
+}
+function dokumentCell(rez) {
+  const url = getRacunUrl(rez);
+  const name = escapeHtml(getRacunName(rez) || 'Dokument');
+  if (!url) return '–';
+  return `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${name}" onclick='openStoredDocument(${JSON.stringify(url)}, ${JSON.stringify(getRacunName(rez) || 'Dokument')})'>📄</button>`;
 }
 function rezZarada(rez) {
-  return rez?.zarada_je_rucna ? rez.zarada_rucna : rez?.zarada_auto;
+  if (!rez) return 0;
+  const rucna = parseFloat(rez.zarada_rucna);
+  const auto = parseFloat(rez.zarada_auto);
+  if (rez.zarada_je_rucna && Number.isFinite(rucna) && rucna > 0) return rucna;
+  if (Number.isFinite(auto) && auto > 0) return auto;
+  if (rez.datum_dolaska && rez.datum_odlaska) return calcPrice(rez.datum_dolaska, rez.datum_odlaska);
+  if (Number.isFinite(rucna) && rucna !== 0) return rucna;
+  if (Number.isFinite(auto)) return auto;
+  return 0;
+}
+function rezAkontacija(rez) {
+  const a = parseFloat(rez?.akontacija);
+  return Number.isFinite(a) && a > 0 ? a : 0;
+}
+function rezNaplaceno(rez, uplateZbroj) {
+  const upl = parseFloat(uplateZbroj);
+  if (Number.isFinite(upl) && upl > 0) return upl;
+  return rezAkontacija(rez);
 }
 function rezTooltip(rez) {
   return [
     rez?.ime || 'Gost',
     `${fmtDate(rez?.datum_dolaska)} - ${fmtDate(rez?.datum_odlaska)}`,
     `Izvor: ${rezSourceLabel(rez?.izvor)}`,
-    `Zarada: ${fmtEur(rezZarada(rez))}`
+    `Ukupno: ${fmtEur(rezZarada(rez))}`
   ].join('\n');
 }
 function normalizeRezStatus(status) {
@@ -1230,7 +1587,7 @@ function statusBadge(s) {
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
 function izvorBadge(s) {
-  const map = {vlastiti:['badge-blue','Vlastiti'],airbnb:['badge-green','Airbnb'],estee:['badge-yellow','Estee'],ostalo:['badge-grey','Ostalo']};
+  const map = {vlastiti:['badge-blue','Vlastiti'],airbnb:['badge-green','Airbnb'],estee:['badge-yellow','AG'],ostalo:['badge-grey','Ostalo']};
   const [cls,lbl] = map[s] || ['badge-grey',s];
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
@@ -1352,9 +1709,10 @@ function setupPorukeSubscription() {
 // Price calculator
 function calcPrice(dateIn, dateOut) {
   if (!dateIn || !dateOut) return 0;
-  const d1 = new Date(dateIn), d2 = new Date(dateOut);
-  if (d2 <= d1) return 0;
-  const nights = Math.round((d2-d1)/86400000);
+  const d1 = parseDateInput(dateIn);
+  const d2 = parseDateInput(dateOut);
+  if (!d1 || !d2 || d2 <= d1) return 0;
+  const nights = dateRangeNights(dateIn, dateOut);
   function getNightPrice(date) {
     const m=date.getMonth()+1, d=date.getDate(), md=m*100+d;
     if(md>=601&&md<=610) return 70;
@@ -1472,7 +1830,8 @@ function renderKalendar() {
     html += `<div class="cal-apt-label">${aptLabel(apt)}</div>`;
     for (let d=1; d<=daysInMonth; d++) {
       const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=dateStr && r.datum_odlaska>dateStr);
+      const nextDateStr = addDaysToIso(dateStr, 1);
+      const rez = allRezervacije.find(r => r.apartman == apt && compareDateRangesOverlap(dateStr, nextDateStr, r.datum_dolaska, r.datum_odlaska));
       let cls = '';
       if (rez) {
         const status = normalizeRezStatus(rez.status);
@@ -1484,23 +1843,26 @@ function renderKalendar() {
     }
     html += `<div class="cal-overlays">`;
     allRezervacije
-      .filter(r => r.apartman == apt && r.datum_dolaska < monthEndExclusive && r.datum_odlaska > monthStart)
+      .filter(r => r.apartman == apt && compareDateRangesOverlap(monthStart, monthEndExclusive, r.datum_dolaska, r.datum_odlaska))
       .sort((a,b) => a.datum_dolaska.localeCompare(b.datum_dolaska))
       .forEach(rez => {
         const visibleStart = rez.datum_dolaska > monthStart ? rez.datum_dolaska : monthStart;
         const visibleEnd = rez.datum_odlaska < monthEndExclusive ? rez.datum_odlaska : monthEndExclusive;
-        const startDay = parseInt(visibleStart.split('-')[2], 10);
+        const startDay = dayOfMonthFromIso(visibleStart);
         const endDay = visibleEnd === monthEndExclusive
           ? daysInMonth
-          : parseInt(visibleEnd.split('-')[2], 10) - 1;
+          : dayOfMonthFromIso(visibleEnd) - 1;
         if (endDay < startDay) return;
         const startCol = startDay + 1;
         const endCol = endDay + 2;
         const spanDays = endDay - startDay + 1;
         const status = normalizeRezStatus(rez.status);
         const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+        const halfStart = visibleStart === rez.datum_dolaska;
+        const halfEnd = visibleEnd === rez.datum_odlaska;
+        const edgeCls = `${halfStart ? ' half-start' : ''}${halfEnd ? ' half-end' : ''}`;
         const label = spanDays > 1 ? escapeHtml(rez.ime || '') : '';
-        html += `<div class="cal-span ${spanCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
+        html += `<div class="cal-span ${spanCls}${edgeCls}" style="grid-column:${startCol} / ${endCol}" title="${escapeHtml(rezTooltip(rez))}" onclick='event.stopPropagation();openRezById("${escapeHtml(rez.id)}")'><span class="cal-span-label">${label}</span></div>`;
       });
     html += `</div>`;
     html += '</div>';
@@ -1516,9 +1878,22 @@ function openRezById(id) {
   if (rez) editRezervacija(rez);
 }
 function calCellClick(apt, date) {
-  const rez = allRezervacije.find(r => r.apartman==apt && r.datum_dolaska<=date && r.datum_odlaska>date);
+  const nextDate = addDaysToIso(date, 1);
+  const rez = allRezervacije.find(r => r.apartman == apt && compareDateRangesOverlap(date, nextDate, r.datum_dolaska, r.datum_odlaska));
   if (rez) editRezervacija(rez);
-  else { openRezModal(); document.getElementById('rApt').value=apt; document.getElementById('rDolazak').value=date; }
+  else {
+    openRezModal();
+    document.getElementById('rApt').value = apt;
+    if (rezDolazakPicker) {
+      rezDolazakPicker.setDate(date, true);
+      if (rezOdlazakPicker) {
+        rezOdlazakPicker.set('minDate', date);
+        rezOdlazakPicker.jumpToDate(date);
+      }
+    } else {
+      document.getElementById('rDolazak').value = date;
+    }
+  }
 }
 
 // ══════════════════════════════════════
@@ -1560,10 +1935,10 @@ function filterGosti() {
   });
 
   const tbody = document.getElementById('gostiBody');
-  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>'; return; }
 
   tbody.innerHTML = filtered.map(r => {
-    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zarada = rezZarada(r);
     const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
     return `<tr>
       <td><strong>${r.ime}</strong></td>
@@ -1574,7 +1949,8 @@ function filterGosti() {
       <td>${izvorBadge(r.izvor)}</td>
       <td>${statusBadge(r.status)}</td>
       <td class="${zaradaCls}">${fmtEur(zarada)}</td>
-      <td>${r.racun_url ? `<a href="${r.racun_url}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Račun">📄</a>` : '–'}</td>
+      <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -1584,8 +1960,13 @@ function filterGosti() {
 function openRezModal(rez=null) {
   currentRezId = rez ? rez.id : null;
   currentRezStatus = rez ? rez.status : null;
+  racunClearedInModal = false;
   document.getElementById('rezModalTitle').textContent = rez ? 'Uredi rezervaciju' : 'Nova rezervacija';
+  const deleteBtn = document.getElementById('rezDeleteBtn');
+  if (deleteBtn) deleteBtn.style.display = rez ? 'inline-flex' : 'none';
   document.getElementById('rIme').value = rez?.ime || '';
+  const emailEl = document.getElementById('rEmail');
+  if (emailEl) emailEl.value = rez?.email || '';
   document.getElementById('rApt').value = rez?.apartman || 1;
   document.getElementById('rIzvor').value = rez?.izvor || 'vlastiti';
   document.getElementById('rDolazak').value = rez?.datum_dolaska || '';
@@ -1594,32 +1975,56 @@ function openRezModal(rez=null) {
   document.getElementById('rStatus').value = rez?.status || 'upit';
   document.getElementById('rKomentar').value = rez?.komentar || '';
   document.getElementById('rRacunFile').value = '';
-  if (rez?.racun_url) {
+  if (getRacunUrl(rez)) {
     document.getElementById('rRacunExisting').style.display = 'block';
-    document.getElementById('rRacunLink').href = rez.racun_url;
+    document.getElementById('rRacunLink').dataset.ref = getRacunUrl(rez);
+    document.getElementById('rRacunLink').href = '#';
+    document.getElementById('rRacunLink').onclick = function(ev) {
+      ev.preventDefault();
+      openStoredDocument(getRacunUrl(rez), getRacunName(rez) || 'Dokument');
+    };
   } else {
     document.getElementById('rRacunExisting').style.display = 'none';
-    document.getElementById('rRacunLink').href = '#';
+    document.getElementById('rRacunLink').removeAttribute('data-ref');
+    document.getElementById('rRacunLink').removeAttribute('href');
+    document.getElementById('rRacunLink').onclick = null;
   }
-  const zarada = rez ? (rez.zarada_je_rucna ? rez.zarada_rucna : rez.zarada_auto) : '';
-  document.getElementById('rZarada').value = zarada || '';
+  const zarada = rez ? rezZarada(rez) : '';
+  document.getElementById('rZarada').value = zarada ? formatMoneyInputValue(zarada) : '';
   document.getElementById('rezZaradaInfo').style.display = 'none';
+  currentRezUplate = [];
+  renderUplateSection();
+  resetUplataForm();
   openModal('rezModal');
 }
 
 function editRezervacija(rez) { openRezModal(rez); }
 
+function deleteCurrentRezFromModal() {
+  if (!currentRezId) return;
+  showConfirm(
+    '🗑️',
+    'Obrisati rezervaciju?',
+    'Rezervacija će biti trajno obrisana. Jeste li sigurni da želite nastaviti?',
+    async () => {
+      const id = currentRezId;
+      closeModal('rezModal');
+      await deleteRez(id);
+    }
+  );
+}
+
 function calcRezZarada(force=false) {
-  const d1 = document.getElementById('rDolazak').value;
-  const d2 = document.getElementById('rOdlazak').value;
+  const d1 = rezPickerValue('rDolazak', rezDolazakPicker);
+  const d2 = rezPickerValue('rOdlazak', rezOdlazakPicker);
   const zEl = document.getElementById('rZarada');
   const info = document.getElementById('rezZaradaInfo');
   if (!d1 || !d2) return;
   const total = calcPrice(d1, d2);
   if (force || !zEl.value) {
-    zEl.value = total;
+    zEl.value = formatMoneyInputValue(total);
     if (total > 0) {
-      const nights = Math.round((new Date(d2)-new Date(d1))/86400000);
+      const nights = dateRangeNights(d1, d2);
       info.textContent = `Auto izračun: ${nights} noćenja × prosječno ${(total/nights).toFixed(0)} €/noć = ${total} €`;
       info.style.display = 'block';
     }
@@ -1628,24 +2033,23 @@ function calcRezZarada(force=false) {
 
 async function saveRezervacija() {
   const ime = document.getElementById('rIme').value.trim();
-  const dolazak = document.getElementById('rDolazak').value;
-  const odlazak = document.getElementById('rOdlazak').value;
+  const dolazak = rezPickerValue('rDolazak', rezDolazakPicker);
+  const odlazak = rezPickerValue('rOdlazak', rezOdlazakPicker);
   if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
 
   const zaradaAuto = calcPrice(dolazak, odlazak);
-  const zaradaRucnaVal = parseFloat(document.getElementById('rZarada').value) || null;
+  const zaradaRucnaVal = parseMoneyInputValue(document.getElementById('rZarada').value);
   const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
 
   // Handle file upload
-  let racunUrl = currentRezId ? (document.getElementById('rRacunLink').href !== '#' ? document.getElementById('rRacunLink').href : null) : null;
+  let racunUrl = currentRezId ? getModalRacunUrl() : null;
   const fileInput = document.getElementById('rRacunFile');
   if (fileInput.files && fileInput.files[0]) {
     const file = fileInput.files[0];
     const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
     const { data: uploadData, error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
     if (uploadErr) { alert('Greška pri uploadu: '+uploadErr.message); return; }
-    const { data: urlData } = sb.storage.from('dokumenti').getPublicUrl(fileName);
-    racunUrl = urlData.publicUrl;
+    racunUrl = fileName;
   }
 
   const payload = {
@@ -1684,15 +2088,174 @@ saveRezervacija = async function() {
 };
 
 function clearRacun() {
+  racunClearedInModal = true;
   document.getElementById('rRacunFile').value = '';
   document.getElementById('rRacunExisting').style.display = 'none';
-  document.getElementById('rRacunLink').href = '#';
+  document.getElementById('rRacunLink').removeAttribute('data-ref');
+  document.getElementById('rRacunLink').removeAttribute('href');
+  document.getElementById('rRacunLink').onclick = null;
 }
 
 async function deleteRez(id) {
   showConfirm('🗑️','Brisanje rezervacije','Ova rezervacija će biti trajno obrisana.', async () => {
-    await sb.from('rezervacije').delete().eq('id',id);
-    loadGosti(); loadKalendar(); loadKalendarStats();
+    const { error } = await sb.from('rezervacije').delete().eq('id',id);
+    if (error) {
+      alert('Greška pri brisanju rezervacije: ' + error.message);
+      return;
+    }
+    if (Array.isArray(allRezervacije)) {
+      allRezervacije = allRezervacije.filter(r => String(r.id) !== String(id));
+    }
+    loadGosti(); loadKalendar(); loadKalendarStats(); loadFinancije();
+  });
+}
+
+function renderUplateSection() {
+  const list = document.getElementById('uplateList');
+  const total = document.getElementById('uplateTotal');
+  const note = document.getElementById('uplateNote');
+  const form = document.getElementById('uplateForm');
+  if (!list || !total || !note || !form) return;
+
+  if (!currentRezId) {
+    note.textContent = 'Spremite rezervaciju kako biste mogli dodavati uplate.';
+    total.textContent = 'Naplaćeno: 0,00 €';
+    list.innerHTML = '<div class="uplata-empty">Uplate se mogu dodavati nakon što rezervacija bude spremljena.</div>';
+    form.style.display = 'none';
+    return;
+  }
+
+  note.textContent = 'Evidentirajte akontacije, gotovinu, AG i Airbnb uplate za ovu rezervaciju.';
+  form.style.display = 'grid';
+  const naplacenoIzUplata = currentRezUplate.reduce((sum, u) => sum + (parseFloat(u.iznos) || 0), 0);
+  const naplaceno = rezNaplaceno(allRezervacije.find(r => String(r.id) === String(currentRezId)), naplacenoIzUplata);
+  total.textContent = `Naplaćeno: ${fmtEur(naplaceno)}`;
+
+  if (!currentRezUplate.length) {
+    const rez = allRezervacije.find(r => String(r.id) === String(currentRezId));
+    const akontacija = rezAkontacija(rez);
+    list.innerHTML = akontacija > 0
+      ? `<div class="uplata-item">
+          <div class="uplata-main">
+            <strong>Akontacija (uvezeno iz rezervacije)</strong>
+            <div>Ovaj iznos je preuzet iz polja akontacije i još nije razbijen na pojedinačne uplate.</div>
+          </div>
+          <div class="uplata-iznos">${fmtEur(akontacija)}</div>
+          <div style="width:32px"></div>
+        </div>`
+      : '<div class="uplata-empty">Još nema uplata za ovu rezervaciju.</div>';
+    return;
+  }
+
+  list.innerHTML = currentRezUplate.map(u => {
+    const meta = [fmtDate(u.datum_uplate), uplataVrstaLabel(u.vrsta), uplataNacinLabel(u.nacin)].filter(Boolean).join(' • ');
+    const extra = [u.broj_racuna ? `Račun: ${escapeHtml(u.broj_racuna)}` : '', u.opis ? escapeHtml(u.opis) : ''].filter(Boolean).join(' • ');
+    const doc = u.dokument_url ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(u.dokument_naziv || 'Dokument')}" onclick='openStoredDocument(${JSON.stringify(u.dokument_url)}, ${JSON.stringify(u.dokument_naziv || 'Dokument')})'>📄</button>` : '<span style="width:32px"></span>';
+    return `<div class="uplata-item">
+      <div class="uplata-main">
+        <strong>${escapeHtml(meta || 'Uplata')}</strong>
+        <div>${extra || 'Bez dodatne napomene.'}</div>
+      </div>
+      <div class="uplata-iznos">${fmtEur(u.iznos || 0)}</div>
+      <div style="display:flex;align-items:center;gap:.4rem;justify-content:flex-end">
+        ${doc}
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteUplata('${u.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function uplataVrstaLabel(vrsta) {
+  const map = { akontacija: 'Akontacija', doplata: 'Doplata', airbnb: 'Airbnb', agencija: 'AG', gotovina: 'Gotovina' };
+  return map[vrsta] || vrsta || '';
+}
+
+function uplataNacinLabel(nacin) {
+  const map = { racun: 'Račun', gotovina: 'Gotovina' };
+  return map[nacin] || nacin || '';
+}
+
+function resetUplataForm() {
+  const today = todayIsoDate();
+  if (document.getElementById('uDatum')) document.getElementById('uDatum').value = today;
+  if (document.getElementById('uIznos')) document.getElementById('uIznos').value = '';
+  if (document.getElementById('uVrsta')) document.getElementById('uVrsta').value = 'akontacija';
+  if (document.getElementById('uNacin')) document.getElementById('uNacin').value = 'racun';
+  if (document.getElementById('uOpis')) document.getElementById('uOpis').value = '';
+  if (document.getElementById('uBrojRacuna')) document.getElementById('uBrojRacuna').value = '';
+  if (document.getElementById('uDokument')) document.getElementById('uDokument').value = '';
+}
+
+async function loadUplateForCurrentRez() {
+  if (!currentRezId) {
+    currentRezUplate = [];
+    resetUplataForm();
+    renderUplateSection();
+    return;
+  }
+  const { data, error } = await sb.from('uplate').select('*').eq('rezervacija_id', currentRezId).order('datum_uplate', { ascending: false }).order('created_at', { ascending: false });
+  if (error) {
+    currentRezUplate = [];
+    renderUplateSection();
+    return;
+  }
+  currentRezUplate = data || [];
+  resetUplataForm();
+  renderUplateSection();
+}
+
+async function saveUplata() {
+  if (!currentRezId) {
+    alert('Prvo spremite rezervaciju, pa zatim dodajte uplatu.');
+    return;
+  }
+  const datum_uplate = document.getElementById('uDatum')?.value;
+  const iznos = parseMoneyInputValue(document.getElementById('uIznos')?.value || '');
+  const vrsta = document.getElementById('uVrsta')?.value || 'akontacija';
+  const nacin = document.getElementById('uNacin')?.value || 'racun';
+  const opis = document.getElementById('uOpis')?.value.trim() || null;
+  const broj_racuna = document.getElementById('uBrojRacuna')?.value.trim() || null;
+  const fileInput = document.getElementById('uDokument');
+
+  if (!datum_uplate || !(iznos > 0)) {
+    alert('Unesite datum uplate i iznos veći od 0.');
+    return;
+  }
+
+  let dokument_url = null;
+  let dokument_naziv = null;
+  if (fileInput?.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    const fileName = `uplate/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const { error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
+    if (uploadErr) {
+      alert('Greška pri uploadu dokumenta: ' + uploadErr.message);
+      return;
+    }
+    dokument_url = fileName;
+    dokument_naziv = file.name;
+  }
+
+  const payload = { rezervacija_id: currentRezId, datum_uplate, iznos, vrsta, nacin, opis, broj_racuna, dokument_url, dokument_naziv };
+  const { error } = await sb.from('uplate').insert([payload]);
+  if (error) {
+    alert('Greška pri spremanju uplate: ' + error.message);
+    return;
+  }
+
+  await loadUplateForCurrentRez();
+  await loadFinancije();
+}
+
+async function deleteUplata(id) {
+  showConfirm('🗑️','Brisanje uplate','Ova uplata bit će trajno obrisana.', async () => {
+    const { error } = await sb.from('uplate').delete().eq('id', id);
+    if (error) {
+      alert('Greška pri brisanju uplate: ' + error.message);
+      return;
+    }
+    await loadUplateForCurrentRez();
+    await loadFinancije();
   });
 }
 
@@ -1726,12 +2289,27 @@ async function loadFinancije() {
 
   const { data } = await q;
   const all = data || [];
+  const rezIds = all.map(r => r.id).filter(Boolean);
+  let naplacenoMap = new Map();
+  if (rezIds.length) {
+    const { data: uplateData } = await sb.from('uplate').select('rezervacija_id, iznos').in('rezervacija_id', rezIds);
+    (uplateData || []).forEach(u => {
+      const iznos = parseFloat(u.iznos) || 0;
+      const key = String(u.rezervacija_id);
+      naplacenoMap.set(key, (naplacenoMap.get(key) || 0) + iznos);
+    });
+  }
+  let naplacenoUkupno = 0;
+  all.forEach(r => {
+    const naplaceno = rezNaplaceno(r, naplacenoMap.get(String(r.id)) || 0);
+    naplacenoUkupno += naplaceno;
+  });
 
   const today = new Date(); today.setHours(0,0,0,0);
   let realizirana = 0, buduca = 0;
 
   all.forEach(r => {
-    const zarada = r.zarada_je_rucna ? (r.zarada_rucna||0) : (r.zarada_auto||0);
+    const zarada = rezZarada(r) || 0;
     const dolazak = new Date(r.datum_dolaska);
     const odlazak = new Date(r.datum_odlaska);
     if (odlazak <= today || (dolazak <= today && odlazak > today)) realizirana += zarada;
@@ -1760,7 +2338,7 @@ async function loadFinancije() {
   const netoEl = document.getElementById('finNeto');
   const netoCard = netoEl ? netoEl.closest('.fin-sum-card') : null;
 
-  document.getElementById('finRealizirana').textContent = fmtEur(realizirana);
+  document.getElementById('finRealizirana').textContent = fmtEur(naplacenoUkupno);
   document.getElementById('finBuduca').textContent = fmtEur(buduca);
   document.getElementById('finUkupna').textContent = fmtEur(ukupnoP);
 
@@ -1775,12 +2353,13 @@ async function loadFinancije() {
   }
 
   const tbody = document.getElementById('finBody');
-  if (!all.length) { tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ico">💰</div><p>Nema podataka za odabrano razdoblje.</p></div></td></tr>'; return; }
+  if (!all.length) { tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="ico">💰</div><p>Nema podataka za odabrano razdoblje.</p></div></td></tr>'; return; }
 
   tbody.innerHTML = all.map(r => {
-    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zarada = rezZarada(r);
     const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
-    const nights = Math.round((new Date(r.datum_odlaska)-new Date(r.datum_dolaska))/86400000);
+    const nights = dateRangeNights(r.datum_dolaska, r.datum_odlaska);
+    const naplaceno = rezNaplaceno(r, naplacenoMap.get(String(r.id)) || 0);
     return `<tr>
       <td><strong>${r.ime}</strong></td>
       <td>${aptLabel(r.apartman)}</td>
@@ -1788,7 +2367,10 @@ async function loadFinancije() {
       <td>${fmtDate(r.datum_odlaska)}</td>
       <td>${nights}</td>
       <td>${statusBadge(r.status)}</td>
+      <td><strong>${fmtEur(naplaceno)}</strong></td>
       <td class="${zaradaCls}"><strong>${fmtEur(zarada)}</strong>${r.zarada_je_rucna?' 🖊️':''}</td>
+      <td>${escapeHtml(r.broj_racuna || '–')}</td>
+      <td>${getRacunUrl(r) ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(getRacunName(r) || 'Dokument')}" onclick='openStoredDocument(${JSON.stringify(getRacunUrl(r))}, ${JSON.stringify(getRacunName(r) || 'Dokument')})'>📄</button>` : '–'}</td>
       <td>
         <button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
         ${r.zarada_je_rucna ? `<button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="resetZarada('${r.id}')">🔄</button>` : ''}
@@ -1837,14 +2419,14 @@ function openRashodModal(kat) {
   });
   document.getElementById('rashodIznos').value='';
   document.getElementById('rashodKomentar').value='';
-  document.getElementById('rashodDatum').value=new Date().toISOString().split('T')[0];
+  document.getElementById('rashodDatum').value=todayIsoDate();
   openModal('rashodModal');
 }
 
 async function saveRashod() {
   const novaVrsta = document.getElementById('rashodNovaVrsta').value.trim();
   const vrsta = novaVrsta || document.getElementById('rashodVrsta').value;
-  const iznos = parseFloat(document.getElementById('rashodIznos').value);
+  const iznos = parseMoneyInputValue(document.getElementById('rashodIznos').value);
   if (!vrsta || !iznos) { alert('Unesite vrstu i iznos.'); return; }
 
   // Spremi novu vrstu ako je unesena
@@ -2160,7 +2742,12 @@ function showConfirm(ico, title, msg, cb) {
   document.getElementById('confirmModal').classList.add('open');
 }
 function closeConfirm() { document.getElementById('confirmModal').classList.remove('open'); confirmCallback=null; }
-async function confirmOk() { closeConfirm(); if(confirmCallback) await confirmCallback(); }
+async function confirmOk() {
+  const cb = confirmCallback;
+  document.getElementById('confirmModal').classList.remove('open');
+  confirmCallback = null;
+  if (cb) await cb();
+}
 
 // Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m => {
@@ -2340,12 +2927,12 @@ filterGosti = function() {
   const tbody = document.getElementById('gostiBody');
   if (!tbody) return;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>';
     return;
   }
 
   tbody.innerHTML = filtered.map(r => {
-    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zarada = rezZarada(r);
     const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
     const statusNorm = normalizeRezStatus(r.status);
     const zaradaPrikaz = statusNorm === 'otkazano' ? '–' : fmtEur(zarada);
@@ -2358,7 +2945,8 @@ filterGosti = function() {
       <td>${izvorBadge(r.izvor)}</td>
       <td>${statusBadge(r.status)}</td>
       <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
-      <td>${r.racun_url ? `<a href="${r.racun_url}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Račun">📄</a>` : '–'}</td>
+      <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -2747,7 +3335,7 @@ filterGosti = function() {
   }
 
   tbody.innerHTML = filtered.map(r => {
-    const zarada = r.zarada_je_rucna ? r.zarada_rucna : r.zarada_auto;
+    const zarada = rezZarada(r);
     const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
     const statusNorm = normalizeRezStatus(r.status);
     const zaradaPrikaz = statusNorm === 'otkazano' ? '–' : fmtEur(zarada);
@@ -2764,7 +3352,8 @@ filterGosti = function() {
       <td>${izvorBadge(r.izvor)}</td>
       <td>${statusBadge(r.status)}</td>
       <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
-      <td>${r.racun_url ? `<a href="${r.racun_url}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Račun">📄</a>` : '–'}</td>
+      <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✎</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -3432,5 +4021,251 @@ initApp();
   };
 })();
 </script>
+<script>
+(() => {
+  function ensureBrojRacunaField() {
+    const statusField = document.getElementById('rStatus')?.closest('.fg');
+    if (!statusField || document.getElementById('rBrojRacuna')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'fg';
+    wrap.innerHTML = `
+      <label>Broj računa</label>
+      <input type="text" id="rBrojRacuna" placeholder="Npr. 2026-014">
+    `;
+    statusField.parentNode.insertBefore(wrap, statusField);
+  }
+
+  function ensureRacunUiText() {
+    const fileInput = document.getElementById('rRacunFile');
+    if (fileInput) fileInput.removeAttribute('accept');
+    const link = document.getElementById('rRacunLink');
+    if (link && link.textContent.includes('račun')) link.textContent = 'Pogledaj dokument';
+  }
+
+  const _origOpenRezModal = openRezModal;
+  openRezModal = function(rez = null) {
+    ensureBrojRacunaField();
+    ensureRacunUiText();
+    racunClearedInModal = false;
+    _origOpenRezModal(rez);
+    initRezDatePickers();
+    if (rezDolazakPicker) rezDolazakPicker.setDate(rez?.datum_dolaska || '', false);
+    if (rezOdlazakPicker) {
+      rezOdlazakPicker.set('minDate', rez?.datum_dolaska || null);
+      rezOdlazakPicker.setDate(rez?.datum_odlaska || '', false);
+      if (rez?.datum_dolaska) rezOdlazakPicker.jumpToDate(rez.datum_dolaska);
+    }
+    const broj = document.getElementById('rBrojRacuna');
+    const link = document.getElementById('rRacunLink');
+    const wrap = document.getElementById('rRacunExisting');
+    if (broj) broj.value = rez?.broj_racuna || '';
+    if (link && wrap) {
+      const url = getRacunUrl(rez);
+      if (url) {
+        wrap.style.display = 'block';
+        link.dataset.ref = url;
+        link.href = '#';
+        link.onclick = function(ev) {
+          ev.preventDefault();
+          openStoredDocument(url, getRacunName(rez) || 'Dokument');
+        };
+        link.textContent = getRacunName(rez) || 'Pogledaj dokument';
+      } else {
+        wrap.style.display = 'none';
+        link.removeAttribute('data-ref');
+        link.removeAttribute('href');
+        link.onclick = null;
+        link.textContent = 'Pogledaj dokument';
+      }
+    }
+    loadUplateForCurrentRez();
+  };
+
+  clearRacun = async function() {
+    racunClearedInModal = true;
+    const file = document.getElementById('rRacunFile');
+    const wrap = document.getElementById('rRacunExisting');
+    const link = document.getElementById('rRacunLink');
+    if (file) file.value = '';
+    if (wrap) wrap.style.display = 'none';
+    if (link) {
+      link.removeAttribute('data-ref');
+      link.removeAttribute('href');
+      link.onclick = null;
+      link.textContent = 'Pogledaj dokument';
+    }
+    if (currentRezId) {
+      const clearPayload = {
+        racun_url: null,
+        racun_dokument_url: null,
+        racun_dokument_naziv: null,
+        racun_dokument_tip: null,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await sb.from('rezervacije').update(clearPayload).eq('id', currentRezId);
+      if (error) {
+        alert('Greška pri uklanjanju dokumenta: ' + error.message);
+        return;
+      }
+      if (Array.isArray(allRezervacije)) {
+        allRezervacije = allRezervacije.map(r => String(r.id) === String(currentRezId)
+          ? { ...r, racun_url: null, racun_dokument_url: null, racun_dokument_naziv: null, racun_dokument_tip: null }
+          : r);
+      }
+      loadGosti();
+      loadFinancije();
+    }
+  };
+
+  const _origSaveRezervacija = saveRezervacija;
+  saveRezervacija = async function() {
+    ensureBrojRacunaField();
+    ensureRacunUiText();
+
+    const ime = document.getElementById('rIme').value.trim();
+    const dolazak = rezPickerValue('rDolazak', rezDolazakPicker);
+    const odlazak = rezPickerValue('rOdlazak', rezOdlazakPicker);
+    if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
+
+    const runSave = async () => {
+      const zaradaAuto = calcPrice(dolazak, odlazak);
+      const zaradaRucnaVal = parseMoneyInputValue(document.getElementById('rZarada').value);
+      const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
+
+      let racunUrl = currentRezId ? getModalRacunUrl() : null;
+      let racunNaziv = currentRezId && racunUrl ? (document.getElementById('rRacunLink').textContent || null) : null;
+      let racunTip = null;
+      const fileInput = document.getElementById('rRacunFile');
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+        const { error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
+        if (uploadErr) { alert('Greška pri uploadu: ' + uploadErr.message); return; }
+        racunUrl = fileName;
+        racunNaziv = file.name;
+        racunTip = file.type || null;
+        racunClearedInModal = false;
+      } else if (racunClearedInModal) {
+        racunUrl = null;
+        racunNaziv = null;
+        racunTip = null;
+      } else if (!racunUrl) {
+        racunNaziv = null;
+      }
+
+      const payload = {
+        ime,
+        email: document.getElementById('rEmail')?.value.trim() || null,
+        apartman: parseInt(document.getElementById('rApt').value),
+        datum_dolaska: dolazak,
+        datum_odlaska: odlazak,
+        broj_osoba: parseInt(document.getElementById('rBrojOsoba').value) || 1,
+        izvor: document.getElementById('rIzvor').value,
+        status: document.getElementById('rStatus').value,
+        broj_racuna: document.getElementById('rBrojRacuna')?.value.trim() || null,
+        komentar: document.getElementById('rKomentar').value || null,
+        racun_url: racunUrl,
+        racun_dokument_url: racunUrl,
+        racun_dokument_naziv: racunNaziv,
+        racun_dokument_tip: racunTip,
+        zarada_auto: zaradaAuto,
+        zarada_rucna: zaradaJeRucna ? zaradaRucnaVal : null,
+        zarada_je_rucna: zaradaJeRucna,
+        updated_at: new Date().toISOString()
+      };
+
+      let err;
+      if (currentRezId) ({ error: err } = await sb.from('rezervacije').update(payload).eq('id', currentRezId));
+      else ({ error: err } = await sb.from('rezervacije').insert([payload]));
+
+      if (err) { alert('Greška: ' + err.message); return; }
+      racunClearedInModal = false;
+      closeModal('rezModal');
+      await loadGosti();
+      await loadKalendar();
+      await loadKalendarStats();
+      await loadFinancije();
+    };
+
+    const nextStatus = document.getElementById('rStatus').value;
+    if (currentRezId && currentRezStatus === 'upit' && nextStatus === 'otkazano') {
+      showConfirm('⚠️','Otkaži upit?','Upit će biti označen kao otkazan. Jeste li sigurni da želite nastaviti?', async () => {
+        currentRezStatus = nextStatus;
+        await runSave();
+      });
+      return;
+    }
+    currentRezStatus = nextStatus;
+    await runSave();
+  };
+
+  filterGosti = function() {
+    const ime = document.getElementById('filterIme').value.toLowerCase();
+    const apt = document.getElementById('filterApt').value;
+    const izvor = document.getElementById('filterIzvor').value;
+    const status = document.getElementById('filterStatus').value;
+    const od = document.getElementById('filterDatumOd').value;
+    const do_ = document.getElementById('filterDatumDo').value;
+    const god = document.getElementById('filterGodina').value;
+
+    let filtered = allRezervacije.filter(r => {
+      if (ime && !String(r.ime || '').toLowerCase().includes(ime)) return false;
+      if (apt && r.apartman != apt) return false;
+      if (izvor && r.izvor !== izvor) return false;
+      if (status && normalizeRezStatus(r.status) !== status) return false;
+      if (od && r.datum_dolaska < od) return false;
+      if (do_ && r.datum_dolaska > do_) return false;
+      if (god && new Date(r.datum_dolaska).getFullYear() != god) return false;
+      return true;
+    });
+
+    const tbody = document.getElementById('gostiBody');
+    if (!tbody) return;
+    if (typeof setupGostiBulkEmailUi === 'function') setupGostiBulkEmailUi();
+
+    const tableHeadRow = document.querySelector('#gostiTable thead tr');
+    if (tableHeadRow) {
+      const th = tableHeadRow.children[8];
+      if (th) th.textContent = 'Račun / dokument';
+    }
+
+    if (!filtered.length) {
+      const colspan = document.getElementById('gostiSelectAllTh') ? 11 : 10;
+      tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>`;
+      if (typeof syncBulkEmailButton === 'function') syncBulkEmailButton();
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+      const zarada = rezZarada(r);
+      const zaradaCls = r.zarada_je_rucna ? 'zarada-rucna' : '';
+      const statusNorm = normalizeRezStatus(r.status);
+      const zaradaPrikaz = statusNorm === 'otkazano' ? '–' : fmtEur(zarada);
+      const email = String(r.email || '').trim();
+      const hasBulk = !!document.getElementById('gostiSelectAllTh');
+      const checked = email && typeof selectedGuestEmails !== 'undefined' && selectedGuestEmails.has(email) ? 'checked' : '';
+      const checkbox = hasBulk ? (email ? `<input type="checkbox" class="gosti-email-select" data-email="${escapeHtml(email)}" ${checked} onchange='toggleGuestEmailSelection("${escapeHtml(email)}", this.checked)'>` : '–') : '';
+      return `<tr>
+        ${hasBulk ? `<td>${checkbox}</td>` : ''}
+        <td><strong>${escapeHtml(r.ime || '')}</strong></td>
+        <td>${aptLabel(r.apartman)}</td>
+        <td>${fmtDate(r.datum_dolaska)}</td>
+        <td>${fmtDate(r.datum_odlaska)}</td>
+        <td>${r.broj_osoba || '–'}</td>
+        <td>${izvorBadge(r.izvor)}</td>
+        <td>${statusBadge(r.status)}</td>
+        <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
+        <td>${racunCell(r)}</td>
+        <td>${dokumentCell(r)}</td>
+        <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✎</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
+      </tr>`;
+    }).join('');
+
+    if (typeof syncBulkEmailButton === 'function') syncBulkEmailButton();
+  };
+})();
+</script>
 </body>
 </html>
+
