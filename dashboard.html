@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -502,11 +503,11 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
             </div>
             <div class="fg">
               <label>Dolazak od</label>
-              <input type="date" id="filterDatumOd" onchange="filterGosti()">
+              <input type="text" id="filterDatumOd" placeholder="Odaberite datum" onchange="filterGosti()">
             </div>
             <div class="fg">
               <label>Dolazak do</label>
-              <input type="date" id="filterDatumDo" onchange="filterGosti()">
+              <input type="text" id="filterDatumDo" placeholder="Odaberite datum" onchange="filterGosti()">
             </div>
             <div class="fg">
               <label>Godina</label>
@@ -545,11 +546,12 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
                 <th>Status</th>
                 <th>Zarada</th>
                 <th>Račun</th>
+                <th>Dokument</th>
                 <th></th>
               </tr>
             </thead>
             <tbody id="gostiBody">
-              <tr><td colspan="10" class="loading">Učitavanje...</td></tr>
+              <tr><td colspan="11" class="loading">Učitavanje...</td></tr>
             </tbody>
           </table>
         </div>
@@ -918,6 +920,10 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
           <input type="text" id="rIme" placeholder="Marija Horvat">
         </div>
         <div class="fg">
+          <label>Email</label>
+          <input type="email" id="rEmail" placeholder="gost@email.com">
+        </div>
+        <div class="fg">
           <label>Apartman</label>
           <select id="rApt">
             <option value="1">Apartman 1 – Prizemlje</option>
@@ -1177,6 +1183,12 @@ const SUPABASE_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'balent_admin_session' } });
 
+sb.auth.onAuthStateChange((_event, session) => {
+  if (!session) {
+    window.location.href = 'admin-login.html';
+  }
+});
+
 let currentUser = null;
 let allRezervacije = [];
 let currentRezId = null;
@@ -1184,6 +1196,8 @@ let currentRezStatus = null;
 let racunClearedInModal = false;
 let rezDolazakPicker = null;
 let rezOdlazakPicker = null;
+let filterDatumOdPicker = null;
+let filterDatumDoPicker = null;
 
 function initRezDatePickers() {
   if (!window.flatpickr) return;
@@ -1239,6 +1253,52 @@ function initRezDatePickers() {
 }
 initRezDatePickers();
 
+function initGostiFilterDatePickers() {
+  if (!window.flatpickr) return;
+  const odEl = document.getElementById('filterDatumOd');
+  const doEl = document.getElementById('filterDatumDo');
+  if (!odEl || !doEl) return;
+
+  const baseOpts = {
+    locale: 'hr',
+    allowInput: false,
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'd.m.Y.',
+    disableMobile: true
+  };
+
+  if (filterDatumOdPicker) filterDatumOdPicker.destroy();
+  if (filterDatumDoPicker) filterDatumDoPicker.destroy();
+
+  filterDatumOdPicker = window.flatpickr(odEl, {
+    ...baseOpts,
+    onChange: function(selectedDates) {
+      const selected = selectedDates[0] || null;
+      if (filterDatumDoPicker) {
+        filterDatumDoPicker.set('minDate', selected);
+        if (selected) filterDatumDoPicker.jumpToDate(selected);
+      }
+      filterGosti();
+    }
+  });
+
+  filterDatumDoPicker = window.flatpickr(doEl, {
+    ...baseOpts,
+    onOpen: function(selectedDates, dateStr, instance) {
+      const fromDate = filterDatumOdPicker?.selectedDates?.[0] || null;
+      if (fromDate) {
+        instance.set('minDate', fromDate);
+        instance.jumpToDate(selectedDates[0] || fromDate);
+      }
+    },
+    onChange: function() {
+      filterGosti();
+    }
+  });
+}
+initGostiFilterDatePickers();
+
 function rezPickerValue(elId, pickerRef) {
   const el = document.getElementById(elId);
   if (el && el.value) return el.value;
@@ -1265,9 +1325,11 @@ let currentPorukeTab = 'rezervacije';
 // Auth check
 async function initApp() {
   const { data: { session } } = await sb.auth.getSession();
-  // AUTH TEMPORARILY DISABLED FOR TESTING
-  // if (!session) { window.location.href = 'admin-login.html'; return; }
-  currentUser = session ? session.user : { email: 'test@test.com' };
+  if (!session) {
+    window.location.href = 'admin-login.html';
+    return;
+  }
+  currentUser = session.user;
   document.getElementById('userEmail').textContent = currentUser.email;
 
   // Set today
@@ -1356,16 +1418,36 @@ function getRacunName(rez) {
 function getModalRacunUrl() {
   const link = document.getElementById('rRacunLink');
   if (!link) return null;
-  const raw = link.getAttribute('href');
+  const raw = link.dataset.ref || link.getAttribute('href');
   if (!raw || raw === '#') return null;
   return raw;
 }
+function isAbsoluteUrl(value) {
+  return /^https?:\/\//i.test(String(value || '').trim());
+}
+async function openStoredDocument(ref, fileName = 'Dokument') {
+  if (!ref) return;
+  const cleanRef = String(ref).trim();
+  if (isAbsoluteUrl(cleanRef)) {
+    window.open(cleanRef, '_blank', 'noopener');
+    return;
+  }
+  const { data, error } = await sb.storage.from('dokumenti').createSignedUrl(cleanRef, 60);
+  if (error || !data?.signedUrl) {
+    alert('Dokument trenutno nije dostupan. Pokušajte ponovno.');
+    return;
+  }
+  window.open(data.signedUrl, '_blank', 'noopener');
+}
 function racunCell(rez) {
   const broj = escapeHtml(rez?.broj_racuna || '');
+  return broj || '–';
+}
+function dokumentCell(rez) {
   const url = getRacunUrl(rez);
   const name = escapeHtml(getRacunName(rez) || 'Dokument');
-  if (!broj && !url) return '–';
-  return `<div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap">${broj ? `<span style="font-size:.78rem;color:var(--navy);font-weight:600">${broj}</span>` : ''}${url ? `<a href="${escapeHtml(url)}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="${name}">📄</a>` : ''}</div>`;
+  if (!url) return '–';
+  return `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${name}" onclick='openStoredDocument(${JSON.stringify(url)}, ${JSON.stringify(getRacunName(rez) || 'Dokument')})'>📄</button>`;
 }
 function rezZarada(rez) {
   if (!rez) return 0;
@@ -1759,7 +1841,7 @@ function filterGosti() {
   });
 
   const tbody = document.getElementById('gostiBody');
-  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>'; return; }
+  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="11"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>'; return; }
 
   tbody.innerHTML = filtered.map(r => {
     const zarada = rezZarada(r);
@@ -1774,6 +1856,7 @@ function filterGosti() {
       <td>${statusBadge(r.status)}</td>
       <td class="${zaradaCls}">${fmtEur(zarada)}</td>
       <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -1788,6 +1871,8 @@ function openRezModal(rez=null) {
   const deleteBtn = document.getElementById('rezDeleteBtn');
   if (deleteBtn) deleteBtn.style.display = rez ? 'inline-flex' : 'none';
   document.getElementById('rIme').value = rez?.ime || '';
+  const emailEl = document.getElementById('rEmail');
+  if (emailEl) emailEl.value = rez?.email || '';
   document.getElementById('rApt').value = rez?.apartman || 1;
   document.getElementById('rIzvor').value = rez?.izvor || 'vlastiti';
   document.getElementById('rDolazak').value = rez?.datum_dolaska || '';
@@ -1798,10 +1883,17 @@ function openRezModal(rez=null) {
   document.getElementById('rRacunFile').value = '';
   if (getRacunUrl(rez)) {
     document.getElementById('rRacunExisting').style.display = 'block';
-    document.getElementById('rRacunLink').href = getRacunUrl(rez);
+    document.getElementById('rRacunLink').dataset.ref = getRacunUrl(rez);
+    document.getElementById('rRacunLink').href = '#';
+    document.getElementById('rRacunLink').onclick = function(ev) {
+      ev.preventDefault();
+      openStoredDocument(getRacunUrl(rez), getRacunName(rez) || 'Dokument');
+    };
   } else {
     document.getElementById('rRacunExisting').style.display = 'none';
+    document.getElementById('rRacunLink').removeAttribute('data-ref');
     document.getElementById('rRacunLink').removeAttribute('href');
+    document.getElementById('rRacunLink').onclick = null;
   }
   const zarada = rez ? rezZarada(rez) : '';
   document.getElementById('rZarada').value = zarada || '';
@@ -1863,8 +1955,7 @@ async function saveRezervacija() {
     const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
     const { data: uploadData, error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
     if (uploadErr) { alert('Greška pri uploadu: '+uploadErr.message); return; }
-    const { data: urlData } = sb.storage.from('dokumenti').getPublicUrl(fileName);
-    racunUrl = urlData.publicUrl;
+    racunUrl = fileName;
   }
 
   const payload = {
@@ -1906,7 +1997,9 @@ function clearRacun() {
   racunClearedInModal = true;
   document.getElementById('rRacunFile').value = '';
   document.getElementById('rRacunExisting').style.display = 'none';
+  document.getElementById('rRacunLink').removeAttribute('data-ref');
   document.getElementById('rRacunLink').removeAttribute('href');
+  document.getElementById('rRacunLink').onclick = null;
 }
 
 async function deleteRez(id) {
@@ -1963,7 +2056,7 @@ function renderUplateSection() {
   list.innerHTML = currentRezUplate.map(u => {
     const meta = [fmtDate(u.datum_uplate), uplataVrstaLabel(u.vrsta), uplataNacinLabel(u.nacin)].filter(Boolean).join(' • ');
     const extra = [u.broj_racuna ? `Račun: ${escapeHtml(u.broj_racuna)}` : '', u.opis ? escapeHtml(u.opis) : ''].filter(Boolean).join(' • ');
-    const doc = u.dokument_url ? `<a href="${escapeHtml(u.dokument_url)}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(u.dokument_naziv || 'Dokument')}">📄</a>` : '<span style="width:32px"></span>';
+    const doc = u.dokument_url ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(u.dokument_naziv || 'Dokument')}" onclick='openStoredDocument(${JSON.stringify(u.dokument_url)}, ${JSON.stringify(u.dokument_naziv || 'Dokument')})'>📄</button>` : '<span style="width:32px"></span>';
     return `<div class="uplata-item">
       <div class="uplata-main">
         <strong>${escapeHtml(meta || 'Uplata')}</strong>
@@ -2045,8 +2138,7 @@ async function saveUplata() {
       alert('Greška pri uploadu dokumenta: ' + uploadErr.message);
       return;
     }
-    const { data: urlData } = sb.storage.from('dokumenti').getPublicUrl(fileName);
-    dokument_url = urlData.publicUrl;
+    dokument_url = fileName;
     dokument_naziv = file.name;
   }
 
@@ -2184,7 +2276,7 @@ async function loadFinancije() {
       <td><strong>${fmtEur(naplaceno)}</strong></td>
       <td class="${zaradaCls}"><strong>${fmtEur(zarada)}</strong>${r.zarada_je_rucna?' 🖊️':''}</td>
       <td>${escapeHtml(r.broj_racuna || '–')}</td>
-      <td>${getRacunUrl(r) ? `<a href="${escapeHtml(getRacunUrl(r))}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(getRacunName(r) || 'Dokument')}">📄</a>` : '–'}</td>
+      <td>${getRacunUrl(r) ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" title="${escapeHtml(getRacunName(r) || 'Dokument')}" onclick='openStoredDocument(${JSON.stringify(getRacunUrl(r))}, ${JSON.stringify(getRacunName(r) || 'Dokument')})'>📄</button>` : '–'}</td>
       <td>
         <button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
         ${r.zarada_je_rucna ? `<button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="resetZarada('${r.id}')">🔄</button>` : ''}
@@ -2741,7 +2833,7 @@ filterGosti = function() {
   const tbody = document.getElementById('gostiBody');
   if (!tbody) return;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="10"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="ico">👥</div><p>Nema gostiju koji odgovaraju filteru.</p></div></td></tr>';
     return;
   }
 
@@ -2760,6 +2852,7 @@ filterGosti = function() {
       <td>${statusBadge(r.status)}</td>
       <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
       <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✏️</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -3166,6 +3259,7 @@ filterGosti = function() {
       <td>${statusBadge(r.status)}</td>
       <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
       <td>${racunCell(r)}</td>
+      <td>${dokumentCell(r)}</td>
       <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✎</button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
     </tr>`;
@@ -3875,11 +3969,18 @@ initApp();
       const url = getRacunUrl(rez);
       if (url) {
         wrap.style.display = 'block';
-        link.href = url;
+        link.dataset.ref = url;
+        link.href = '#';
+        link.onclick = function(ev) {
+          ev.preventDefault();
+          openStoredDocument(url, getRacunName(rez) || 'Dokument');
+        };
         link.textContent = getRacunName(rez) || 'Pogledaj dokument';
       } else {
         wrap.style.display = 'none';
+        link.removeAttribute('data-ref');
         link.removeAttribute('href');
+        link.onclick = null;
         link.textContent = 'Pogledaj dokument';
       }
     }
@@ -3894,7 +3995,9 @@ initApp();
     if (file) file.value = '';
     if (wrap) wrap.style.display = 'none';
     if (link) {
+      link.removeAttribute('data-ref');
       link.removeAttribute('href');
+      link.onclick = null;
       link.textContent = 'Pogledaj dokument';
     }
     if (currentRezId) {
@@ -3944,8 +4047,7 @@ initApp();
         const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
         const { error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
         if (uploadErr) { alert('Greška pri uploadu: ' + uploadErr.message); return; }
-        const { data: urlData } = sb.storage.from('dokumenti').getPublicUrl(fileName);
-        racunUrl = urlData.publicUrl;
+        racunUrl = fileName;
         racunNaziv = file.name;
         racunTip = file.type || null;
         racunClearedInModal = false;
@@ -3959,6 +4061,7 @@ initApp();
 
       const payload = {
         ime,
+        email: document.getElementById('rEmail')?.value.trim() || null,
         apartman: parseInt(document.getElementById('rApt').value),
         datum_dolaska: dolazak,
         datum_odlaska: odlazak,
@@ -3984,7 +4087,10 @@ initApp();
       if (err) { alert('Greška: ' + err.message); return; }
       racunClearedInModal = false;
       closeModal('rezModal');
-      loadGosti(); loadKalendar(); loadKalendarStats(); loadFinancije();
+      await loadGosti();
+      await loadKalendar();
+      await loadKalendarStats();
+      await loadFinancije();
     };
 
     const nextStatus = document.getElementById('rStatus').value;
@@ -4056,6 +4162,7 @@ initApp();
         <td>${statusBadge(r.status)}</td>
         <td class="${statusNorm === 'otkazano' ? '' : zaradaCls}">${zaradaPrikaz}</td>
         <td>${racunCell(r)}</td>
+        <td>${dokumentCell(r)}</td>
         <td><button class="btn btn-secondary btn-sm btn-icon" onclick='editRezervacija(${JSON.stringify(r)})'>✎</button>
             <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRez('${r.id}')">🗑️</button></td>
       </tr>`;
