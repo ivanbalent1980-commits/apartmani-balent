@@ -1181,17 +1181,6 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 // INIT
 // ══════════════════════════════════════
 const { SUPABASE_URL, SUPABASE_KEY } = window.BALENT_CONFIG;
-const {
-  toIsoDateLocal,
-  normalizeDateInputToIso,
-  parseDateInput,
-  formatDisplayDate,
-  compareDateRangesOverlap,
-  dateRangeNights,
-  parseMoneyInputValue,
-  formatMoneyInputValue,
-  bindMoneyInput
-} = window.BalentShared;
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'balent_admin_session' } });
 
 sb.auth.onAuthStateChange((_event, session) => {
@@ -3116,22 +3105,6 @@ window.togglePorukaRead = async function(id, nextReadState) {
   }
 };
 
-window.replyToPoruka = function(p) {
-  const recipient = String(p?.email || '').trim();
-  if (!recipient) {
-    alert('Poruka nema email adresu za odgovor.');
-    return;
-  }
-  const guestName = p?.ime || 'Gost';
-  const lang = (p?.jezik || 'nepoznat').toUpperCase();
-  const original = p?.poruka || '';
-  const subject = encodeURIComponent(`Odgovor na vaš upit - Apartmani Balent`);
-  const body = encodeURIComponent(
-    `Gost: ${guestName}\nJezik poruke: ${lang}\n\nOriginal poruke:\n${original}\n\nOdgovor:\n`
-  );
-  window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${subject}&body=${body}`;
-};
-
 const selectedGuestEmails = new Set();
 
 function setupGostiBulkEmailUi() {
@@ -3525,44 +3498,6 @@ function ensureReplyModal() {
 }
 
 let currentReplyPayload = null;
-
-window.replyToPoruka = function(p) {
-  const recipient = String(p?.email || '').trim();
-  if (!recipient) {
-    alert('Poruka nema email adresu za odgovor.');
-    return;
-  }
-  ensureReplyModal();
-  currentReplyPayload = {
-    email: recipient,
-    ime: p?.ime || 'Gost',
-    jezik: String(p?.jezik || 'hr').toLowerCase(),
-    poruka: p?.poruka || ''
-  };
-  document.getElementById('replyRecipient').textContent = `${currentReplyPayload.ime} <${recipient}> • jezik: ${currentReplyPayload.jezik.toUpperCase()}`;
-  document.getElementById('replyOriginal').textContent = currentReplyPayload.poruka || 'Bez originalne poruke.';
-  document.getElementById('replyBodyHr').value = '';
-  document.getElementById('replyTranslatedPreview').textContent = 'Prijevod će se prikazati prije otvaranja emaila.';
-  openModal('replyModal');
-};
-
-window.sendReplyDraft = async function() {
-  if (!currentReplyPayload?.email) {
-    alert('Nema primatelja za odgovor.');
-    return;
-  }
-  const hrText = (document.getElementById('replyBodyHr')?.value || '').trim();
-  if (!hrText) {
-    alert('Upišite odgovor.');
-    return;
-  }
-  const targetLang = currentReplyPayload.jezik || 'hr';
-  const translated = targetLang === 'hr' ? hrText : (await balentTranslate(hrText, 'hr', targetLang)) || hrText;
-  document.getElementById('replyTranslatedPreview').textContent = translated;
-  const subject = encodeURIComponent('Odgovor na vaš upit - Apartmani Balent');
-  const body = encodeURIComponent(translated);
-  window.location.href = `mailto:${encodeURIComponent(currentReplyPayload.email)}?subject=${subject}&body=${body}`;
-};
 
 loadPoruke = async function() {
   const rezWrap = document.getElementById('porukeRezBody');

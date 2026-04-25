@@ -3374,15 +3374,8 @@ function showModalCal(n) {
 <script>
 // ── Supabase – dohvat zauzetih datuma ──────────────────────────
 const { SUPABASE_URL: SB_URL, SUPABASE_KEY: SB_KEY } = window.BALENT_CONFIG;
-const {
-  toIsoDateLocal,
-  normalizeDateInputToIso,
-  parseDateInput,
-  formatDisplayDate,
-  compareDateRangesOverlap,
-  dateRangeNights
-} = window.BalentShared;
 const sbWeb = window.supabase.createClient(SB_URL, SB_KEY);
+window.sbWeb = sbWeb;
 
 let zauzetiDatumi = {}; // legacy disabled-date cache
 let occupancyCache = {};
@@ -3403,6 +3396,7 @@ async function loadOccupancyData(apartman) {
   zauzetiDatumi[apartman] = occupancyCache[apartman].disabled;
   return occupancyCache[apartman];
 }
+window.loadOccupancyData = loadOccupancyData;
 
 function buildOccupancySnapshot(records) {
   const disabled = [];
@@ -3630,6 +3624,7 @@ function getModalDates() {
     : normalizeDateInputToIso(outEl._flatpickr ? null : outEl.value);
   return { inVal, outVal };
 }
+window.getModalDates = getModalDates;
 
 // Override openModal to init flatpickr
 const _origOpenModal = openModal;
