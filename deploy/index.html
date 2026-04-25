@@ -33,6 +33,7 @@
 <meta property="og:locale:alternate" content="it_IT">
 <meta property="og:locale:alternate" content="ru_RU">
 <meta property="og:site_name" content="Apartmani Balent">
+<script src="./shared.js?v=20260425-1"></script>
 <meta property="og:image" content="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/apartman%203/Apartmani%20Balent%20-%203-1.jpg">
 <meta property="og:image:secure_url" content="https://xtvgkraqccsuonqhaeab.supabase.co/storage/v1/object/public/apartman%203/Apartmani%20Balent%20-%203-1.jpg">
 <meta property="og:image:alt" content="Apartmani Balent u Šilu na otoku Krku">
@@ -3372,8 +3373,15 @@ function showModalCal(n) {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ── Supabase – dohvat zauzetih datuma ──────────────────────────
-const SB_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
-const SB_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
+const { SUPABASE_URL: SB_URL, SUPABASE_KEY: SB_KEY } = window.BALENT_CONFIG;
+const {
+  toIsoDateLocal,
+  normalizeDateInputToIso,
+  parseDateInput,
+  formatDisplayDate,
+  compareDateRangesOverlap,
+  dateRangeNights
+} = window.BalentShared;
 const sbWeb = window.supabase.createClient(SB_URL, SB_KEY);
 
 let zauzetiDatumi = {}; // legacy disabled-date cache
@@ -3427,61 +3435,6 @@ function buildOccupancySnapshot(records) {
 async function loadZauzeteDatume(apartman) {
   const occupancy = await loadOccupancyData(apartman);
   return occupancy.disabled || [];
-}
-
-function toIsoDateLocal(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return year + '-' + month + '-' + day;
-}
-
-function normalizeDateInputToIso(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-  const isoLike = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (isoLike) {
-    const [, y, m, d] = isoLike;
-    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  }
-  const match = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/);
-  if (!match) return '';
-  const [, d, m, y] = match;
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-}
-
-function parseDateInput(value) {
-  const normalized = normalizeDateInputToIso(value);
-  if (!normalized || !/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return null;
-  const [y, m, d] = normalized.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatDisplayDate(value, fallback = '–') {
-  const iso = normalizeDateInputToIso(value);
-  if (!iso) return fallback;
-  const [y, m, d] = iso.split('-');
-  if (!y || !m || !d) return fallback;
-  return `${d}.${m}.${y}.`;
-}
-
-function compareDateRangesOverlap(startA, endA, startB, endB) {
-  const aStart = normalizeDateInputToIso(startA);
-  const aEnd = normalizeDateInputToIso(endA);
-  const bStart = normalizeDateInputToIso(startB);
-  const bEnd = normalizeDateInputToIso(endB);
-  if (!aStart || !aEnd || !bStart || !bEnd) return false;
-  return aStart < bEnd && aEnd > bStart;
-}
-
-function dateRangeNights(dateIn, dateOut) {
-  const start = parseDateInput(dateIn);
-  const end = parseDateInput(dateOut);
-  if (!start || !end) return 0;
-  return Math.max(0, Math.round((end - start) / 86400000));
 }
 
 function rangeOverlapsDisabled(checkinIso, checkoutIso, occupancyOrSet) {
@@ -3768,466 +3721,6 @@ function calcPriceLocal(dateIn, dateOut) {
   return total;
 }
 
-// Override submitModal to use flatpickr dates
-const _origSubmitModal = submitModal;
-submitModal = async function() {
-  const { inVal, outVal } = getModalDates();
-  const aptValue = document.getElementById('m-apt')?.value || '';
-  const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = await loadOccupancyData(aptNum);
-  const lang = localStorage.getItem('balent_lang') || 'hr';
-
-  if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
-    const overlapMsg = {
-      hr: 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.',
-      en: 'The selected range includes unavailable dates. Please choose an available stay.',
-      de: 'Der gewĂ¤hlte Zeitraum enthĂ¤lt belegte Daten. Bitte wĂ¤hlen Sie einen freien Termin.',
-      it: 'L\'intervallo selezionato include date non disponibili. Scegli un periodo libero.',
-      ru: 'Выбранный диапазон включает занятые даты. Пожалуйста, выберите свободный период.'
-    }[lang] || 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.';
-    alert(overlapMsg);
-    return;
-  }
-
-  const name = document.getElementById('m-name').value.trim();
-  const email = document.getElementById('m-email').value.trim();
-  const phone = document.getElementById('m-phone').value.trim();
-  const guests = document.getElementById('m-guests').value;
-  const children = document.getElementById('m-children').value;
-  const msg = document.getElementById('m-msg').value.trim();
-  const btn = document.querySelector('.modal-submit-btn') || document.querySelector('#modalForm .btn-primary');
-  const sendingText = {hr:'⏳ Slanje...',en:'⏳ Sending...',de:'⏳ Wird gesendet...',it:'⏳ Invio...',ru:'⏳ Отправка...'}[lang] || '⏳ Slanje...';
-  const resetText = {hr:'Pošalji upit →',en:'Send enquiry →',de:'Anfrage senden →',it:'Invia richiesta →',ru:'Отправить запрос →'}[lang] || 'Pošalji upit →';
-  const validationMsg = {hr:'Molimo unesite ime, email i odaberite apartman.',en:'Please enter your name, email and select an apartment.',de:'Bitte Name, E-Mail und Apartment eingeben.',it:'Si prega di inserire nome, email e selezionare un appartamento.',ru:'ĐźĐľĐ¶Đ°Đ»ŃĐąŃŃ‚Đ°, Đ˛Đ˛ĐµĐ´Đ¸Ń‚Đµ Đ¸ĐĽŃŹ, email Đ¸ Đ˛Ń‹Đ±ĐµŃ€Đ¸Ń‚Đµ Đ°ĐżĐ°Ń€Ń‚Đ°ĐĽĐµĐ˝Ń‚.'}[lang] || 'Molimo unesite ime, email i odaberite apartman.';
-
-  if (!name || !email || !aptNum || !inVal || !outVal) {
-    alert(validationMsg);
-    return;
-  }
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = sendingText;
-  }
-
-  try {
-    const { error: insertError } = await sbWeb.from('rezervacije').insert([{
-      apartman: aptNum,
-      ime: name,
-      datum_dolaska: inVal,
-      datum_odlaska: outVal,
-      broj_osoba: parseInt(guests, 10) || 1,
-      izvor: 'vlastiti',
-      status: 'upit',
-      komentar: (phone ? 'Tel: ' + phone + '\n' : '') + msg,
-      zarada_auto: calcPriceLocal(inVal, outVal)
-    }]);
-    if (insertError) throw insertError;
-
-    if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
-
-    document.getElementById('m-checkin')._fpVal = inVal;
-    document.getElementById('m-checkout')._fpVal = outVal;
-    document.getElementById('modalForm').style.display = 'none';
-    document.getElementById('modalSuccess').style.display = 'block';
-
-    const nights = dateRangeNights(inVal, outVal);
-    const nightsStr = nights > 0 ? nights + (nights === 1 ? ' noćenje' : ' noćenja') : '–';
-    const line = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-    const plainText = `
-APARTMANI BALENT – Novi upit s web stranice
-${line}
-
-PODACI O GOSTU
-Ime i prezime:  ${name}
-Email:          ${email}
-Telefon:        ${phone || '–'}
-
-DETALJI REZERVACIJE
-Apartman:       Apartman ${aptNum}
-Datum dolaska:  ${fmtDate(inVal)}
-Datum odlaska:  ${fmtDate(outVal)}
-Broj noćenja:   ${nightsStr}
-Broj gostiju:   ${guests}
-Djeca:          ${children}
-${msg ? `\nPORUKA GOSTA\n${msg}\n` : ''}
-${line}`;
-
-    const formData = new FormData();
-    formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
-    formData.append('subject', 'Novi upit – Apartman ' + aptNum + ' – ' + fmtDate(inVal) + ' do ' + fmtDate(outVal));
-    formData.append('from_name', 'Apartmani Balent – Web upit');
-    formData.append('replyto', email);
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('message', plainText);
-    formData.append('botcheck', '');
-
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) console.warn('Web3Forms send failed:', data);
-    })
-    .catch(err => console.warn('Web3Forms request failed:', err));
-  } catch (saveErr) {
-    console.warn('Supabase insert failed:', saveErr);
-    const errMsg = {hr:'Greška pri slanju upita. Pokušajte ponovo ili nas kontaktirajte direktno.',en:'There was an error sending your enquiry. Please try again or contact us directly.',de:'Fehler beim Senden Ihrer Anfrage. Bitte erneut versuchen oder uns direkt kontaktieren.',it:"Errore durante l'invio della richiesta. Riprovare o contattarci direttamente.",ru:'Ошибка при отправке запроса. Попробуйте снова или свяжитесь с нами напрямую.'}[lang] || 'Greška pri slanju upita.';
-    alert(errMsg);
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = resetText;
-    }
-  }
-};
-
-// Clean override to keep enquiry flow stable and avoid mojibake in outgoing mail
-submitModal = async function() {
-  const { inVal, outVal } = getModalDates();
-  const aptValue = document.getElementById('m-apt')?.value || '';
-  const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = await loadOccupancyData(aptNum);
-  const lang = localStorage.getItem('balent_lang') || 'hr';
-
-  if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
-    const overlapMsg = {
-      hr: 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.',
-      en: 'The selected range includes unavailable dates. Please choose an available stay.',
-      de: 'Der gewĂ¤hlte Zeitraum enthĂ¤lt belegte Daten. Bitte wĂ¤hlen Sie einen freien Termin.',
-      it: 'L\'intervallo selezionato include date non disponibili. Scegli un periodo libero.',
-      ru: 'Выбранный диапазон включает занятые даты. Пожалуйста, выберите свободный период.'
-    }[lang] || 'Odabrani raspon uključuje zauzete datume. Molimo odaberite slobodan termin.';
-    alert(overlapMsg);
-    return;
-  }
-
-  const name = document.getElementById('m-name').value.trim();
-  const email = document.getElementById('m-email').value.trim();
-  const phone = document.getElementById('m-phone').value.trim();
-  const guests = document.getElementById('m-guests').value;
-  const children = document.getElementById('m-children').value;
-  const msg = document.getElementById('m-msg').value.trim();
-  const btn = document.querySelector('.modal-submit-btn') || document.querySelector('#modalForm .btn-primary');
-  const sendingText = {hr:'Slanje...',en:'Sending...',de:'Wird gesendet...',it:'Invio...',ru:'Отправка...'}[lang] || 'Slanje...';
-  const resetText = {hr:'Pošalji upit →',en:'Send enquiry →',de:'Anfrage senden →',it:'Invia richiesta →',ru:'Отправить запрос →'}[lang] || 'Pošalji upit →';
-  const validationMsg = {hr:'Molimo unesite ime, email i odaberite apartman.',en:'Please enter your name, email and select an apartment.',de:'Bitte Name, E-Mail und Apartment eingeben.',it:'Si prega di inserire nome, email e selezionare un appartamento.',ru:'Пожалуйста, введите имя, email и выберите апартамент.'}[lang] || 'Molimo unesite ime, email i odaberite apartman.';
-
-  if (!name || !email || !aptNum || !inVal || !outVal) {
-    alert(validationMsg);
-    return;
-  }
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = sendingText;
-  }
-
-  try {
-    await sbWeb.from('rezervacije').insert([{
-      apartman: aptNum,
-      ime: name,
-      datum_dolaska: inVal,
-      datum_odlaska: outVal,
-      broj_osoba: parseInt(guests, 10) || 1,
-      izvor: 'vlastiti',
-      status: 'upit',
-      komentar: (phone ? 'Tel: ' + phone + '\n' : '') + msg,
-      zarada_auto: calcPriceLocal(inVal, outVal)
-    }]);
-
-    if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
-
-    document.getElementById('m-checkin')._fpVal = inVal;
-    document.getElementById('m-checkout')._fpVal = outVal;
-    document.getElementById('modalForm').style.display = 'none';
-    document.getElementById('modalSuccess').style.display = 'block';
-
-    const nights = dateRangeNights(inVal, outVal);
-    const nightsStr = nights > 0 ? nights + (nights === 1 ? ' noćenje' : ' noćenja') : '-';
-    const line = '------------------------------------------';
-    const plainText =
-`APARTMANI BALENT - Novi upit s web stranice
-${line}
-
-PODACI O GOSTU
-Ime i prezime:  ${name}
-Email:          ${email}
-Telefon:        ${phone || '-'}
-
-DETALJI REZERVACIJE
-Apartman:       Apartman ${aptNum}
-Datum dolaska:  ${formatDisplayDate(inVal, '-')}
-Datum odlaska:  ${formatDisplayDate(outVal, '-')}
-Broj noćenja:   ${nightsStr}
-Broj gostiju:   ${guests}
-Djeca:          ${children}
-${msg ? `\nPORUKA GOSTA\n${msg}\n` : ''}
-${line}`;
-
-    const formData = new FormData();
-    formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
-    formData.append('subject', 'Novi upit - Apartman ' + aptNum + ' - ' + formatDisplayDate(inVal, '-') + ' do ' + formatDisplayDate(outVal, '-'));
-    formData.append('from_name', 'Apartmani Balent - Web upit');
-    formData.append('replyto', email);
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('message', plainText);
-    formData.append('botcheck', '');
-
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) console.warn('Web3Forms send failed:', data);
-    })
-    .catch(err => console.warn('Web3Forms request failed:', err));
-  } catch (saveErr) {
-    console.warn('Supabase insert failed:', saveErr);
-    const errMsg = {hr:'Greška pri slanju upita. Pokušajte ponovo ili nas kontaktirajte direktno.',en:'There was an error sending your enquiry. Please try again or contact us directly.',de:'Fehler beim Senden Ihrer Anfrage. Bitte erneut versuchen oder uns direkt kontaktieren.',it:'Errore durante l\'invio della richiesta. Riprovare o contattarci direttamente.',ru:'Ошибка при отправке запроса. Попробуйте снова или свяжитесь с нами напрямую.'}[lang] || 'Greška pri slanju upita.';
-    alert(errMsg);
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = resetText;
-    }
-  }
-};
-
-// ── AVAILABILITY CALENDAR (sekcija Dostupnost) ────────────────
-let availYear = new Date().getFullYear();
-let availMonth = new Date().getMonth();
-let availApt = 1;
-let availCache = {};
-
-async function loadAvailData(apt) {
-  if (availCache[apt]) return availCache[apt];
-  const { data } = await sbWeb
-    .from('rezervacije')
-    .select('datum_dolaska, datum_odlaska')
-    .eq('apartman', apt)
-    .in('status', ['potvrdjeno', 'blokirano']);
-  const taken = new Set();
-  (data || []).forEach(r => {
-    let cur = new Date(r.datum_dolaska);
-    const end = new Date(r.datum_odlaska);
-    while (cur < end) {
-      taken.add(toIsoDateLocal(cur));
-      cur.setDate(cur.getDate() + 1);
-    }
-  });
-  const occupancy = await loadOccupancyData(apt);
-  const payload = {
-    taken: occupancy.takenSet || new Set(),
-    arrivals: occupancy.arrivals || new Map(),
-    departures: occupancy.departures || new Map()
-  };
-  availCache[apt] = payload;
-  return payload;
-}
-
-function ensureAvailCalendarNav() {
-  const calendar = document.getElementById('avail-calendar');
-  if (!calendar) return;
-  const nav = calendar.firstElementChild;
-  if (!nav || nav.dataset.enhancedNav === '1') return;
-  nav.className = 'avail-nav';
-  nav.dataset.enhancedNav = '1';
-  nav.innerHTML = '<div class="avail-nav-inner"><button onclick="availPrev()" class="avail-nav-btn" aria-label="Prethodni mjesec">‹</button><select id="availMonthSelect" class="avail-nav-select" onchange="availSelectMonth(this.value)"></select><span id="availYearLabel" class="avail-nav-year"></span><button onclick="availNext()" class="avail-nav-btn" aria-label="Sljedeći mjesec">›</button></div>';
-}
-
-function availSelectMonth(value) {
-  availMonth = parseInt(value, 10) || 0;
-  renderAvailCalendar();
-}
-
-async function renderAvailCalendar() {
-  const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
-  document.getElementById('availMonthLabel').textContent = mNames[availMonth] + ' ' + availYear;
-  const occupancy = await loadAvailData(availApt);
-  const taken = occupancy.taken || new Set();
-  const arrivals = occupancy.arrivals || new Map();
-  const departures = occupancy.departures || new Map();
-  const today = new Date(); today.setHours(0,0,0,0);
-  const firstDay = new Date(availYear, availMonth, 1);
-  // Monday-first: 0=Mon...6=Sun
-  let startDow = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = new Date(availYear, availMonth + 1, 0).getDate();
-  let html = '';
-  // Empty cells before first day
-  for (let i = 0; i < startDow; i++) html += '<div class="avail-day empty"></div>';
-  // Days
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = availYear + '-' + String(availMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    const colors = getWebCalendarColors();
-    const isTaken = taken.has(dateStr);
-    const arrivalStatus = arrivals.get(dateStr) || '';
-    const departureStatus = departures.get(dateStr) || '';
-    const isToday = new Date(availYear, availMonth, d).getTime() === today.getTime();
-    const isPast = new Date(availYear, availMonth, d) < today;
-    let cls = 'avail-day ';
-    if (isPast) cls += 'empty';
-    else if (isTaken) cls += 'taken';
-    else cls += 'free';
-    if (arrivalStatus) cls += ' arrival';
-    if (departureStatus) cls += ' departure';
-    if (arrivalStatus && departureStatus) cls += ' turnover';
-    if (isToday) cls += ' today';
-    let style = '';
-    const departureColor = departureStatus ? colors.taken : '#fff';
-    const arrivalColor = arrivalStatus ? colors.free : '#fff';
-    if (!isPast && (arrivalStatus || departureStatus)) {
-      if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
-      else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
-      else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
-    }
-    const onclick = (!isTaken && !isPast) ? `onclick="openModal();setTimeout(()=>{if(checkinPicker)checkinPicker.setDate('${dateStr}');},100)"` : '';
-    html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
-  }
-  document.getElementById('availGrid').innerHTML = html;
-}
-
-function availPrev() { availMonth--; if(availMonth<0){availMonth=11;availYear--;} renderAvailCalendar(); }
-function availNext() { availMonth++; if(availMonth>11){availMonth=0;availYear++;} renderAvailCalendar(); }
-
-// Override showCal to also update availApt
-const _origShowCal = showCal;
-showCal = function(n) {
-  _origShowCal(n);
-  availApt = n;
-  availCache = {}; // reset cache
-  renderAvailCalendar();
-};
-
-// Init avail calendar when page loads
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(renderAvailCalendar, 500);
-});
-
-</script>
-<script>
-// Final override for booking enquiry flow
-submitModal = async function() {
-  const { inVal, outVal } = getModalDates();
-  const aptValue = document.getElementById('m-apt')?.value || '';
-  const aptNum = parseInt(aptValue || '0', 10);
-  const blockedDates = await loadOccupancyData(aptNum);
-  const lang = localStorage.getItem('balent_lang') || 'hr';
-
-  const overlapMsg = {
-    hr: 'Odabrani raspon ukljucuje zauzete datume. Molimo odaberite slobodan termin.',
-    en: 'The selected range includes unavailable dates. Please choose an available stay.',
-    de: 'Der gewahlte Zeitraum enthalt belegte Daten. Bitte wahlen Sie einen freien Termin.',
-    it: 'L\'intervallo selezionato include date non disponibili. Scegli un periodo libero.',
-    ru: 'The selected range includes unavailable dates. Please choose an available stay.'
-  }[lang] || 'Odabrani raspon ukljucuje zauzete datume. Molimo odaberite slobodan termin.';
-
-  if (rangeOverlapsDisabled(inVal, outVal, blockedDates)) {
-    alert(overlapMsg);
-    return;
-  }
-
-  const name = document.getElementById('m-name').value.trim();
-  const email = document.getElementById('m-email').value.trim();
-  const phone = document.getElementById('m-phone').value.trim();
-  const guests = document.getElementById('m-guests').value;
-  const children = document.getElementById('m-children').value;
-  const msg = document.getElementById('m-msg').value.trim();
-  const btn = document.querySelector('.modal-submit-btn') || document.querySelector('#modalForm .btn-primary');
-
-  if (!name || !email || !aptNum || !inVal || !outVal) {
-    alert('Molimo unesite ime, email i odaberite apartman.');
-    return;
-  }
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Slanje...';
-  }
-
-  let insertError = null;
-  try {
-    const { error } = await sbWeb.from('rezervacije').insert([{
-      apartman: aptNum,
-      ime: name,
-      datum_dolaska: inVal,
-      datum_odlaska: outVal,
-      broj_osoba: parseInt(guests, 10) || 1,
-      izvor: 'vlastiti',
-      status: 'upit',
-      komentar: (phone ? 'Tel: ' + phone + '\n' : '') + msg,
-      zarada_auto: calcPriceLocal(inVal, outVal)
-    }]);
-    insertError = error;
-  } catch (err) {
-    insertError = err;
-  }
-
-  if (insertError) {
-    console.warn('Supabase insert failed:', insertError);
-    alert('Greska pri spremanju upita: ' + (insertError.message || insertError.details || JSON.stringify(insertError)));
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'Posalji upit ->';
-    }
-    return;
-  }
-
-  if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
-
-  document.getElementById('m-checkin')._fpVal = inVal;
-  document.getElementById('m-checkout')._fpVal = outVal;
-  document.getElementById('modalForm').style.display = 'none';
-  document.getElementById('modalSuccess').style.display = 'block';
-
-  const nights = dateRangeNights(inVal, outVal);
-  const nightsStr = nights > 0 ? nights + (nights === 1 ? ' nocenje' : ' nocenja') : '-';
-  const line = '------------------------------------------';
-  const plainText =
-`APARTMANI BALENT - Novi upit s web stranice
-${line}
-
-PODACI O GOSTU
-Ime i prezime:  ${name}
-Email:          ${email}
-Telefon:        ${phone || '-'}
-
-DETALJI REZERVACIJE
-Apartman:       Apartman ${aptNum}
-Datum dolaska:  ${formatDisplayDate(inVal, '-')}
-Datum odlaska:  ${formatDisplayDate(outVal, '-')}
-Broj nocenja:   ${nightsStr}
-Broj gostiju:   ${guests}
-Djeca:          ${children}
-${msg ? `\nPORUKA GOSTA\n${msg}\n` : ''}
-${line}`;
-
-  try {
-    const formData = new FormData();
-    formData.append('access_key', '61f45a70-b6f8-4c0f-bb0f-a57944cf3cc5');
-    formData.append('subject', 'Novi upit - Apartman ' + aptNum + ' - ' + fmtDate(inVal) + ' do ' + fmtDate(outVal));
-    formData.append('from_name', 'Apartmani Balent - Web upit');
-    formData.append('replyto', email);
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('message', plainText);
-    formData.append('botcheck', '');
-
-    const mailRes = await fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      body: formData
-    });
-    const mailJson = await mailRes.json().catch(() => null);
-    if (!mailRes.ok || !mailJson || !mailJson.success) {
-      console.warn('Web3Forms send failed:', mailJson || mailRes.status);
-    }
-  } catch (err) {
-    console.warn('Web3Forms request failed:', err);
-  }
-};
-window.submitModalFinal = submitModal;
 </script>
 <script>
 (() => {
@@ -4304,36 +3797,6 @@ window.submitModalFinal = submitModal;
     if (success) success.textContent = copy.success;
   }
 
-  function addQuestionCtas() {
-    return;
-    const targets = Array.from(document.querySelectorAll('button[onclick="openModal()"], a[onclick="openModal()"], .fab[onclick="openModal()"]'))
-      .filter(el => !el.closest('.apt-card') && !el.closest('#contactModal') && !el.closest('.hero-btns') && !el.closest('nav'));
-
-    targets.forEach(target => {
-      if (target.dataset.questionEnhanced === '1') return;
-      target.dataset.questionEnhanced = '1';
-      if (target.classList.contains('fab')) {
-        target.setAttribute('onclick', 'openQuestionModal()');
-        return;
-      }
-      const wrapper = document.createElement('div');
-      wrapper.className = 'cta-stack';
-      target.parentNode.insertBefore(wrapper, target);
-      wrapper.appendChild(target);
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'question-secondary-btn';
-      btn.setAttribute('onclick', 'openQuestionModal()');
-      btn.innerHTML = '<span data-lang="hr" class="lang-active">Imate pitanje?</span><span data-lang="en">Have a question?</span><span data-lang="de">Haben Sie eine Frage?</span><span data-lang="it">Hai una domanda?</span><span data-lang="ru">Есть вопрос?</span>';
-      wrapper.appendChild(btn);
-    });
-
-    document.querySelectorAll('.btn-outline[onclick="openModal()"]').forEach(link => {
-      if (!link.closest('.hero-btns')) return;
-      link.setAttribute('onclick', 'openQuestionModal()');
-    });
-  }
-
   function localizeBookingCtas() {
     const bookingHtml = '<span data-lang="hr" class="lang-active">Rezerviraj</span><span data-lang="en">Book now</span><span data-lang="de">Buchen</span><span data-lang="it">Prenota</span><span data-lang="ru">Забронировать</span>';
     document.querySelectorAll('[onclick="openModal()"]').forEach(el => {
@@ -4341,21 +3804,6 @@ window.submitModalFinal = submitModal;
       if (el.closest('#contactModal')) return;
       el.innerHTML = bookingHtml;
     });
-  }
-
-  function enhanceBookingModalActions() {
-    const submitBtn = document.querySelector('#contactModal button[onclick="submitModalFinal()"]');
-    const existingHelper = submitBtn?.parentNode?.querySelector('.question-secondary-btn');
-    if (existingHelper) existingHelper.remove();
-    if (!submitBtn) return;
-    const helperBtn = document.createElement('button');
-    helperBtn.type = 'button';
-    helperBtn.className = 'question-secondary-btn';
-    helperBtn.style.width = '100%';
-    helperBtn.style.marginTop = '.75rem';
-    helperBtn.setAttribute('onclick', 'closeModal();setTimeout(()=>openQuestionModal(),120)');
-    helperBtn.innerHTML = '<span data-lang="hr" class="lang-active">Imate pitanje?</span><span data-lang="en">Have a question?</span><span data-lang="de">Haben Sie eine Frage?</span><span data-lang="it">Hai una domanda?</span><span data-lang="ru">Есть вопрос?</span>';
-    submitBtn.parentNode.appendChild(helperBtn);
   }
 
   window.openQuestionModal = function() {
@@ -4460,9 +3908,7 @@ window.submitModalFinal = submitModal;
   };
 
   ensureQuestionModal();
-  addQuestionCtas();
   localizeBookingCtas();
-  enhanceBookingModalActions();
   updateQuestionModalTexts();
 })();
 </script>
@@ -5233,156 +4679,6 @@ ${line}`;
 </script>
 <script>
 (() => {
-  function ensureAvailCalendarNavFinal() {
-    const calendar = document.getElementById('avail-calendar');
-    if (!calendar) return;
-    const nav = calendar.firstElementChild;
-    if (!nav) return;
-    if (nav.dataset.enhancedNav === '1' && document.getElementById('availMonthSelect')) return;
-    nav.className = 'avail-nav';
-    nav.dataset.enhancedNav = '1';
-    nav.innerHTML = `
-      <div class="avail-nav-inner">
-        <button onclick="availPrev()" class="avail-nav-btn" aria-label="Prethodni mjesec">‹</button>
-        <select id="availMonthSelect" class="avail-nav-select" onchange="availSelectMonth(this.value)"></select>
-        <select id="availYearSelect" class="avail-nav-select avail-nav-year-select" onchange="availSelectYear(this.value)"></select>
-        <button onclick="availNext()" class="avail-nav-btn" aria-label="Sljedeći mjesec">›</button>
-      </div>
-    `;
-  }
-
-  window.availSelectMonth = function(value) {
-    availMonth = parseInt(value, 10) || 0;
-    renderAvailCalendar();
-  };
-
-  window.availSelectYear = function(value) {
-    availYear = parseInt(value, 10) || availYear;
-    renderAvailCalendar();
-  };
-
-  window.openAvailDate = function(apt, dateStr) {
-    if (typeof openModal === 'function') openModal();
-    setTimeout(() => {
-      const mApt = document.getElementById('m-apt');
-      const mCheckin = document.getElementById('m-checkin');
-      if (mApt) {
-        mApt.value = String(apt);
-        mApt.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-      if (mCheckin) {
-        mCheckin.value = dateStr;
-        mCheckin._fpVal = dateStr;
-        if (window.checkinPicker) window.checkinPicker.setDate(dateStr, true);
-      }
-    }, 100);
-  };
-
-  window.renderAvailCalendar = async function() {
-    ensureAvailCalendarNavFinal();
-    const mNames = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
-    const monthSelect = document.getElementById('availMonthSelect');
-    const yearSelect = document.getElementById('availYearSelect');
-    const oldMonthLabel = document.getElementById('availMonthLabel');
-    if (monthSelect) {
-      monthSelect.innerHTML = mNames.map((name, idx) => `<option value="${idx}" ${idx === availMonth ? 'selected' : ''}>${name}</option>`).join('');
-    }
-    if (yearSelect) {
-      const currentYear = new Date().getFullYear();
-      const years = [];
-      for (let y = currentYear - 1; y <= currentYear + 3; y++) years.push(y);
-      if (!years.includes(availYear)) years.push(availYear);
-      years.sort((a, b) => a - b);
-      yearSelect.innerHTML = years.map(y => `<option value="${y}" ${y === availYear ? 'selected' : ''}>${y}</option>`).join('');
-    }
-    if (oldMonthLabel) oldMonthLabel.textContent = `${mNames[availMonth]} ${availYear}`;
-
-    const legacyGrid = document.getElementById('availGrid');
-    if (legacyGrid) legacyGrid.style.display = 'none';
-    const legacyWeekdays = legacyGrid ? legacyGrid.previousElementSibling : null;
-    if (legacyWeekdays) legacyWeekdays.style.display = 'none';
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const firstDay = new Date(availYear, availMonth, 1);
-    const startDow = (firstDay.getDay() + 6) % 7;
-    const totalCells = 42;
-    const colors = getWebCalendarColors();
-    for (const apt of [1, 2, 3, 4]) {
-      const occupancy = await loadAvailData(apt);
-      const taken = occupancy.taken || new Set();
-      const arrivals = occupancy.arrivals || new Map();
-      const departures = occupancy.departures || new Map();
-      let html = '';
-
-      for (let i = 0; i < totalCells; i++) {
-        const offsetDay = i - startDow + 1;
-        const cellDate = new Date(availYear, availMonth, offsetDay);
-        const d = cellDate.getDate();
-        const dateStr = toIsoDateLocal(cellDate);
-        const isOtherMonth = cellDate.getMonth() !== availMonth;
-        const isTaken = taken.has(dateStr);
-        const arrivalStatus = arrivals.get(dateStr) || '';
-        const departureStatus = departures.get(dateStr) || '';
-        const isToday = cellDate.getTime() === today.getTime();
-        const isPast = cellDate < today;
-
-        let cls = 'avail-day ';
-        if (isOtherMonth) cls += 'other-month ';
-        if (isPast) cls += 'empty';
-        else if (isTaken) cls += 'taken';
-        else cls += 'free';
-        if (arrivalStatus) cls += ' arrival';
-        if (departureStatus) cls += ' departure';
-        if (arrivalStatus && departureStatus) cls += ' turnover';
-        if (isToday) cls += ' today';
-
-        let style = '';
-        if (isPast) {
-          style = 'style="background:#f1ede5"';
-        } else if (arrivalStatus || departureStatus) {
-          if (arrivalStatus && departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.taken)}"`;
-          else if (departureStatus) style = `style="background:${buildDiagonalFill(colors.taken, colors.free)}"`;
-          else if (arrivalStatus) style = `style="background:${buildDiagonalFill(colors.free, colors.taken)}"`;
-        }
-
-        const onclick = (!isTaken && !isPast && !isOtherMonth)
-          ? `onclick="openAvailDate(${apt}, '${dateStr}')"`
-          : '';
-
-        html += `<div class="${cls}" ${style} ${onclick}><div class="avail-num">${d}</div></div>`;
-      }
-
-      const grid = document.getElementById(`availGrid${apt}`);
-      if (grid) grid.innerHTML = html;
-    }
-  };
-
-  const originalAvailPrev = window.availPrev;
-  const originalAvailNext = window.availNext;
-  window.availPrev = function() {
-    if (typeof originalAvailPrev === 'function') {
-      availMonth--;
-      if (availMonth < 0) { availMonth = 11; availYear--; }
-      renderAvailCalendar();
-    }
-  };
-  window.availNext = function() {
-    if (typeof originalAvailNext === 'function') {
-      availMonth++;
-      if (availMonth > 11) { availMonth = 0; availYear++; }
-      renderAvailCalendar();
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', ensureAvailCalendarNavFinal, { once: true });
-  } else {
-    ensureAvailCalendarNavFinal();
-  }
-})();
-</script>
-<script>
-(() => {
   const bookingHtml = '<span data-lang="hr" class="lang-active">Upit / rezervacija</span><span data-lang="en">Enquiry / booking</span><span data-lang="de">Anfrage / Buchung</span><span data-lang="it">Richiesta / prenotazione</span><span data-lang="ru">Запрос / бронирование</span>';
 
   function applyUnifiedBookingCtas() {
@@ -5406,55 +4702,12 @@ ${line}`;
     if (fabText) fabText.innerHTML = bookingHtml;
   }
 
-  function removeNavQuestionCta() {
-    const navStack = document.querySelector('nav .cta-stack');
-    if (!navStack) return;
-    const secondary = navStack.querySelector('.question-secondary-btn');
-    if (secondary) secondary.remove();
-  }
-
-  function cleanupPromoCtas() {
-    const promoSection = Array.from(document.querySelectorAll('div'))
-      .find(el => (el.textContent || '').includes('najbolje cijene'));
-    if (!promoSection) return;
-    promoSection.querySelectorAll('.question-secondary-btn').forEach(btn => btn.remove());
-    promoSection.querySelectorAll('.cta-stack').forEach(stack => {
-      stack.style.display = 'inline-flex';
-      stack.style.alignItems = 'center';
-      stack.style.justifyContent = 'center';
-      stack.style.gap = '0';
-      stack.style.width = 'auto';
-      stack.style.margin = '0';
-    });
-  }
-
-  function cleanupLegacyQuestionCtas() {
-    document.querySelectorAll('.question-secondary-btn').forEach(btn => {
-      if (btn.closest('#contactModal')) return;
-      btn.remove();
-    });
-    document.querySelectorAll('.cta-stack').forEach(stack => {
-      if (stack.closest('#contactModal')) return;
-      const first = stack.querySelector('[onclick="openModal()"], [onclick="openQuestionModal()"]');
-      if (first && stack.parentNode) {
-        stack.parentNode.insertBefore(first, stack);
-        stack.remove();
-      }
-    });
-  }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       applyUnifiedBookingCtas();
-      removeNavQuestionCta();
-      cleanupPromoCtas();
-      cleanupLegacyQuestionCtas();
     }, { once: true });
   } else {
     applyUnifiedBookingCtas();
-    removeNavQuestionCta();
-    cleanupPromoCtas();
-    cleanupLegacyQuestionCtas();
   }
 })();
 </script>
@@ -6026,29 +5279,6 @@ ${line}`;
 </script>
 <script>
 (() => {
-  function removeLegacyModalQuestionHelper() {
-    document.querySelectorAll('#contactModal .question-secondary-btn').forEach(btn => btn.remove());
-  }
-
-  const prevOpenModalCleanup = window.openModal;
-  if (typeof prevOpenModalCleanup === 'function' && !window.__removeLegacyModalQuestionHelperWrapped) {
-    window.openModal = function(...args) {
-      const result = prevOpenModalCleanup.apply(this, args);
-      setTimeout(removeLegacyModalQuestionHelper, 0);
-      return result;
-    };
-    window.__removeLegacyModalQuestionHelperWrapped = true;
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', removeLegacyModalQuestionHelper, { once: true });
-  } else {
-    removeLegacyModalQuestionHelper();
-  }
-})();
-</script>
-<script>
-(() => {
   function normalizeApartmentAmenityTags() {
     document.querySelectorAll('.apt-card').forEach(card => {
       const name = (card.querySelector('.apt-name')?.textContent || '').trim();
@@ -6273,15 +5503,6 @@ ${line}`;
     return base + (nightsBetween(dateIn, dateOut) * EXTRA_BED_PRICE * extra);
   };
 
-  function patchSubmitPriceAndText() {
-    const target = window.submitModalFinal;
-    if (typeof target !== 'function' || window.__extraBedSubmitPatched) return;
-    window.submitModalFinal = async function(...args) {
-      return target.apply(this, args);
-    };
-    window.__extraBedSubmitPatched = true;
-  }
-
   function bindExtraEvents() {
     ['calc-apt','calc-extra'].forEach(id => {
       const el = document.getElementById(id);
@@ -6322,7 +5543,6 @@ ${line}`;
     updateExtraBedAvailability('modal');
     bindExtraEvents();
     wrapContactModalMode();
-    patchSubmitPriceAndText();
     try { if (typeof setLang === 'function') setLang(localStorage.getItem('balent_lang') || 'hr'); } catch (e) {}
   }
 

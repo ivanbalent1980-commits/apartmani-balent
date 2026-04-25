@@ -17,6 +17,7 @@
 })();
 </script>
 <title>Apartmani Balent – Dashboard</title>
+<script src="./shared.js?v=20260425-1"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
@@ -965,7 +966,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         <div class="fg">
           <label>Zarada (€)</label>
           <div style="display:flex;gap:.5rem;align-items:center">
-            <input type="number" id="rZarada" placeholder="Auto izračun" step="0.01">
+            <input type="text" id="rZarada" placeholder="Auto izračun" inputmode="decimal" autocomplete="off">
             <button class="btn btn-secondary btn-sm btn-icon" title="Vrati auto izračun" onclick="calcRezZarada(true)">🔄</button>
           </div>
         </div>
@@ -1001,7 +1002,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
           </div>
           <div class="fg">
             <label>Iznos (€)</label>
-            <input type="number" id="uIznos" step="0.01" min="0" placeholder="0.00">
+            <input type="text" id="uIznos" inputmode="decimal" autocomplete="off" placeholder="0,00">
           </div>
           <div class="fg">
             <label>Vrsta</label>
@@ -1065,7 +1066,7 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
         </div>
         <div class="fg">
           <label>Iznos (€)</label>
-          <input type="number" id="rashodIznos" step="0.01" placeholder="0.00">
+          <input type="text" id="rashodIznos" inputmode="decimal" autocomplete="off" placeholder="0,00">
         </div>
         <div class="fg">
           <label>Učestalost</label>
@@ -1179,8 +1180,18 @@ html,body{height:100%;font-family:var(--sans);color:var(--text);background:var(-
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
-const SUPABASE_URL = 'https://xtvgkraqccsuonqhaeab.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_SL6TVK5N_mR9-aP2gPXYFw_jC3K1rOZ';
+const { SUPABASE_URL, SUPABASE_KEY } = window.BALENT_CONFIG;
+const {
+  toIsoDateLocal,
+  normalizeDateInputToIso,
+  parseDateInput,
+  formatDisplayDate,
+  compareDateRangesOverlap,
+  dateRangeNights,
+  parseMoneyInputValue,
+  formatMoneyInputValue,
+  bindMoneyInput
+} = window.BalentShared;
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, storageKey: 'balent_admin_session' } });
 
 sb.auth.onAuthStateChange((_event, session) => {
@@ -1387,61 +1398,6 @@ function loadPage(name) {
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
-function toIsoDateLocal(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function normalizeDateInputToIso(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
-  const isoLike = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (isoLike) {
-    const [, y, m, d] = isoLike;
-    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  }
-  const displayLike = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$/);
-  if (!displayLike) return '';
-  const [, d, m, y] = displayLike;
-  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-}
-
-function parseDateInput(value) {
-  const iso = normalizeDateInputToIso(value);
-  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
-  const [y, m, d] = iso.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatDisplayDate(value, fallback = '–') {
-  const iso = normalizeDateInputToIso(value);
-  if (!iso) return fallback;
-  const [y, m, d] = iso.split('-');
-  if (!y || !m || !d) return fallback;
-  return `${d}.${m}.${y}.`;
-}
-
-function compareDateRangesOverlap(startA, endA, startB, endB) {
-  const aStart = normalizeDateInputToIso(startA);
-  const aEnd = normalizeDateInputToIso(endA);
-  const bStart = normalizeDateInputToIso(startB);
-  const bEnd = normalizeDateInputToIso(endB);
-  if (!aStart || !aEnd || !bStart || !bEnd) return false;
-  return aStart < bEnd && aEnd > bStart;
-}
-
-function dateRangeNights(dateIn, dateOut) {
-  const start = parseDateInput(dateIn);
-  const end = parseDateInput(dateOut);
-  if (!start || !end) return 0;
-  return Math.max(0, Math.round((end - start) / 86400000));
-}
-
 function addDaysToIso(value, days) {
   const date = parseDateInput(value);
   if (!date) return '';
@@ -1456,6 +1412,8 @@ function dayOfMonthFromIso(value) {
 function todayIsoDate() {
   return toIsoDateLocal(new Date());
 }
+
+['rZarada', 'uIznos', 'rashodIznos'].forEach(bindMoneyInput);
 
 function fmtDate(d) {
   return formatDisplayDate(d);
@@ -1963,7 +1921,7 @@ function openRezModal(rez=null) {
     document.getElementById('rRacunLink').onclick = null;
   }
   const zarada = rez ? rezZarada(rez) : '';
-  document.getElementById('rZarada').value = zarada || '';
+  document.getElementById('rZarada').value = zarada ? formatMoneyInputValue(zarada) : '';
   document.getElementById('rezZaradaInfo').style.display = 'none';
   currentRezUplate = [];
   renderUplateSection();
@@ -1995,7 +1953,7 @@ function calcRezZarada(force=false) {
   if (!d1 || !d2) return;
   const total = calcPrice(d1, d2);
   if (force || !zEl.value) {
-    zEl.value = total;
+    zEl.value = formatMoneyInputValue(total);
     if (total > 0) {
       const nights = dateRangeNights(d1, d2);
       info.textContent = `Auto izračun: ${nights} noćenja × prosječno ${(total/nights).toFixed(0)} €/noć = ${total} €`;
@@ -2011,7 +1969,7 @@ async function saveRezervacija() {
   if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
 
   const zaradaAuto = calcPrice(dolazak, odlazak);
-  const zaradaRucnaVal = parseFloat(document.getElementById('rZarada').value) || null;
+  const zaradaRucnaVal = parseMoneyInputValue(document.getElementById('rZarada').value);
   const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
 
   // Handle file upload
@@ -2183,7 +2141,7 @@ async function saveUplata() {
     return;
   }
   const datum_uplate = document.getElementById('uDatum')?.value;
-  const iznos = parseFloat(document.getElementById('uIznos')?.value || '0');
+  const iznos = parseMoneyInputValue(document.getElementById('uIznos')?.value || '');
   const vrsta = document.getElementById('uVrsta')?.value || 'akontacija';
   const nacin = document.getElementById('uNacin')?.value || 'racun';
   const opis = document.getElementById('uOpis')?.value.trim() || null;
@@ -2399,7 +2357,7 @@ function openRashodModal(kat) {
 async function saveRashod() {
   const novaVrsta = document.getElementById('rashodNovaVrsta').value.trim();
   const vrsta = novaVrsta || document.getElementById('rashodVrsta').value;
-  const iznos = parseFloat(document.getElementById('rashodIznos').value);
+  const iznos = parseMoneyInputValue(document.getElementById('rashodIznos').value);
   if (!vrsta || !iznos) { alert('Unesite vrstu i iznos.'); return; }
 
   // Spremi novu vrstu ako je unesena
@@ -4102,7 +4060,7 @@ initApp();
 
     const runSave = async () => {
       const zaradaAuto = calcPrice(dolazak, odlazak);
-      const zaradaRucnaVal = parseFloat(document.getElementById('rZarada').value) || null;
+      const zaradaRucnaVal = parseMoneyInputValue(document.getElementById('rZarada').value);
       const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
 
       let racunUrl = currentRezId ? getModalRacunUrl() : null;
