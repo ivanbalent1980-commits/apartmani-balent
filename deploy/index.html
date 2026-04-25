@@ -2887,9 +2887,10 @@ ${line}`;
         const aptNum = aptMatch ? parseInt(aptMatch[1]) : null;
         const guestsNum = parseInt(guests) || 1;
         if (aptNum && checkin && checkout) {
-          await sbWeb.from('rezervacije').insert([{
+          const reservationPayload = {
             apartman: aptNum,
             ime: name,
+            email: email || null,
             datum_dolaska: checkin,
             datum_odlaska: checkout,
             broj_osoba: guestsNum,
@@ -2897,7 +2898,16 @@ ${line}`;
             status: 'upit',
             komentar: (phone !== '–' ? 'Tel: ' + phone + '\n' : '') + (msg || ''),
             zarada_auto: calcPriceLocal(checkin, checkout)
-          }]);
+          };
+          const { error: reservationError } = await sbWeb.from('rezervacije').insert([reservationPayload]);
+          if (reservationError) throw reservationError;
+          await logReservationAudit({
+            action: 'insert',
+            source: 'public_web_modal_legacy',
+            actorEmail: email || null,
+            newData: reservationPayload,
+            notes: 'legacy modal submit'
+          });
           // Refresh zauzeti datumi cache
           if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
         }
@@ -3381,6 +3391,52 @@ let zauzetiDatumi = {}; // legacy disabled-date cache
 let occupancyCache = {};
 let checkinPicker = null;
 let checkoutPicker = null;
+
+function getReservationAuditSessionId() {
+  try {
+    const key = 'balent_audit_session_id';
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+      sessionStorage.setItem(key, id);
+    }
+    return id;
+  } catch (_) {
+    return '';
+  }
+}
+
+function reservationDuplicateKey(payload) {
+  const emailOrName = String(payload?.email || payload?.ime || '').trim().toLowerCase();
+  return [
+    emailOrName,
+    payload?.apartman || '',
+    payload?.datum_dolaska || '',
+    payload?.datum_odlaska || ''
+  ].join('|');
+}
+
+async function logReservationAudit(entry) {
+  try {
+    const newData = entry.newData || null;
+    await sbWeb.from('rezervacije_audit').insert([{
+      rezervacija_id: entry.reservationId ? String(entry.reservationId) : null,
+      action: entry.action,
+      source: entry.source || 'public_web',
+      actor_type: 'public_guest',
+      actor_email: entry.actorEmail || newData?.email || null,
+      session_id: getReservationAuditSessionId(),
+      duplicate_key: reservationDuplicateKey(newData),
+      page_url: window.location.href,
+      user_agent: navigator.userAgent,
+      old_data: entry.oldData || null,
+      new_data: newData,
+      notes: entry.notes || null
+    }]);
+  } catch (err) {
+    console.warn('Reservation audit insert failed:', err);
+  }
+}
 
 async function loadOccupancyData(apartman) {
   if (!apartman) return { records: [], disabled: [], takenSet: new Set(), arrivals: new Map(), departures: new Map() };
@@ -4199,9 +4255,10 @@ ${line}`;
       const translated = msg ? (translatedInfo.translated || msg) : '';
       const detectedLang = translatedInfo.detectedLang || lang;
       const komentar = buildRezComment({ email, phone, lang: detectedLang, msg, translated });
-      const { error } = await sbWeb.from('rezervacije').insert([{
+      const reservationPayload = {
         apartman: aptNum,
         ime: name,
+        email: email || null,
         datum_dolaska: inVal,
         datum_odlaska: outVal,
         broj_osoba: parseInt(guests, 10) || 1,
@@ -4209,8 +4266,16 @@ ${line}`;
         status: 'upit',
         komentar: komentar || null,
         zarada_auto: calcPriceLocal(inVal, outVal)
-      }]);
+      };
+      const { error } = await sbWeb.from('rezervacije').insert([reservationPayload]);
       if (error) throw error;
+      await logReservationAudit({
+        action: 'insert',
+        source: 'public_web_modal',
+        actorEmail: email || null,
+        newData: reservationPayload,
+        notes: 'validated modal submit'
+      });
 
       if (zauzetiDatumi[aptNum]) delete zauzetiDatumi[aptNum];
       document.getElementById('m-checkin')._fpVal = inVal;
