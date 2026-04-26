@@ -7,43 +7,7 @@
 <title>Apartmani Balent – Admin</title>
 <script src="./shared.js?v=20260425-1"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --sand:#f5f0e8;--sand-dark:#e5ddd0;--navy:#1a2636;
-  --accent:#b5905a;--accent-light:#d4b48a;--white:#ffffff;
-  --text:#2a2a2a;--muted:#6b6b6b;--error:#c0392b;
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --sans:'DM Sans',sans-serif;
-}
-html,body{height:100%}
-body{font-family:var(--sans);background:var(--navy);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
-
-.login-wrap{width:100%;max-width:400px}
-.login-logo{text-align:center;margin-bottom:2.5rem}
-.login-logo h1{font-family:var(--serif);font-size:2rem;font-weight:300;color:#fff;letter-spacing:.05em}
-.login-logo h1 span{color:var(--accent-light)}
-.login-logo p{font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.2em;text-transform:uppercase;margin-top:.4rem}
-
-.login-box{background:var(--white);border-radius:3px;padding:2.4rem;box-shadow:0 24px 64px rgba(0,0,0,.3)}
-.login-box h2{font-family:var(--serif);font-size:1.4rem;font-weight:400;color:var(--navy);margin-bottom:1.8rem}
-
-.fg{margin-bottom:1.2rem}
-.fg label{display:block;font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-.fg input{width:100%;padding:.75rem 1rem;border:1px solid var(--sand-dark);border-radius:2px;font-family:var(--sans);font-size:.9rem;color:var(--text);background:var(--sand);transition:border-color .2s,background .2s;outline:none}
-.fg input:focus{border-color:var(--accent);background:var(--white)}
-
-.btn-login{width:100%;padding:.9rem;background:var(--navy);color:#fff;border:none;border-radius:2px;font-family:var(--sans);font-size:.82rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:.6rem}
-.btn-login:hover{background:var(--accent)}
-.btn-login:disabled{opacity:.6;cursor:not-allowed}
-
-.error-msg{background:#fdf2f2;border:1px solid #f5c6cb;border-radius:2px;padding:.7rem 1rem;font-size:.82rem;color:var(--error);margin-bottom:1.2rem;display:none}
-.error-msg.show{display:block}
-
-.login-footer{text-align:center;margin-top:1.5rem}
-.login-footer a{font-size:.75rem;color:rgba(255,255,255,.4);text-decoration:none;transition:color .2s}
-.login-footer a:hover{color:var(--accent-light)}
-</style>
+<link rel="stylesheet" href="./assets/css/admin-login.css?v=20260426-1">
 </head>
 <body>
 
@@ -77,54 +41,7 @@ body{font-family:var(--sans);background:var(--navy);display:flex;align-items:cen
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const { SUPABASE_URL, SUPABASE_KEY } = window.BALENT_CONFIG;
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, storageKey: 'balent_admin_session' }
-});
-
-// If already logged in, redirect to dashboard
-sbClient.auth.getSession().then(({data:{session}}) => {
-  if (session) window.location.href = 'dashboard.html';
-});
-
-async function login() {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const zapamti = document.getElementById('zapamtiMe').checked;
-  const btn = document.getElementById('btnLogin');
-  const err = document.getElementById('errorMsg');
-
-  if (!email || !password) {
-    err.textContent = 'Unesite email i lozinku.';
-    err.classList.add('show');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Prijava...';
-  err.classList.remove('show');
-
-  const { error } = await sbClient.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    err.textContent = 'Pogrešan email ili lozinka.';
-    err.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = 'Prijavi se';
-  } else {
-    // If not remember me, clear on tab close
-    if (!zapamti) sessionStorage.setItem('balent_no_persist', '1');
-    else sessionStorage.removeItem('balent_no_persist');
-    window.location.href = 'dashboard.html';
-  }
-}
-
-// Enter key
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
-});
-</script>
+<script src="./assets/js/admin-login.js?v=20260426-1"></script>
 </body>
 </html>
 
