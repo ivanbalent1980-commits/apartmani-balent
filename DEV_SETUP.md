@@ -11,10 +11,10 @@ Ova biljeska sluzi za ponovno postavljanje racunala i ne utjece na web-stranicu.
 - Playwright 1.62.1 i Chromium za automatske testove stranice i dashboarda
 - Supabase CLI koristi se kroz `npx.cmd supabase`
 
-## Jedini preostali korak
+## Docker i WSL
 
-Docker je instaliran, ali Windows Subsystem for Linux (WSL 2) jos nije ukljucen.
-To je jednokratna Windows promjena koja zahtijeva administratorsku potvrdu i ponovno pokretanje racunala.
+Docker Desktop i WSL 2 ukljuceni su i provjereni 19.08.2026. Docker engine radi s Linux spremnicima.
+Ako se racunalo ponovno postavlja, WSL se ukljucuje jednokratnom Windows promjenom koja zahtijeva administratorsku potvrdu i ponovno pokretanje racunala.
 
 1. Otvori PowerShell kao administrator.
 2. Pokreni:
@@ -36,7 +36,7 @@ docker compose version
 ## Prijave
 
 Supabase CLI je povezan s projektom. GitHub repozitorij je postavljen kao `origin`,
-ali GitHub CLI nakon nove instalacije racunala po potrebi trazi novu prijavu:
+a GitHub CLI je prijavljen kao `ivanbalent1980-commits`. Nakon nove instalacije racunala po potrebi trazi novu prijavu:
 
 ```powershell
 gh auth login
