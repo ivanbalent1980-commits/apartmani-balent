@@ -1,7 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -9,7 +10,7 @@
 <meta http-equiv="Expires" content="0">
 <script>
 (() => {
-  const buildVersion = '20260426-1';
+  const buildVersion = '20260714-10';
   const url = new URL(window.location.href);
   if (url.searchParams.get('v') === buildVersion) return;
   url.searchParams.set('v', buildVersion);
@@ -17,11 +18,11 @@
 })();
 </script>
 <title>Apartmani Balent – Dashboard</title>
-<script src="./shared.js?v=20260425-1"></script>
-<link rel="preload" href="./assets/js/dashboard.js?v=20260426-1" as="script">
+<script src="./shared.js?v=20260727-2"></script>
+<link rel="preload" href="./assets/js/dashboard.js?v=20260714-10" as="script">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="./assets/css/dashboard.css?v=20260426-1">
+<link rel="stylesheet" href="./assets/vendor/flatpickr/flatpickr.min.css?v=4.6.13">
+<link rel="stylesheet" href="./assets/css/dashboard.css?v=20260714-10">
 </head>
 <body>
 <div class="app">
@@ -56,7 +57,7 @@
     <a class="nav-item" onclick="showPage('postavke')" href="#">
       <span class="ico">⚙️</span> Postavke
     </a>
-    <a class="nav-item" href="https://ivanbalent1980-commits.github.io/krk-app/" target="_blank">
+    <a class="nav-item" href="https://apartmanibalent.hr/" target="_blank" rel="noopener">
       <span class="ico">🌐</span> Otvori web stranicu
     </a>
   </nav>
@@ -75,6 +76,7 @@
       <h2 class="topbar-title" id="pageTitle">Kalendar i rezervacije</h2>
     </div>
     <div class="topbar-right">
+      <div class="topbar-chip offline" id="offlineChip" style="display:none">Nema interneta · promjene se neće spremiti</div>
       <div class="topbar-chip" id="topbarUpitChip" style="display:none">🔔 <span id="topbarUpitText">Novi upiti: 0</span></div>
       <span id="todayDate"></span>
     </div>
@@ -90,16 +92,32 @@
       <div class="notice notice-warn" id="upitNotice" style="display:none">
         🔔 <span id="upitNoticeText">Stigao je novi zahtjev.</span>
       </div>
+      <section class="today-board" aria-labelledby="todayBoardTitle">
+        <div class="today-board-head">
+          <div>
+            <p class="today-eyebrow">Operativni pregled</p>
+            <h3 id="todayBoardTitle">Danas</h3>
+            <p>Najvažnije obaveze i rezervacije na jednom mjestu.</p>
+          </div>
+          <div class="today-quick-actions">
+            <button class="btn btn-primary btn-sm" onclick="openRezModal()">+ Nova rezervacija</button>
+            <button class="btn btn-secondary btn-sm" onclick="showPage('poruke')">Otvori poruke</button>
+          </div>
+        </div>
+        <div class="today-summary" id="todaySummary" aria-live="polite">
+          <div class="loading">Učitavanje današnjeg pregleda...</div>
+        </div>
+      </section>
       <div class="stat-grid" id="kalendarStats">
         <div class="stat-card">
-          <div class="label">Čišćenje</div>
-          <div class="sub">pregled odlazaka i čišćenja</div>
+          <div class="label">Dolasci i odlasci</div>
+          <div class="sub">sljedećih 7 dana</div>
           <div class="cleaning-box">
-            <h4>Čišćenja u idućih 7 dana</h4>
+            <h4>Raspored u idućih 7 dana</h4>
             <div class="cleaning-list" id="kCleaningNext7"></div>
             <div class="cleaning-mini">
-              <div class="cleaning-row"><span>Obavljeno čišćenja do sada</span><strong id="kCleaningDone">â€“</strong></div>
-              <div class="cleaning-row"><span>Buduća čišćenja</span><strong id="kCleaningFuture">â€“</strong></div>
+              <div class="cleaning-row"><span>Dolasci</span><strong id="kCleaningDone">–</strong></div>
+              <div class="cleaning-row"><span>Odlasci</span><strong id="kCleaningFuture">–</strong></div>
             </div>
           </div>
         </div>
@@ -143,6 +161,9 @@
             </div>
             <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
               <div style="width:14px;height:14px;background:#fef9e7;border-radius:2px"></div> Upit
+            </div>
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
+              <div style="width:14px;height:14px;background:#f6dfc2;border-radius:2px"></div> Čeka akontaciju
             </div>
             <div style="display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)">
               <div style="width:14px;height:14px;background:#f2f3f4;border-radius:2px"></div> Blokirano
@@ -203,6 +224,7 @@
               <select id="filterStatus" onchange="filterGosti()">
                 <option value="">Svi</option>
                 <option value="upit">Samo upiti</option>
+                <option value="ceka_akontaciju">Čeka akontaciju</option>
                 <option value="potvrdjeno">Samo potvrđeno</option>
                 <option value="blokirano">Samo blokirano</option>
               </select>
@@ -272,19 +294,19 @@
             <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Akontacije, gotovina, AG i Airbnb uplate</div>
           </div>
           <div class="fin-sum-card buduca">
-            <div class="fs-label">Buduća zarada</div>
+            <div class="fs-label">Budući potvrđeni prihod</div>
             <div class="fs-value" id="finBuduca">0 €</div>
             <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Potvrđene buduće rezervacije</div>
           </div>
           <div class="fin-sum-card ukupna">
-            <div class="fs-label">Ukupni prihodi</div>
+            <div class="fs-label">Vrijednost potvrđenih rezervacija</div>
             <div class="fs-value" id="finUkupna">0 €</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Realizirani + budući</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Boravci u tijeku, završeni i budući</div>
           </div>
           <div class="fin-sum-card" style="border-left-color:#8e44ad">
-            <div class="fs-label">Neto (prihodi − rashodi)</div>
+            <div class="fs-label">Neto naplaćeno</div>
             <div class="fs-value" id="finNeto" style="color:#8e44ad">0 €</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Ukupni prihodi − ukupni rashodi</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">Naplaćeno − stvarno plaćeni rashodi</div>
           </div>
         </div>
         <div class="card">
@@ -448,13 +470,21 @@
       <!-- CIJENE -->
       <div id="cnt-cijene" style="display:none">
         <div class="card">
-          <div class="card-head"><h3>Cjenik po sezonama</h3></div>
+          <div class="card-head">
+            <h3>Cjenik po sezonama</h3>
+            <button class="btn btn-primary btn-sm" onclick="openCijenaModal()">+ Novo razdoblje</button>
+          </div>
           <div class="card-body">
-            <div class="notice notice-info">ℹ️ Promjena cijena automatski ažurira kalkulator na web stranici.</div>
+            <div class="notice notice-info">Promjena cijena ažurira kalkulator i cjenik na web stranici. Već spremljene rezervacije zadržavaju svoju cijenu.</div>
+            <div class="dashboard-price-toolbar">
+              <label for="cijeneGodina">Godina</label>
+              <select id="cijeneGodina" onchange="loadCijene()"></select>
+              <button class="btn btn-secondary btn-sm" onclick="copyCijeneYear()">Kopiraj u sljedeću godinu</button>
+            </div>
             <table class="tbl" style="margin-top:1rem">
-              <thead><tr><th>Razdoblje</th><th>Cijena / noć</th><th></th></tr></thead>
+              <thead><tr><th>Razdoblje</th><th>Cijena / noć</th><th>Vrijedi za</th><th>Status</th><th></th></tr></thead>
               <tbody id="cijeneBody">
-                <tr><td colspan="3" class="loading">Učitavanje...</td></tr>
+                <tr><td colspan="5" class="loading">Učitavanje...</td></tr>
               </tbody>
             </table>
           </div>
@@ -540,6 +570,8 @@
             <button class="cnt-btn active" onclick="setPostavkeTab('minBoravak',this)">Minimalni boravak</button>
             <button class="cnt-btn" onclick="setPostavkeTab('korekcija',this)">Cjenovna korekcija</button>
             <button class="cnt-btn" onclick="setPostavkeTab('blokirano',this)">Blokirani datumi</button>
+            <button class="cnt-btn" onclick="setPostavkeTab('ical',this)">Airbnb iCal</button>
+            <button class="cnt-btn" onclick="setPostavkeTab('backup',this)">Sigurnosna kopija</button>
           </div>
           <div id="postavke-minBoravak">
             <div class="notice notice-info">ℹ️ Definišite minimalni broj noćenja po sezonama. Gost neće moći odabrati kraći boravak.</div>
@@ -577,6 +609,42 @@
               <button class="btn btn-primary btn-sm" onclick="openPraviloModal('blokirano')">+ Dodaj blokadu</button>
             </div>
           </div>
+          <div id="postavke-backup" style="display:none">
+            <div class="backup-panel">
+              <div>
+                <h3>Preuzmite vlastitu kopiju podataka</h3>
+                <p>JSON sigurnosna kopija sadrži rezervacije, uplate, rashode, pravila, cjenik i sadržaj dashboarda. CSV je praktičan za pregled rezervacija u Excelu.</p>
+                <p class="backup-warning">Datoteke sadrže osobne podatke gostiju. Čuvajte ih na sigurnom mjestu i nemojte ih slati neovlaštenim osobama.</p>
+              </div>
+              <div class="backup-actions">
+                <button class="btn btn-primary" id="backupJsonBtn" onclick="exportDashboardBackup()">Preuzmi kompletnu kopiju</button>
+                <button class="btn btn-secondary" onclick="exportReservationsCsv()">Preuzmi rezervacije za Excel</button>
+              </div>
+              <div class="backup-status" id="backupStatus" aria-live="polite"></div>
+            </div>
+          </div>
+          <div id="postavke-ical" style="display:none">
+            <div class="ical-panel">
+              <div>
+                <h3>Airbnb iCal sinkronizacija</h3>
+                <p>U svaki red zalijepite Airbnb export iCal link za odgovarajuci apartman. Sinkronizacija povlaci zauzete termine iz Airbnb kalendara u dashboard.</p>
+                <p class="backup-warning">Airbnb rezervacije se ne unose rucno. Za apartmane s aktivnim iCal linkom Airbnb kalendar je mjerodavan: ako postoji stara rucna ili agencijska rezervacija u istom terminu, oznacit ce se kao otkazana i zamijeniti Airbnb unosom.</p>
+              </div>
+              <div class="ical-actions">
+                <button class="btn btn-primary" onclick="saveIcalSources()">Spremi linkove</button>
+                <button class="btn btn-secondary" onclick="syncAirbnbIcal()">Sinkroniziraj sada</button>
+              </div>
+              <div class="ical-table-wrap">
+                <table class="tbl">
+                  <thead><tr><th>Apartman</th><th>Airbnb iCal link</th><th>Aktivan</th><th>Zadnja sinkronizacija</th></tr></thead>
+                  <tbody id="icalSourcesBody">
+                    <tr><td colspan="4" class="loading">Ucitavanje...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="backup-status" id="icalSyncStatus" aria-live="polite"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -608,7 +676,7 @@
         </div>
         <div class="fg">
           <label>Apartman</label>
-          <select id="rApt">
+          <select id="rApt" onchange="syncExtraBedUi()">
             <option value="1">Apartman 1 – Prizemlje</option>
             <option value="2">Apartman 2 – Prizemlje</option>
             <option value="3">Apartman 3 – 1. kat</option>
@@ -619,10 +687,11 @@
           <label>Izvor rezervacije</label>
           <select id="rIzvor">
             <option value="vlastiti">Vlastiti</option>
-            <option value="airbnb">Airbnb</option>
+            <option value="airbnb" disabled>Airbnb (automatski uvoz)</option>
             <option value="estee">AG</option>
             <option value="ostalo">Ostalo</option>
           </select>
+          <small class="field-help" id="rIzvorHelp">Airbnb rezervacije unosit će se automatski sinkronizacijom kalendara.</small>
         </div>
         <div class="fg">
           <label>Datum dolaska</label>
@@ -633,17 +702,32 @@
           <input type="text" id="rOdlazak" placeholder="Odaberite datum" onchange="calcRezZarada()">
         </div>
         <div class="fg">
-          <label>Broj osoba</label>
-          <input type="number" id="rBrojOsoba" value="2" min="1" max="10">
+          <label>Broj odraslih</label>
+          <input type="number" id="rBrojOsoba" value="2" min="1" max="5" oninput="syncExtraBedUi()">
+        </div>
+        <div class="fg">
+          <label>Broj djece</label>
+          <input type="number" id="rBrojDjece" value="0" min="0" max="5" oninput="syncExtraBedUi()">
+        </div>
+        <div class="fg full" id="rPomocniLezajInfo" style="display:none">
+          <div class="notice notice-info" style="margin:0">Pomoćni ležaj: +10 € po noći</div>
         </div>
         <div class="fg">
           <label>Status</label>
-          <select id="rStatus">
+          <select id="rStatus" onchange="syncDepositBlockUi()">
             <option value="upit">Upit</option>
+            <option value="ceka_akontaciju">Čeka akontaciju</option>
             <option value="potvrdjeno">Potvrđeno</option>
             <option value="blokirano">Blokirano</option>
             <option value="otkazano">Otkazano</option>
           </select>
+        </div>
+        <div class="fg full" id="rBlokirajTerminWrap" style="display:none">
+          <label class="toggle-wrap" style="cursor:pointer">
+            <span class="toggle"><input type="checkbox" id="rBlokirajTermin" checked><span class="toggle-slider"></span></span>
+            <span class="toggle-label">Blokiraj termin dok čekamo uplatu</span>
+          </label>
+          <small style="color:var(--muted);line-height:1.5">Isključite samo ako termin i dalje želite nuditi drugim gostima.</small>
         </div>
         <div class="fg">
           <label>Zarada (€)</label>
@@ -724,7 +808,7 @@
     <div class="modal-footer">
       <button class="btn btn-danger" id="rezDeleteBtn" onclick="deleteCurrentRezFromModal()" style="margin-right:auto;display:none">Obriši rezervaciju</button>
       <button class="btn btn-secondary" onclick="closeModal('rezModal')">Odustani</button>
-      <button class="btn btn-primary" onclick="saveRezervacija()">💾 Spremi</button>
+      <button class="btn btn-primary" id="rezSaveBtn" onclick="saveRezervacija()">💾 Spremi</button>
     </div>
   </div>
 </div>
@@ -740,7 +824,7 @@
       <div class="form-grid">
         <div class="fg full">
           <label>Vrsta rashoda</label>
-          <select id="rashodVrsta" id="rashodVrsta"></select>
+          <select id="rashodVrsta"></select>
         </div>
         <div class="fg full">
           <label>Ili dodaj novu vrstu</label>
@@ -750,18 +834,9 @@
           <label>Iznos (€)</label>
           <input type="text" id="rashodIznos" inputmode="decimal" autocomplete="off" placeholder="0,00">
         </div>
+        <input type="hidden" id="rashodUcestalost" value="jednokratni">
         <div class="fg">
-          <label>Učestalost</label>
-          <select id="rashodUcestalost">
-            <option value="godisnji">Godišnji</option>
-            <option value="polugodisnji">Polugodišnji</option>
-            <option value="kvartalni">Kvartalni</option>
-            <option value="mjesecni">Mjesečni</option>
-            <option value="jednokratni">Jednokratni</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Datum</label>
+          <label>Datum plaćanja</label>
           <input type="date" id="rashodDatum">
         </div>
         <div class="fg full">
@@ -842,6 +917,31 @@
   </div>
 </div>
 
+<!-- Modal: Cijena -->
+<div class="modal-overlay" id="cijenaModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="cijenaModalTitle">Novo cjenovno razdoblje</h3>
+      <button class="modal-close" onclick="closeModal('cijenaModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cijenaId">
+      <div class="form-grid">
+        <div class="fg full"><label>Naziv razdoblja</label><input type="text" id="cijenaNaziv" placeholder="npr. Glavna sezona"></div>
+        <div class="fg"><label>Od</label><input type="date" id="cijenaOd"></div>
+        <div class="fg"><label>Do</label><input type="date" id="cijenaDo"></div>
+        <div class="fg"><label>Cijena po noći (€)</label><input type="number" id="cijenaIznos" min="1" step="1" inputmode="decimal"></div>
+        <div class="fg"><label>Vrijedi za</label><select id="cijenaApartman"><option value="">Sve apartmane</option><option value="1">Apartman 1</option><option value="2">Apartman 2</option><option value="3">Apartman 3</option><option value="4">Apartman 4</option></select></div>
+        <div class="fg"><label>Status</label><div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="cijenaAktivna" checked><span class="toggle-slider"></span></label><span class="toggle-label">Aktivno</span></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('cijenaModal')">Odustani</button>
+      <button class="btn btn-primary" onclick="saveCijena()">Spremi</button>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm modal -->
 <div class="confirm-modal" id="confirmModal">
   <div class="confirm-box">
@@ -855,10 +955,10 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/hr.js"></script>
+<script src="./assets/vendor/flatpickr/flatpickr.min.js?v=4.6.13"></script>
+<script src="./assets/vendor/flatpickr/hr.js?v=4.6.13"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./assets/js/dashboard.js?v=20260426-1"></script>
+<script src="./assets/js/dashboard.js?v=20260714-10"></script>
 
 
 

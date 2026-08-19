@@ -1,0 +1,12 @@
+{
+  "name": "apartmani-balent",
+  "private": true,
+  "description": "Development and browser-test tools for the Apartmani Balent website and dashboard.",
+  "scripts": {
+    "serve": "node tools/static-server.cjs",
+    "test": "node tools/run-tests.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

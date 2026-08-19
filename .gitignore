@@ -1,0 +1,40 @@
+# Local credentials and generated service state
+.env
+.env.*
+!.env.example
+supabase/.temp/
+
+# Installed dependencies and caches
+node_modules/
+tools/.db-migrate-deps/
+__pycache__/
+*.pyc
+
+# Local backups and downloaded source material
+backups/
+balentbackup-production-*/
+deploy-backup-before-*/
+/*.zip
+/*.xlsx
+/*.pdf
+/app1fotke/
+/app2fotke/
+
+# Loose local source images; deployed assets remain tracked under deploy/
+/*.jpg
+/*.jpeg
+/*.png
+
+# One-off recovery copies
+/dashboard.before-clean-restore.html
+/dashboard.html.encoding-backup
+/index.before-encoding-fix.html
+/index.fixed.html
+/index.mojibake-backup.html
+
+# Operating-system and editor noise
+Thumbs.db
+.DS_Store
+*.log
+*.tmp
+

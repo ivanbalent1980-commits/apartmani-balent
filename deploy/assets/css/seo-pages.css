@@ -1,0 +1,39 @@
+.seo-hero{min-height:62vh;padding:9rem 3rem 4rem;background:linear-gradient(135deg,rgba(26,38,54,.92),rgba(26,38,54,.72)),url("../photos/apartment-3/apartman-3-001.webp") center/cover;color:#fff;display:flex;align-items:flex-end}
+.seo-hero .container{width:100%}
+.seo-hero h1{font-family:var(--serif);font-size:clamp(2.5rem,6vw,5rem);font-weight:300;line-height:1.05;max-width:920px;margin-bottom:1.2rem}
+.seo-hero p{font-size:1.02rem;line-height:1.8;color:rgba(255,255,255,.82);max-width:720px}
+.seo-breadcrumb{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:1.2rem}
+.seo-breadcrumb a{color:var(--accent-light);text-decoration:none}
+.seo-content{background:#fff}
+.seo-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:4rem;align-items:start}
+.seo-main h2{font-family:var(--serif);font-size:clamp(1.7rem,3vw,2.45rem);font-weight:300;color:var(--navy);line-height:1.2;margin:0 0 1rem}
+.seo-main h3{font-size:1rem;color:var(--navy);margin:2rem 0 .65rem;letter-spacing:.04em;text-transform:uppercase}
+.seo-main p,.seo-main li{font-size:.98rem;color:var(--muted);line-height:1.85}
+.seo-main p{margin-bottom:1rem}
+.seo-main ul{padding-left:1.1rem;margin:0 0 1.4rem}
+.seo-card{background:var(--sand);border-left:2px solid var(--accent);padding:1.35rem;border-radius:2px;margin:1.6rem 0}
+.seo-card strong{display:block;color:var(--navy);margin-bottom:.45rem}
+.seo-side{position:sticky;top:110px}
+.seo-panel{border:1px solid var(--sand-dark);border-radius:2px;padding:1.25rem;background:#fff;margin-bottom:1rem}
+.seo-panel h2,.seo-panel h3{font-family:var(--serif);font-size:1.35rem;font-weight:400;color:var(--navy);margin-bottom:.85rem}
+.seo-panel a{display:block;color:var(--navy);text-decoration:none;padding:.55rem 0;border-bottom:1px solid var(--sand-dark);font-size:.88rem}
+.seo-panel a:last-child{border-bottom:none}
+.seo-panel a:hover{color:var(--accent)}
+.seo-cta{background:var(--navy);color:#fff;text-align:center}
+.seo-cta h2{font-family:var(--serif);font-size:clamp(1.9rem,4vw,3rem);font-weight:300;margin-bottom:1rem}
+.seo-cta p{max-width:700px;margin:0 auto 1.5rem;color:rgba(255,255,255,.72);line-height:1.75}
+.seo-faq{background:var(--sand)}
+.faq-list{display:grid;gap:.9rem}
+.faq-item{background:#fff;border:1px solid var(--sand-dark);border-radius:2px;padding:1.1rem 1.25rem}
+.faq-item h3{font-size:.95rem;color:var(--navy);margin-bottom:.45rem}
+.faq-item p{font-size:.92rem;color:var(--muted);line-height:1.75}
+.seo-link-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:1.3rem}
+.seo-link-grid a{background:#fff;border:1px solid var(--sand-dark);border-left:2px solid var(--accent);padding:1rem;text-decoration:none;color:var(--navy);font-weight:500;border-radius:2px}
+.seo-link-grid a span{display:block;color:var(--muted);font-weight:400;font-size:.82rem;line-height:1.55;margin-top:.35rem}
+.seo-link-grid a:hover{border-color:var(--accent)}
+@media(max-width:960px){
+  .seo-hero{padding:7rem 1.5rem 3rem;min-height:54vh}
+  .seo-grid{grid-template-columns:1fr;gap:2.2rem}
+  .seo-side{position:static}
+  .seo-link-grid{grid-template-columns:1fr}
+}

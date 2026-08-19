@@ -45,6 +45,57 @@ function reservationDuplicateKey(payload) {
   ].join('|');
 }
 
+function reservationGuestCounts(row) {
+  const hasLegacyAdults = row?.odrasli !== null && row?.odrasli !== undefined && row?.odrasli !== '';
+  const adults = parseInt(hasLegacyAdults ? row.odrasli : row?.broj_osoba, 10) || 0;
+  const children = parseInt(hasLegacyAdults ? row?.djeca : (row?.broj_djece ?? row?.djeca), 10) || 0;
+  return { adults, children, total: adults + children };
+}
+
+function reservationGuestLabel(row) {
+  const { adults, children } = reservationGuestCounts(row);
+  return children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+}
+
+function reservationRecordScore(row) {
+  const statusPriority = { potvrdjeno: 40, blokirano: 30, ceka_akontaciju: 20 };
+  let score = statusPriority[normalizeRezStatus(row?.status)] || 0;
+  if (row?.zarada_je_rucna) score += 30;
+  if (Number(row?.akontacija) > 0) score += 12;
+  if (row?.email) score += 8;
+  if (row?.telefon) score += 8;
+  score += Math.min(String(row?.ime || '').trim().length, 25);
+  const created = Date.parse(row?.created_at || row?.updated_at || '') || 0;
+  return score + created / 1e15;
+}
+
+function dedupeActiveReservations(rows) {
+  const result = [];
+  const slots = new Map();
+  (rows || []).forEach(row => {
+    if (!reservationBlocksAvailability(row)) {
+      result.push(row);
+      return;
+    }
+    const key = [row.apartman, row.datum_dolaska, row.datum_odlaska].join('|');
+    const existing = slots.get(key);
+    if (!existing) {
+      slots.set(key, row);
+      result.push(row);
+      return;
+    }
+    const keepNew = reservationRecordScore(row) > reservationRecordScore(existing);
+    const kept = keepNew ? row : existing;
+    const removed = keepNew ? existing : row;
+    if (keepNew) {
+      result[result.indexOf(existing)] = row;
+      slots.set(key, row);
+    }
+    console.warn('Duplicate reservation slot hidden from dashboard totals.', { kept: kept.id, hidden: removed.id, key });
+  });
+  return result;
+}
+
 function findReservationSnapshot(id) {
   if (!id || !Array.isArray(allRezervacije)) return null;
   return allRezervacije.find(r => String(r.id) === String(id)) || null;
@@ -192,9 +243,19 @@ let rezervacijeChannel = null;
 let porukeChannel = null;
 let currentPageName = 'kalendar';
 let currentPorukeTab = 'rezervacije';
+let dashboardPriceRules = [];
+
+function updateNetworkStatus() {
+  const chip = document.getElementById('offlineChip');
+  if (chip) chip.style.display = navigator.onLine ? 'none' : 'inline-flex';
+}
+
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
 
 // Auth check
 async function initApp() {
+  updateNetworkStatus();
   const { data: { session } } = await sb.auth.getSession();
   if (!session) {
     window.location.href = 'admin-login.html';
@@ -202,6 +263,7 @@ async function initApp() {
   }
   currentUser = session.user;
   document.getElementById('userEmail').textContent = currentUser.email;
+  await window.BalentPricing.load();
 
   // Set today
   const now = new Date();
@@ -293,7 +355,7 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 function rezSourceLabel(s) {
-  return {vlastiti:'Vlastiti', airbnb:'Airbnb', estee:'AG', ostalo:'Ostalo'}[s] || (s || 'â€“');
+  return {vlastiti:'Vlastiti', airbnb:'Airbnb', estee:'AG', ostalo:'Ostalo'}[s] || (s || '–');
 }
 function getRacunUrl(rez) {
   return rez?.racun_dokument_url || rez?.racun_url || null;
@@ -341,7 +403,7 @@ function rezZarada(rez) {
   const auto = parseFloat(rez.zarada_auto);
   if (rez.zarada_je_rucna && Number.isFinite(rucna) && rucna > 0) return rucna;
   if (Number.isFinite(auto) && auto > 0) return auto;
-  if (rez.datum_dolaska && rez.datum_odlaska) return calcPrice(rez.datum_dolaska, rez.datum_odlaska);
+  if (rez.datum_dolaska && rez.datum_odlaska) return calcPrice(rez.datum_dolaska, rez.datum_odlaska, rez.apartman);
   if (Number.isFinite(rucna) && rucna !== 0) return rucna;
   if (Number.isFinite(auto)) return auto;
   return 0;
@@ -366,6 +428,7 @@ function rezTooltip(rez) {
 function normalizeRezStatus(status) {
   const s = String(status || '').trim().toLowerCase();
   if (s === 'potvrdjeno' || s === 'potvrđeno') return 'potvrdjeno';
+  if (s === 'ceka_akontaciju' || s === 'čeka akontaciju' || s === 'ceka akontaciju') return 'ceka_akontaciju';
   if (s === 'upit') return 'upit';
   if (s === 'blokirano') return 'blokirano';
   if (s === 'otkazano') return 'otkazano';
@@ -374,12 +437,72 @@ function normalizeRezStatus(status) {
 function statusBadge(s) {
   const map = {
     potvrdjeno: ['badge-green','Potvrđeno'],
+    ceka_akontaciju: ['badge-yellow','Čeka akontaciju'],
     upit: ['badge-yellow','Upit'],
     blokirano: ['badge-red','Blokirano'],
     otkazano: ['badge-grey','Otkazano']
   };
-  const [cls,lbl] = map[s] || ['badge-grey',s];
+  const normalized = normalizeRezStatus(s);
+  const [cls,lbl] = map[normalized] || ['badge-grey',normalized];
   return `<span class="badge ${cls}">${lbl}</span>`;
+}
+function statusLabel(s) {
+  const labels = { potvrdjeno:'Potvrđeno', ceka_akontaciju:'Čeka akontaciju', upit:'Upit', blokirano:'Blokirano', otkazano:'Otkazano' };
+  const normalized = normalizeRezStatus(s);
+  return labels[normalized] || normalized || '';
+}
+
+function reservationBlocksAvailability(rez) {
+  const status = normalizeRezStatus(rez?.status);
+  if (status === 'potvrdjeno' || status === 'blokirano') return true;
+  return status === 'ceka_akontaciju' && rez?.blokiraj_termin === true;
+}
+
+function syncDepositBlockUi() {
+  const status = normalizeRezStatus(document.getElementById('rStatus')?.value);
+  const wrap = document.getElementById('rBlokirajTerminWrap');
+  if (wrap) wrap.style.display = status === 'ceka_akontaciju' ? 'flex' : 'none';
+}
+
+function syncExtraBedUi() {
+  const apartman = parseInt(document.getElementById('rApt')?.value || '0', 10);
+  const adults = parseInt(document.getElementById('rBrojOsoba')?.value || '0', 10) || 0;
+  const children = parseInt(document.getElementById('rBrojDjece')?.value || '0', 10) || 0;
+  const info = document.getElementById('rPomocniLezajInfo');
+  if (info) info.style.display = apartman >= 1 && apartman <= 3 && adults + children === 5 ? 'block' : 'none';
+}
+
+function setReservationSaveBusy(busy) {
+  const saveBtn = document.getElementById('rezSaveBtn');
+  if (!saveBtn) return;
+  saveBtn.disabled = busy;
+  saveBtn.textContent = busy ? 'Spremanje...' : '💾 Spremi';
+}
+
+function validateReservationDraft({ ime, apartman, dolazak, odlazak, brojOdraslih, brojDjece }) {
+  if (!ime || !dolazak || !odlazak) return 'Unesite ime, datum dolaska i odlaska.';
+  if (odlazak <= dolazak) return 'Datum odlaska mora biti nakon datuma dolaska.';
+  const maxGuests = Number(apartman) === 4 ? 4 : 5;
+  if (!Number.isInteger(brojOdraslih) || brojOdraslih < 1) return 'Broj odraslih mora biti najmanje 1.';
+  if (!Number.isInteger(brojDjece) || brojDjece < 0) return 'Broj djece ne može biti negativan.';
+  if (brojOdraslih + brojDjece > maxGuests) return `Apartman ${apartman} prima najviše ${maxGuests} gostiju.`;
+  return '';
+}
+
+async function findBlockingConflict(payload, reservationId = null) {
+  if (!reservationBlocksAvailability(payload)) return { conflict: null, error: null };
+  const { data, error } = await sb.from('rezervacije')
+    .select('id,ime,apartman,datum_dolaska,datum_odlaska,status,blokiraj_termin')
+    .eq('apartman', payload.apartman)
+    .neq('status', 'otkazano');
+  if (error) return { conflict: null, error };
+  const conflict = (data || []).find(rez =>
+    String(rez.id) !== String(reservationId || '') &&
+    reservationBlocksAvailability(rez) &&
+    !(reservationId && rez.datum_dolaska === payload.datum_dolaska && rez.datum_odlaska === payload.datum_odlaska) &&
+    compareDateRangesOverlap(payload.datum_dolaska, payload.datum_odlaska, rez.datum_dolaska, rez.datum_odlaska)
+  );
+  return { conflict: conflict || null, error: null };
 }
 function izvorBadge(s) {
   const map = {vlastiti:['badge-blue','Vlastiti'],airbnb:['badge-green','Airbnb'],estee:['badge-yellow','AG'],ostalo:['badge-grey','Ostalo']};
@@ -502,29 +625,10 @@ function setupPorukeSubscription() {
 }
 
 // Price calculator
-function calcPrice(dateIn, dateOut) {
+function calcPrice(dateIn, dateOut, apartmentOverride = null) {
   if (!dateIn || !dateOut) return 0;
-  const d1 = parseDateInput(dateIn);
-  const d2 = parseDateInput(dateOut);
-  if (!d1 || !d2 || d2 <= d1) return 0;
-  const nights = dateRangeNights(dateIn, dateOut);
-  function getNightPrice(date) {
-    const m=date.getMonth()+1, d=date.getDate(), md=m*100+d;
-    if(md>=601&&md<=610) return 70;
-    if(md>=611&&md<=619) return 85;
-    if(md>=620&&md<=630) return 95;
-    if(md>=701&&md<=705) return 115;
-    if(md>=706&&md<=712) return 119;
-    if(md>=713&&md<=724) return 130;
-    if(md>=725||(m===8&&d<=15)) return 150;
-    if(md>=816&&md<=830) return 130;
-    if(md>=831||(m===9&&d<=6)) return 100;
-    if(m===9&&d>=7&&d<=13) return 90;
-    return 85;
-  }
-  let total=0, cur=new Date(d1);
-  for(let i=0;i<nights;i++){total+=getNightPrice(cur);cur.setDate(cur.getDate()+1);}
-  return total;
+  const apartment = Number(apartmentOverride) || Number(document.getElementById('rApt')?.value) || null;
+  return window.BalentPricing.stayPrice(dateIn, dateOut, apartment) ?? 0;
 }
 
 // ══════════════════════════════════════
@@ -579,9 +683,7 @@ async function loadKalendarStats() {
   const next7 = futureCleanings.filter(r => r.departureDate >= today && r.departureDate < next7Limit);
 
   const cleaningGuestsText = r => {
-    const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-    const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-    return children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+    return reservationGuestLabel(r);
   };
 
   const next7Wrap = document.getElementById('kCleaningNext7');
@@ -598,7 +700,7 @@ async function loadKalendarStats() {
 
 async function loadKalendar() {
   const { data } = await sb.from('rezervacije').select('*').neq('status','otkazano');
-  allRezervacije = (data || []).filter(r => ['potvrdjeno','upit','blokirano'].includes(normalizeRezStatus(r.status)));
+  allRezervacije = dedupeActiveReservations((data || []).filter(r => ['potvrdjeno','ceka_akontaciju','upit','blokirano'].includes(normalizeRezStatus(r.status))));
   updateUpitIndicators(allRezervacije);
   renderKalendar();
 }
@@ -630,7 +732,7 @@ function renderKalendar() {
       let cls = '';
       if (rez) {
         const status = normalizeRezStatus(rez.status);
-        cls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+        cls = status==='potvrdjeno' ? 'confirmed' : status==='ceka_akontaciju' ? 'deposit' : status==='upit' ? 'pending' : 'blocked';
       }
       const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
       if (isToday) cls += ' today';
@@ -652,7 +754,7 @@ function renderKalendar() {
         const endCol = endDay + 2;
         const spanDays = endDay - startDay + 1;
         const status = normalizeRezStatus(rez.status);
-        const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='upit' ? 'pending' : 'blocked';
+        const spanCls = status==='potvrdjeno' ? 'confirmed' : status==='ceka_akontaciju' ? 'deposit' : status==='upit' ? 'pending' : 'blocked';
         const halfStart = visibleStart === rez.datum_dolaska;
         const halfEnd = visibleEnd === rez.datum_odlaska;
         const edgeCls = `${halfStart ? ' half-start' : ''}${halfEnd ? ' half-end' : ''}`;
@@ -696,7 +798,7 @@ function calCellClick(apt, date) {
 // ══════════════════════════════════════
 async function loadGosti() {
   const { data } = await sb.from('rezervacije').select('*').order('datum_dolaska',{ascending:false});
-  allRezervacije = data || [];
+  allRezervacije = dedupeActiveReservations(data || []);
   updateUpitIndicators(allRezervacije);
   populateGodinaFilter(data);
   filterGosti();
@@ -1121,6 +1223,7 @@ async function loadFinancije() {
   let realizirana = 0, buduca = 0;
 
   all.forEach(r => {
+    if (normalizeRezStatus(r.status) !== 'potvrdjeno') return;
     const zarada = rezZarada(r) || 0;
     const dolazak = new Date(r.datum_dolaska);
     const odlazak = new Date(r.datum_odlaska);
@@ -1129,20 +1232,14 @@ async function loadFinancije() {
   });
 
   // Calculate rashodi for neto (all categories, current year)
-  let rashodiFilter = sb.from('rashodi').select('iznos,ucestalost');
+  let rashodiFilter = sb.from('rashodi').select('iznos,datum')
+    .gte('datum', god+'-01-01').lte('datum', god+'-12-31');
   if (currentFinTab === 'gaga' || currentFinTab === 'ivan') {
     // Rashodi are shared - show full amount for 'sve', half for gaga/ivan
   }
   const { data: rashodiData } = await rashodiFilter;
   let ukupnoRashodi = 0;
-  (rashodiData||[]).forEach(r => {
-    const iznos = parseFloat(r.iznos)||0;
-    if (r.ucestalost === 'godisnji') ukupnoRashodi += iznos;
-    else if (r.ucestalost === 'polugodisnji') ukupnoRashodi += iznos * 2;
-    else if (r.ucestalost === 'kvartalni') ukupnoRashodi += iznos * 4;
-    else if (r.ucestalost === 'mjesecni') ukupnoRashodi += iznos * 12;
-    else ukupnoRashodi += iznos; // jednokratni
-  });
+  (rashodiData||[]).forEach(r => { ukupnoRashodi += parseFloat(r.iznos) || 0; });
   // For gaga/ivan split rashodi 50/50
   if (currentFinTab === 'gaga' || currentFinTab === 'ivan') ukupnoRashodi = ukupnoRashodi / 2;
 
@@ -1157,7 +1254,7 @@ async function loadFinancije() {
   // Neto samo za "sve zajedno"
   if (currentFinTab === 'sve') {
     if (netoCard) netoCard.style.display = 'block';
-    const neto = ukupnoP - ukupnoRashodi;
+    const neto = naplacenoUkupno - ukupnoRashodi;
     netoEl.textContent = fmtEur(neto);
     netoEl.style.color = neto >= 0 ? '#27ae60' : '#c0392b';
   } else {
@@ -1214,7 +1311,7 @@ async function loadRashodi() {
       <div class="rashod-item">
         <div class="rashod-info">
           <div class="rashod-naziv">${r.vrsta}</div>
-          <div class="rashod-meta">${r.ucestalost}${r.komentar?' · '+r.komentar:''}</div>
+          <div class="rashod-meta">${fmtDate(r.datum)}${r.komentar?' · '+escapeHtml(r.komentar):''}</div>
         </div>
         <div class="rashod-iznos">${fmtEur(r.iznos)}</div>
         <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRashod('${r.id}')">🗑️</button>
@@ -1306,10 +1403,136 @@ async function saveBaner() {
     {kljuc:'baner_boja_pozadine', vrijednost:document.getElementById('banerBojaPozadine').value},
     {kljuc:'baner_boja_teksta', vrijednost:document.getElementById('banerBojaTeksta').value},
   ];
-  for (const u of updates) {
-    await sb.from('sadrzaj').upsert({...u, updated_at:new Date().toISOString()},{onConflict:'kljuc'});
+  const { error } = await sb.from('sadrzaj').upsert(
+    updates.map(u => ({...u, updated_at:new Date().toISOString()})),
+    {onConflict:'kljuc'}
+  );
+  if (error) { alert('Baner nije spremljen: ' + error.message); return; }
+  showToast('✅ Baner spremljen i objavljen!');
+}
+
+// ══════════════════════════════════════
+// SADRŽAJ – CJENIK
+// ══════════════════════════════════════
+function selectedPriceYear() {
+  return Number(document.getElementById('cijeneGodina')?.value) || new Date().getFullYear();
+}
+
+function fillPriceYearSelect(rows) {
+  const select = document.getElementById('cijeneGodina');
+  if (!select) return;
+  const previous = Number(select.value) || new Date().getFullYear();
+  const years = [...new Set([new Date().getFullYear(), ...rows.map(row => Number(row.godina))])].filter(Boolean).sort((a, b) => b - a);
+  select.innerHTML = years.map(year => `<option value="${year}"${year === previous ? ' selected' : ''}>${year}</option>`).join('');
+  if (!years.includes(previous)) select.value = String(years[0]);
+}
+
+async function loadCijene() {
+  const body = document.getElementById('cijeneBody');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="5" class="loading">Učitavanje...</td></tr>';
+  const { data, error } = await sb.from('cjenik').select('*').order('datum_od', { ascending: true });
+  if (error) {
+    body.innerHTML = `<tr><td colspan="5"><div class="notice notice-warn">Cjenik još nije povezan s bazom. Pokrenite SQL datoteku za ovu fazu.</div></td></tr>`;
+    return;
   }
-  showToast('✅ Baner spremljen!');
+  dashboardPriceRules = data || [];
+  fillPriceYearSelect(dashboardPriceRules);
+  const year = selectedPriceYear();
+  const rows = dashboardPriceRules.filter(row => Number(row.godina) === year);
+  window.BalentPricing.setRules(dashboardPriceRules.filter(row => row.aktivan));
+  body.innerHTML = rows.length ? rows.map(row => `
+    <tr>
+      <td><strong>${escapeHtml(row.naziv || 'Razdoblje')}</strong><br><small>${fmtDate(row.datum_od)} - ${fmtDate(row.datum_do)}</small></td>
+      <td><strong>${fmtEur(Number(row.cijena) || 0)}</strong></td>
+      <td>${row.apartman ? aptLabel(row.apartman) : 'Svi apartmani'}</td>
+      <td>${row.aktivan ? '<span class="badge badge-green">Aktivno</span>' : '<span class="badge badge-grey">Arhivirano</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondary btn-sm" onclick="openCijenaModal('${row.id}')">Uredi</button>
+        ${row.aktivan ? `<button class="btn btn-danger btn-sm" onclick="archiveCijena('${row.id}')">Arhiviraj</button>` : ''}
+      </td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--muted)">Nema cjenika za odabranu godinu.</td></tr>';
+}
+
+function openCijenaModal(id = null) {
+  const row = id ? dashboardPriceRules.find(item => String(item.id) === String(id)) : null;
+  const year = selectedPriceYear();
+  document.getElementById('cijenaModalTitle').textContent = row ? 'Uredi cjenovno razdoblje' : 'Novo cjenovno razdoblje';
+  document.getElementById('cijenaId').value = row?.id || '';
+  document.getElementById('cijenaNaziv').value = row?.naziv || '';
+  document.getElementById('cijenaOd').value = row?.datum_od || `${year}-06-01`;
+  document.getElementById('cijenaDo').value = row?.datum_do || `${year}-06-10`;
+  document.getElementById('cijenaIznos').value = row?.cijena ?? '';
+  document.getElementById('cijenaApartman').value = row?.apartman ?? '';
+  document.getElementById('cijenaAktivna').checked = row?.aktivan ?? true;
+  openModal('cijenaModal');
+}
+
+async function saveCijena() {
+  const id = document.getElementById('cijenaId').value;
+  const datumOd = document.getElementById('cijenaOd').value;
+  const datumDo = document.getElementById('cijenaDo').value;
+  const cijena = Number(document.getElementById('cijenaIznos').value);
+  const apartman = Number(document.getElementById('cijenaApartman').value) || null;
+  if (!datumOd || !datumDo || datumDo < datumOd || !Number.isFinite(cijena) || cijena <= 0) {
+    alert('Provjerite datume i cijenu. Završni datum mora biti nakon početnog, a cijena veća od nule.');
+    return;
+  }
+  const overlapping = dashboardPriceRules.find(row =>
+    String(row.id) !== String(id) && row.aktivan && (Number(row.apartman) || null) === apartman && datumOd <= row.datum_do && datumDo >= row.datum_od
+  );
+  if (overlapping) {
+    alert(`Razdoblje se preklapa s postojećim zapisom "${overlapping.naziv}" za isti apartman.`);
+    return;
+  }
+  const payload = {
+    godina: Number(datumOd.slice(0, 4)),
+    naziv: document.getElementById('cijenaNaziv').value.trim() || `${fmtDate(datumOd)} - ${fmtDate(datumDo)}`,
+    datum_od: datumOd,
+    datum_do: datumDo,
+    cijena,
+    apartman,
+    aktivan: document.getElementById('cijenaAktivna').checked,
+    updated_at: new Date().toISOString()
+  };
+  const result = id ? await sb.from('cjenik').update(payload).eq('id', id) : await sb.from('cjenik').insert([payload]);
+  if (result.error) { alert('Cijena nije spremljena: ' + result.error.message); return; }
+  closeModal('cijenaModal');
+  await window.BalentPricing.load(true);
+  await loadCijene();
+  showToast('✅ Cjenik je spremljen i objavljen.');
+}
+
+function archiveCijena(id) {
+  showConfirm('📦', 'Arhivirati cijenu?', 'Zapis se više neće koristiti na web stranici, ali ostaje sačuvan u dashboardu.', async () => {
+    const { error } = await sb.from('cjenik').update({ aktivan: false, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) { alert('Cijena nije arhivirana: ' + error.message); return; }
+    await window.BalentPricing.load(true);
+    await loadCijene();
+  });
+}
+
+function shiftPriceDateToYear(value, year) {
+  return `${year}-${String(value).slice(5)}`;
+}
+
+function copyCijeneYear() {
+  const sourceYear = selectedPriceYear();
+  const targetYear = sourceYear + 1;
+  const sourceRows = dashboardPriceRules.filter(row => Number(row.godina) === sourceYear && row.aktivan);
+  if (!sourceRows.length) { alert(`Nema aktivnih cijena za ${sourceYear}. godinu.`); return; }
+  if (dashboardPriceRules.some(row => Number(row.godina) === targetYear)) { alert(`Cjenik za ${targetYear}. već postoji.`); return; }
+  showConfirm('📋', `Kopirati cjenik u ${targetYear}.?`, 'Kopirat će se sva aktivna razdoblja i cijene. Nakon toga ih možete pojedinačno urediti.', async () => {
+    const payload = sourceRows.map(({ naziv, datum_od, datum_do, cijena, apartman }) => ({
+      godina: targetYear, naziv, datum_od: shiftPriceDateToYear(datum_od, targetYear), datum_do: shiftPriceDateToYear(datum_do, targetYear), cijena, apartman, aktivan: true
+    }));
+    const { error } = await sb.from('cjenik').insert(payload);
+    if (error) { alert('Cjenik nije kopiran: ' + error.message); return; }
+    await loadCijene();
+    document.getElementById('cijeneGodina').value = String(targetYear);
+    await loadCijene();
+    showToast(`✅ Cjenik je kopiran u ${targetYear}. godinu.`);
+  });
 }
 
 // ══════════════════════════════════════
@@ -1512,6 +1735,163 @@ async function saveOpcenito() {
   showToast('✅ Podaci spremljeni!');
 }
 
+function downloadDashboardFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function backupTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+async function exportDashboardBackup() {
+  const button = document.getElementById('backupJsonBtn');
+  const status = document.getElementById('backupStatus');
+  const tables = ['rezervacije','uplate','rashodi','vrste_rashoda','pravila_kalendara','cjenik','sadrzaj','poruke','dokumenti','popup_akcije','atrakcije','recenzije','airbnb_ical_sources','rezervacije_audit'];
+  if (button) button.disabled = true;
+  if (status) status.textContent = 'Pripremam sigurnosnu kopiju...';
+  const backup = {
+    format: 'apartmani-balent-dashboard-backup',
+    version: 1,
+    generated_at: new Date().toISOString(),
+    generated_by: currentUser?.email || null,
+    data: {},
+    warnings: []
+  };
+  for (const table of tables) {
+    if (status) status.textContent = `Preuzimam: ${table}...`;
+    const { data, error } = await sb.from(table).select('*');
+    if (error) {
+      backup.data[table] = [];
+      backup.warnings.push(`${table}: ${error.message}`);
+    } else {
+      backup.data[table] = data || [];
+    }
+  }
+  const filename = `apartmani-balent-backup-${backupTimestamp()}.json`;
+  downloadDashboardFile(filename, JSON.stringify(backup, null, 2), 'application/json;charset=utf-8');
+  if (status) status.textContent = backup.warnings.length
+    ? `Kopija je preuzeta. ${backup.warnings.length} pomoćnih tablica nije bilo dostupno; glavne podatke provjerite u datoteci.`
+    : 'Kompletna sigurnosna kopija je uspješno preuzeta.';
+  if (button) button.disabled = false;
+}
+
+function csvCell(value) {
+  const text = value == null ? '' : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+async function exportReservationsCsv() {
+  const status = document.getElementById('backupStatus');
+  if (status) status.textContent = 'Pripremam popis rezervacija...';
+  const { data, error } = await sb.from('rezervacije').select('*').order('datum_dolaska', { ascending: true });
+  if (error) { if (status) status.textContent = 'Rezervacije nije moguće preuzeti: ' + error.message; return; }
+  const headers = ['Ime gosta','Email','Telefon','Apartman','Dolazak','Odlazak','Odrasli','Djeca','Status','Izvor','Ukupna cijena','Akontacija','Napomena'];
+  const rows = (data || []).map(row => [
+    row.ime, row.email, row.telefon, row.apartman, row.datum_dolaska, row.datum_odlaska,
+    row.broj_osoba, row.broj_djece || 0, statusLabel(row.status), row.izvor,
+    rezZarada(row), row.akontacija || 0, row.napomena
+  ]);
+  const csv = '\uFEFF' + [headers, ...rows].map(row => row.map(csvCell).join(';')).join('\r\n');
+  downloadDashboardFile(`apartmani-balent-rezervacije-${backupTimestamp()}.csv`, csv, 'text/csv;charset=utf-8');
+  if (status) status.textContent = `Preuzeto je ${rows.length} rezervacija za Excel.`;
+}
+
+async function loadIcalSources() {
+  const body = document.getElementById('icalSourcesBody');
+  const status = document.getElementById('icalSyncStatus');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="4" class="loading">Ucitavanje...</td></tr>';
+  const { data, error } = await sb.from('airbnb_ical_sources').select('*').order('apartman', { ascending: true });
+  if (error) {
+    body.innerHTML = '<tr><td colspan="4" class="empty">Tablica za Airbnb iCal jos nije napravljena. Prvo pokrenite SQL skriptu supabase_airbnb_ical_phase1.sql.</td></tr>';
+    if (status) status.textContent = error.message;
+    return;
+  }
+  const rows = data || [];
+  body.innerHTML = [1,2,3,4].map(apt => {
+    const row = rows.find(item => Number(item.apartman) === apt) || {};
+    const checked = row.aktivan !== false ? 'checked' : '';
+    const last = row.last_synced_at
+      ? `${fmtDate(String(row.last_synced_at).slice(0,10))} - ${escapeHtml(row.last_status || '')}`
+      : 'Nije sinkronizirano';
+    const message = row.last_message ? `<div class="ical-status">${escapeHtml(row.last_message)}</div>` : '';
+    return `<tr data-ical-apt="${apt}" data-ical-id="${escapeHtml(row.id || '')}">
+      <td><strong>Apt ${apt}</strong></td>
+      <td><input class="ical-url-input" type="url" value="${escapeHtml(row.ical_url || '')}" placeholder="https://www.airbnb.com/calendar/ical/..."></td>
+      <td><label class="toggle"><input type="checkbox" ${checked}><span class="toggle-slider"></span></label></td>
+      <td><div class="ical-status">${last}</div>${message}</td>
+    </tr>`;
+  }).join('');
+  if (status) status.textContent = rows.length ? 'iCal linkovi su ucitani.' : 'Unesite Airbnb iCal linkove za apartmane koje zelite sinkronizirati.';
+}
+
+async function saveIcalSources() {
+  const status = document.getElementById('icalSyncStatus');
+  const rows = [...document.querySelectorAll('#icalSourcesBody tr[data-ical-apt]')];
+  if (status) status.textContent = 'Spremam iCal linkove...';
+  const mapped = rows.map(row => ({
+      id: row.dataset.icalId || '',
+      apartman: Number(row.dataset.icalApt),
+      naziv: `Airbnb Apt ${row.dataset.icalApt}`,
+      ical_url: row.querySelector('input[type="url"]')?.value.trim() || '',
+      aktivan: row.querySelector('input[type="checkbox"]')?.checked !== false,
+      updated_at: new Date().toISOString()
+    }));
+  const payload = mapped
+    .filter(row => row.ical_url)
+    .map(({ id, ...row }) => row);
+  const deleteIds = mapped.filter(row => !row.ical_url && row.id).map(row => row.id);
+
+  if (!payload.length && !deleteIds.length) {
+    if (status) status.textContent = 'Nema upisanih iCal linkova.';
+    return;
+  }
+
+  if (payload.length) {
+    const { error } = await sb.from('airbnb_ical_sources').upsert(payload, { onConflict: 'apartman' });
+    if (error) {
+      if (status) status.textContent = 'Spremanje nije uspjelo: ' + error.message;
+      return;
+    }
+  }
+  if (deleteIds.length) {
+    const { error } = await sb.from('airbnb_ical_sources').delete().in('id', deleteIds);
+    if (error) {
+      if (status) status.textContent = 'Brisanje praznih linkova nije uspjelo: ' + error.message;
+      return;
+    }
+  }
+  if (status) status.textContent = 'iCal linkovi su spremljeni.';
+  await loadIcalSources();
+}
+
+async function syncAirbnbIcal() {
+  const status = document.getElementById('icalSyncStatus');
+  if (status) status.textContent = 'Pokrecem Airbnb sinkronizaciju...';
+  const { data, error } = await sb.functions.invoke('sync-airbnb-ical', { body: {} });
+  if (error) {
+    if (status) status.textContent = 'Sinkronizacija nije uspjela: ' + error.message;
+    return;
+  }
+  const results = data?.results || [];
+  const summary = results.length
+    ? results.map(r => r.ok
+      ? `Apt ${r.apartman}: +${r.inserted || 0}, azurirano ${r.updated || 0}, zamijenjeno ${r.replaced || 0}, preskoceno ${r.skipped || 0}, otkazano ${r.cancelled || 0}`
+      : `Apt ${r.apartman}: greska - ${r.error || 'nepoznato'}`
+    ).join(' | ')
+    : 'Nema aktivnih iCal linkova za sinkronizaciju.';
+  await Promise.all([loadIcalSources(), loadKalendar(), loadKalendarStats(), loadGosti()]);
+  if (status) status.textContent = summary;
+}
+
 // ══════════════════════════════════════
 // UI HELPERS
 // ══════════════════════════════════════
@@ -1523,6 +1903,7 @@ function setCntSection(sec, el) {
     if(el2) el2.style.display = s===sec?'block':'none';
   });
   if(sec==='popup') loadPopup();
+  if(sec==='cijene') loadCijene();
   if(sec==='istrazi') loadAtrakcije();
   if(sec==='recenzije') loadRecenzije();
 }
@@ -1530,10 +1911,11 @@ function setCntSection(sec, el) {
 function setPostavkeTab(tab, el) {
   document.querySelectorAll('#page-postavke .cnt-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['minBoravak','korekcija','blokirano'].forEach(t=>{
+  ['minBoravak','korekcija','blokirano','ical','backup'].forEach(t=>{
     const e=document.getElementById('postavke-'+t);
     if(e) e.style.display=t===tab?'block':'none';
   });
+  if (tab === 'ical') loadIcalSources();
 }
 
 function setAptTab(n, el) {
@@ -1776,18 +2158,15 @@ function syncArrivalAndPendingCards() {
     const label = arrivalsCard.querySelector('.label');
     const sub = arrivalsCard.querySelector('.sub');
     const title = arrivalsCard.querySelector('.cleaning-box h4');
-    if (label) label.textContent = 'Dolasci';
-    if (sub) sub.textContent = 'pregled realiziranih, najavljenih i potencijalnih dolazaka';
-    if (title) title.textContent = 'Dolasci u idućih 7 dana';
+    if (label) label.textContent = 'Dolasci i odlasci';
+    if (sub) sub.textContent = 'sljedećih 7 dana';
+    if (title) title.textContent = 'Raspored u idućih 7 dana';
 
     const mini = arrivalsCard.querySelector('.cleaning-mini');
     if (mini) {
-      if (!document.getElementById('kPotentialArrivals')) {
-        mini.insertAdjacentHTML('beforeend', '<div class="cleaning-row"><span>Broj potencijalnih dolazaka</span><strong id="kPotentialArrivals">–</strong></div>');
-      }
       const rows = mini.querySelectorAll('.cleaning-row span');
-      if (rows[0]) rows[0].textContent = 'Realizirani dolasci';
-      if (rows[1]) rows[1].textContent = 'Broj najavljenih dolazaka';
+      if (rows[0]) rows[0].textContent = 'Dolasci';
+      if (rows[1]) rows[1].textContent = 'Odlasci';
     }
   }
 
@@ -1819,9 +2198,7 @@ renderPendingList = function(pending) {
   }
 
   wrap.innerHTML = items.map(r => {
-    const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-    const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-    const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+    const guestsLabel = reservationGuestLabel(r);
     return `<div class="pending-card">
       <div class="pending-main">
         <strong>${escapeHtml(r.ime || 'Gost')}</strong>
@@ -1838,17 +2215,77 @@ renderPendingList = function(pending) {
   }).join('');
 };
 
+function todayReservationNames(rows, emptyText) {
+  if (!rows.length) return emptyText;
+  const first = rows.slice(0, 2).map(row => `${aptLabel(row.apartman)} · ${escapeHtml(row.ime || 'Gost')}`);
+  if (rows.length > 2) first.push(`+ još ${rows.length - 2}`);
+  return first.join('<br>');
+}
+
+function todayTile({ label, value, detail, tone = '', button = '', action = '' }) {
+  return `<article class="today-tile ${tone}">
+    <div class="today-tile-label">${escapeHtml(label)}</div>
+    <div class="today-tile-value">${escapeHtml(String(value))}</div>
+    <div class="today-tile-detail">${detail}</div>
+    ${button && action ? `<button class="btn btn-sm" onclick="${action}">${escapeHtml(button)}</button>` : ''}
+  </article>`;
+}
+
+async function renderTodayOverview(reservations) {
+  const wrap = document.getElementById('todaySummary');
+  if (!wrap) return;
+  const today = todayIsoDate();
+  const limitDate = parseDateInput(today);
+  limitDate.setDate(limitDate.getDate() + 7);
+  const nextWeek = toIsoDateLocal(limitDate);
+  const active = (reservations || []).filter(row => normalizeRezStatus(row.status) !== 'otkazano');
+  const confirmed = active.filter(row => normalizeRezStatus(row.status) === 'potvrdjeno');
+  const arrivals = confirmed.filter(row => row.datum_dolaska === today);
+  const departures = confirmed.filter(row => row.datum_odlaska === today);
+  const waiting = active.filter(row => normalizeRezStatus(row.status) === 'ceka_akontaciju' && (!row.datum_odlaska || row.datum_odlaska >= today));
+  const inquiries = active.filter(row => normalizeRezStatus(row.status) === 'upit' && (!row.datum_odlaska || row.datum_odlaska >= today));
+  const paymentRelevant = confirmed.filter(row => row.datum_odlaska >= today && row.datum_dolaska <= nextWeek);
+
+  const paymentMap = new Map();
+  if (paymentRelevant.length) {
+    const ids = paymentRelevant.map(row => row.id).filter(Boolean);
+    const { data: payments } = await sb.from('uplate').select('rezervacija_id,iznos').in('rezervacija_id', ids);
+    (payments || []).forEach(payment => {
+      const key = String(payment.rezervacija_id);
+      paymentMap.set(key, (paymentMap.get(key) || 0) + (Number(payment.iznos) || 0));
+    });
+  }
+
+  const outstanding = paymentRelevant.map(row => {
+    const total = rezZarada(row);
+    const paid = rezNaplaceno(row, paymentMap.get(String(row.id)) || 0);
+    return { ...row, remaining: Math.max(0, total - paid) };
+  }).filter(row => row.remaining > .01);
+  const outstandingTotal = outstanding.reduce((sum, row) => sum + row.remaining, 0);
+
+  const firstAction = rows => rows[0]?.id ? `openRezById('${String(rows[0].id).replace(/'/g, '')}')` : '';
+  wrap.innerHTML = [
+    todayTile({ label: 'Dolasci danas', value: arrivals.length, detail: todayReservationNames(arrivals, 'Danas nema dolazaka.'), tone: arrivals.length ? 'attention' : '', button: arrivals.length ? 'Otvori' : '', action: firstAction(arrivals) }),
+    todayTile({ label: 'Odlasci danas', value: departures.length, detail: todayReservationNames(departures, 'Danas nema odlazaka.'), tone: departures.length ? 'attention' : '', button: departures.length ? 'Otvori' : '', action: firstAction(departures) }),
+    todayTile({ label: 'Čeka akontaciju', value: waiting.length, detail: todayReservationNames(waiting, 'Nema rezervacija na čekanju.'), tone: waiting.length ? 'danger' : '', button: waiting.length ? 'Otvori' : '', action: firstAction(waiting) }),
+    todayTile({ label: 'Otvoreni upiti', value: inquiries.length, detail: todayReservationNames(inquiries, 'Nema otvorenih upita.'), tone: inquiries.length ? 'attention' : '', button: inquiries.length ? 'Otvori poruke' : '', action: inquiries.length ? "showPage('poruke')" : '' }),
+    todayTile({ label: 'Preostalo za naplatu', value: fmtEur(outstandingTotal), detail: outstanding.length ? `${outstanding.length} ${outstanding.length === 1 ? 'boravak' : 'boravaka'} u sljedećih 7 dana` : 'Sve skore rezervacije su podmirene.', tone: outstanding.length ? 'danger' : '', button: outstanding.length ? 'Otvori' : '', action: firstAction(outstanding) })
+  ].join('');
+}
+
 loadKalendarStats = async function() {
   syncArrivalAndPendingCards();
-  const { data } = await sb.from('rezervacije').select('*').in('status',['potvrdjeno','upit']);
+  const { data } = await sb.from('rezervacije').select('*').in('status',['potvrdjeno','ceka_akontaciju','upit']);
   if (!data) return;
+  const cleanData = dedupeActiveReservations(data);
 
   const now = new Date();
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  const confirmed = data.filter(r => normalizeRezStatus(r.status) === 'potvrdjeno');
-  const pending = data.filter(r => normalizeRezStatus(r.status) === 'upit');
+  const confirmed = cleanData.filter(r => normalizeRezStatus(r.status) === 'potvrdjeno');
+  const pending = cleanData.filter(r => normalizeRezStatus(r.status) === 'upit');
+  await renderTodayOverview(cleanData);
 
   const arrivals = confirmed
     .map(r => {
@@ -1862,22 +2299,30 @@ loadKalendarStats = async function() {
   const next7Limit = new Date(today);
   next7Limit.setDate(next7Limit.getDate() + 7);
   const next7Arrivals = futureArrivals.filter(r => {
-    const arrivalDate = new Date(r.datum_dolaska);
+    const arrivalDate = parseDateInput(r.datum_dolaska);
     arrivalDate.setHours(0,0,0,0);
     return arrivalDate >= today && arrivalDate < next7Limit;
   });
+  const next7Departures = confirmed
+    .map(r => ({ ...r, departureDate: parseDateInput(r.datum_odlaska) }))
+    .filter(r => {
+      const departure = parseDateInput(r.datum_odlaska);
+      departure.setHours(0,0,0,0);
+      return departure >= today && departure < next7Limit;
+    })
+    .sort((a, b) => a.departureDate - b.departureDate);
 
   const trenutno = confirmed.filter(r => {
-    const d1 = new Date(r.datum_dolaska);
-    const d2 = new Date(r.datum_odlaska);
+    const d1 = parseDateInput(r.datum_dolaska);
+    const d2 = parseDateInput(r.datum_odlaska);
     return d1 <= today && d2 > today;
   });
 
   const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
   let zauzetoDana = 0;
   confirmed.forEach(r => {
-    const d1 = new Date(r.datum_dolaska);
-    const d2 = new Date(r.datum_odlaska);
+    const d1 = parseDateInput(r.datum_dolaska);
+    const d2 = parseDateInput(r.datum_odlaska);
     const mStart = new Date(today.getFullYear(), today.getMonth(), 1);
     const mEnd = new Date(today.getFullYear(), today.getMonth()+1, 0);
     const start = d1 < mStart ? mStart : d1;
@@ -1888,24 +2333,23 @@ loadKalendarStats = async function() {
 
   const next7Wrap = document.getElementById('kCleaningNext7');
   if (next7Wrap) {
-    next7Wrap.innerHTML = next7Arrivals.length
-      ? next7Arrivals.map(r => {
-          const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-          const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-          const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
-          return `<div class="cleaning-item">${fmtDate(r.datum_dolaska)} • ${aptLabel(r.apartman)} • ${escapeHtml(r.ime || 'Gost')} • ${escapeHtml(guestsLabel)}</div>`;
-        }).join('')
-      : '<div class="cleaning-empty">Nema dolazaka u idućih 7 dana.</div>';
+    const schedule = [
+      ...next7Arrivals.map(r => ({ ...r, eventDate: r.datum_dolaska, eventType: 'Dolazak' })),
+      ...next7Departures.map(r => ({ ...r, eventDate: r.datum_odlaska, eventType: 'Odlazak' }))
+    ].sort((a, b) => a.eventDate.localeCompare(b.eventDate));
+    next7Wrap.innerHTML = schedule.length
+      ? schedule.map(r => `<div class="cleaning-item"><strong>${r.eventType}</strong> • ${fmtDate(r.eventDate)} • ${aptLabel(r.apartman)} • ${escapeHtml(r.ime || 'Gost')}</div>`).join('')
+      : '<div class="cleaning-empty">Nema dolazaka ni odlazaka u idućih 7 dana.</div>';
   }
 
   const realizedEl = document.getElementById('kCleaningDone');
-  if (realizedEl) realizedEl.textContent = realizedArrivals.length;
+  if (realizedEl) realizedEl.textContent = next7Arrivals.length;
   const futureEl = document.getElementById('kCleaningFuture');
-  if (futureEl) futureEl.textContent = futureArrivals.length;
-  const potentialEl = document.getElementById('kPotentialArrivals');
-  if (potentialEl) potentialEl.textContent = pending.length;
+  if (futureEl) futureEl.textContent = next7Departures.length;
   const trenutnoEl = document.getElementById('kTrenutno');
-  if (trenutnoEl) trenutnoEl.textContent = trenutno.length;
+  if (trenutnoEl) trenutnoEl.textContent = trenutno.reduce((sum, r) => {
+    return sum + reservationGuestCounts(r).total;
+  }, 0);
   const popunjenostEl = document.getElementById('kPopunjenost');
   if (popunjenostEl) popunjenostEl.textContent = `${popunjenost}%`;
 };
@@ -1925,9 +2369,7 @@ loadPoruke = async function() {
       .sort((a, b) => new Date(a.datum_dolaska) - new Date(b.datum_dolaska));
 
     rezWrap.innerHTML = rezervacije.length ? rezervacije.map(r => {
-      const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-      const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-      const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+      const guestsLabel = reservationGuestLabel(r);
       return `
         <div class="pending-card">
           <div class="pending-main">
@@ -2406,9 +2848,7 @@ loadPoruke = async function() {
       const detectedLang = (meta.lang && meta.lang !== 'hr') ? meta.lang : (translatedInfo.detectedLang || meta.lang || 'hr');
       const translated = meta.translatedHr || translatedInfo.translated || '';
       const showTranslation = detectedLang && detectedLang !== 'hr' && translated && translated !== (meta.original || r.komentar || '');
-      const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-      const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-      const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+      const guestsLabel = reservationGuestLabel(r);
       const replyBtn = meta.email ? `<button class="btn btn-secondary btn-sm" onclick='replyToPoruka(${JSON.stringify({ ime: r.ime || '', email: meta.email, jezik: detectedLang || 'hr', poruka: meta.original || r.komentar || '' })})'>Odgovori</button>` : '';
       return `
         <div class="pending-card">
@@ -2731,9 +3171,7 @@ initApp();
         const detectedLang = (meta.lang && meta.lang !== 'hr') ? meta.lang : (translatedInfo.detectedLang || meta.lang || 'hr');
         const translated = meta.translatedHr || translatedInfo.translated || '';
         const showTranslation = detectedLang && detectedLang !== 'hr' && translated && translated !== (meta.original || r.komentar || '');
-        const adults = parseInt(r.broj_osoba || 0, 10) || 0;
-        const children = parseInt(r.broj_djece || r.djeca || 0, 10) || 0;
-        const guestsLabel = children > 0 ? `${adults} odraslih ${children} djece` : `${adults} odraslih`;
+      const guestsLabel = reservationGuestLabel(r);
         const replyBtn = meta.email ? `<button class="btn btn-secondary btn-sm" onclick='replyToPoruka(${JSON.stringify({ ime: r.ime || '', email: meta.email, jezik: detectedLang || 'hr', poruka: meta.original || r.komentar || '' })})'>Odgovori</button>` : '';
         return renderInboxReservation(r, meta, detectedLang, translated, showTranslation, guestsLabel, replyBtn);
       }));
@@ -2803,6 +3241,22 @@ initApp();
     ensureRacunUiText();
     racunClearedInModal = false;
     _origOpenRezModal(rez);
+    const sourceSelect = document.getElementById('rIzvor');
+    const sourceHelp = document.getElementById('rIzvorHelp');
+    const isImportedAirbnb = normalizeRezStatus(rez?.status) !== 'otkazano' && String(rez?.izvor || '').toLowerCase() === 'airbnb';
+    if (sourceSelect) {
+      sourceSelect.disabled = isImportedAirbnb;
+      if (isImportedAirbnb) sourceSelect.value = 'airbnb';
+    }
+    if (sourceHelp) sourceHelp.textContent = isImportedAirbnb
+      ? 'Ova rezervacija dolazi iz Airbnb kalendara. Izvor je zaključan kako se ne bi stvorio duplikat.'
+      : 'Airbnb rezervacije unosit će se automatski sinkronizacijom kalendara.';
+    const childrenInput = document.getElementById('rBrojDjece');
+    if (childrenInput) childrenInput.value = reservationGuestCounts(rez || {}).children;
+    const blockToggle = document.getElementById('rBlokirajTermin');
+    if (blockToggle) blockToggle.checked = rez?.blokiraj_termin !== false;
+    syncDepositBlockUi();
+    syncExtraBedUi();
     initRezDatePickers();
     if (rezDolazakPicker) rezDolazakPicker.setDate(rez?.datum_dolaska || '', false);
     if (rezOdlazakPicker) {
@@ -2889,9 +3343,42 @@ initApp();
     const ime = document.getElementById('rIme').value.trim();
     const dolazak = rezPickerValue('rDolazak', rezDolazakPicker);
     const odlazak = rezPickerValue('rOdlazak', rezOdlazakPicker);
-    if (!ime || !dolazak || !odlazak) { alert('Unesite ime, datum dolaska i odlaska.'); return; }
+    const apartman = parseInt(document.getElementById('rApt').value, 10);
+    const brojOdraslih = parseInt(document.getElementById('rBrojOsoba').value, 10);
+    const brojDjece = parseInt(document.getElementById('rBrojDjece').value, 10) || 0;
+    const nextStatus = normalizeRezStatus(document.getElementById('rStatus').value);
+    const selectedSource = document.getElementById('rIzvor').value;
+    const previousReservation = findReservationSnapshot(currentRezId);
+    if (selectedSource === 'airbnb' && String(previousReservation?.izvor || '').toLowerCase() !== 'airbnb') {
+      alert('Airbnb rezervacije nije moguće ručno unositi. One će se automatski povući iz Airbnb kalendara.');
+      return;
+    }
+    const blokirajTermin = nextStatus === 'ceka_akontaciju'
+      ? document.getElementById('rBlokirajTermin')?.checked !== false
+      : (nextStatus === 'potvrdjeno' || nextStatus === 'blokirano');
+    const validationError = validateReservationDraft({ ime, apartman, dolazak, odlazak, brojOdraslih, brojDjece });
+    if (validationError) { alert(validationError); return; }
 
     const runSave = async () => {
+      setReservationSaveBusy(true);
+      const conflictCheck = await findBlockingConflict({
+        apartman,
+        datum_dolaska: dolazak,
+        datum_odlaska: odlazak,
+        status: nextStatus,
+        blokiraj_termin: blokirajTermin
+      }, currentRezId);
+      if (conflictCheck.error) {
+        setReservationSaveBusy(false);
+        alert('Nije moguće provjeriti zauzetost termina. Pokušajte ponovno.');
+        return;
+      }
+      if (conflictCheck.conflict) {
+        setReservationSaveBusy(false);
+        const rez = conflictCheck.conflict;
+        alert(`Termin se preklapa s rezervacijom: ${rez.ime || 'Gost'} (${fmtDate(rez.datum_dolaska)} - ${fmtDate(rez.datum_odlaska)}).`);
+        return;
+      }
       const zaradaAuto = calcPrice(dolazak, odlazak);
       const zaradaRucnaVal = parseMoneyInputValue(document.getElementById('rZarada').value);
       const zaradaJeRucna = zaradaRucnaVal !== null && zaradaRucnaVal !== zaradaAuto;
@@ -2904,7 +3391,11 @@ initApp();
         const file = fileInput.files[0];
         const fileName = `racuni/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
         const { error: uploadErr } = await sb.storage.from('dokumenti').upload(fileName, file);
-        if (uploadErr) { alert('Greška pri uploadu: ' + uploadErr.message); return; }
+        if (uploadErr) {
+          setReservationSaveBusy(false);
+          alert('Greška pri uploadu: ' + uploadErr.message);
+          return;
+        }
         racunUrl = fileName;
         racunNaziv = file.name;
         racunTip = file.type || null;
@@ -2920,12 +3411,17 @@ initApp();
       const payload = {
         ime,
         email: document.getElementById('rEmail')?.value.trim() || null,
-        apartman: parseInt(document.getElementById('rApt').value),
+        apartman,
         datum_dolaska: dolazak,
         datum_odlaska: odlazak,
-        broj_osoba: parseInt(document.getElementById('rBrojOsoba').value) || 1,
-        izvor: document.getElementById('rIzvor').value,
-        status: document.getElementById('rStatus').value,
+        broj_osoba: brojOdraslih,
+        broj_djece: brojDjece,
+        odrasli: null,
+        djeca: null,
+        pomocni_lezaj: apartman <= 3 && brojOdraslih + brojDjece === 5,
+        izvor: selectedSource,
+        status: nextStatus,
+        blokiraj_termin: blokirajTermin,
         broj_racuna: document.getElementById('rBrojRacuna')?.value.trim() || null,
         komentar: document.getElementById('rKomentar').value || null,
         racun_url: racunUrl,
@@ -2939,11 +3435,17 @@ initApp();
       };
 
       let err;
-      const previousReservation = findReservationSnapshot(currentRezId);
       if (currentRezId) ({ error: err } = await sb.from('rezervacije').update(payload).eq('id', currentRezId));
       else ({ error: err } = await sb.from('rezervacije').insert([payload]));
 
-      if (err) { alert('Greška: ' + err.message); return; }
+      if (err) {
+        setReservationSaveBusy(false);
+        const message = err.code === '23P01'
+          ? 'Termin se preklapa s postojećom potvrđenom rezervacijom ili blokadom.'
+          : 'Greška: ' + err.message;
+        alert(message);
+        return;
+      }
       await logReservationAudit({
         action: currentRezId ? 'update' : 'insert',
         source: currentRezId ? 'dashboard_reservation_edit' : 'dashboard_reservation_create',
@@ -2958,9 +3460,9 @@ initApp();
       await loadKalendar();
       await loadKalendarStats();
       await loadFinancije();
+      setReservationSaveBusy(false);
     };
 
-    const nextStatus = document.getElementById('rStatus').value;
     if (currentRezId && currentRezStatus === 'upit' && nextStatus === 'otkazano') {
       showConfirm('⚠️','Otkaži upit?','Upit će biti označen kao otkazan. Jeste li sigurni da želite nastaviti?', async () => {
         currentRezStatus = nextStatus;
